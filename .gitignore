@@ -1,0 +1,16 @@
+homeManagerModules/features/ags/types
+result
+result-*
+*.bak
+*~
+.direnv/
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+.env
+.envrc
+/result
+/result-*
