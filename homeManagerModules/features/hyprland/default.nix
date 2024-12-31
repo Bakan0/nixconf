@@ -163,43 +163,39 @@ in {
           movefocus_cycles_fullscreen = 0;
         };
 
-        decoration = {
+        decoration = lib.mkForce {
           # See https://wiki.hyprland.org/Configuring/Variables/ for more
-
           rounding = 5;
-
-          drop_shadow = true;
-          shadow_range = 30;
-          shadow_render_power = 3;
-          # "col.shadow" = "rgba(1a1a1aee)";
+          shadow = {
+            enabled = true;
+            range = 30;
+            render_power = 3;
+            color = "rgba(1a1a1aee)";
+          };
         };
-
+        
         animations = {
           enabled = true;
-
-          # Some default animations, see https://wiki.hyprland.org/Configuring/Animations/ for more
-
+        
           bezier = "myBezier, 0.25, 0.9, 0.1, 1.02";
-
-          animation =
-            [
-              "windows, 1, 7, myBezier"
-              "windowsOut, 1, 7, default, popin 80%"
-              "border, 1, 10, default"
-              "borderangle, 1, 8, default"
-              "fade, 1, 7, default"
-            ]
-            ++ [config.myHomeManager.windowanimation];
+        
+          animation = [
+            "windows, 1, 7, myBezier"
+            "windowsOut, 1, 7, default, popin 80%"
+            "border, 1, 10, default"
+            "borderangle, 1, 8, default"
+            "fade, 1, 7, default"
+          ] ++ [config.myHomeManager.windowanimation];
         };
-
-        dwindle = {
-          # See https://wiki.hyprland.org/Configuring/Dwindle-Layout/ for more
-          pseudotile = true;
-          preserve_split = true;
-          no_gaps_when_only = true;
-          force_split = 2;
-        };
-
+        
+          dwindle = {
+            pseudotile = true;
+            preserve_split = true;
+            # Remove this line as it's deprecated:
+            # no_gaps_when_only = true;
+            force_split = 2;
+          };
+           
         master = {
           # See https://wiki.hyprland.org/Configuring/Master-Layout/ for more
           # new_is_master = true;
