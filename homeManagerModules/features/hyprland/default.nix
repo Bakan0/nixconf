@@ -142,7 +142,7 @@ in {
           follow_mouse = 1;
 
           touchpad = {
-            natural_scroll = false;
+            natural_scroll = true;
           };
 
           repeat_rate = 40;

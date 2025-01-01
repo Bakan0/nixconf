@@ -7,7 +7,7 @@
 }: {
   programs.firefox = {
     enable = true;
-    profiles.yurii = {
+    profiles.emet = {
       extensions = with inputs.firefox-addons.packages."x86_64-linux"; [
         bitwarden
         ublock-origin

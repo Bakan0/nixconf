@@ -55,7 +55,7 @@
 
         acc01ade = mkSystem ./hosts/acc01ade/configuration.nix;
         # nighthawk = mkSystem ./hosts/nighthawk/configuration.nix;
-        # tyr = mkSystem ./hosts/tyr/configuration.nix;
+        tyr = mkSystem ./hosts/tyr/configuration.nix;
         # liveiso = mkSystem ./hosts/liveiso/configuration.nix;
       };
 
@@ -64,7 +64,7 @@
 
         "emet@acc01ade" = mkHome "x86_64-linux" ./hosts/acc01ade/home.nix;
         # "emet@nighthawk" = mkHome "x86_64-linux" ./hosts/nighthawk/home.nix;
-        # "emet@tyr" = mkHome "x86_64-linux" ./hosts/tyr/home.nix;
+        "emet@tyr" = mkHome "x86_64-linux" ./hosts/tyr/home.nix;
 
       };
 
