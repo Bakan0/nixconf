@@ -36,6 +36,7 @@
     firefox.enable = true;
     waybar.enable = true;
     hyprland.enable = true;
+    # stylix.enable = false;
   };
 
   programs = {

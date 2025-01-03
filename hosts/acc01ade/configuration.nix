@@ -12,6 +12,7 @@
     bundles.users.enable = true;
     sddm.enable = true;
     hyprland.enable = true;
+    stylix.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
