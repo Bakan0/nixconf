@@ -7,7 +7,7 @@
 }: {
   nixpkgs = {
     config = {
-      # allowUnfree = true;
+      allowUnfree = true;
       experimental-features = "nix-command flakes";
     };
   };

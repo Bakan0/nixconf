@@ -25,17 +25,19 @@
     # Bundles
     bundles.general.enable = true;  # From bundles/general.nix
     bundles.desktop.enable = true;  # From bundles/desktop.nix
+    bundles.desktop-full.enable = true;  # From bundles/desktop.nix
 
     # Features
     fish.enable = false;  # Explicitly disable fish
     zsh.enable = true;    # Enable zsh from features/zsh.nix
     git.enable = true;    # Enable git from features/git.nix
     kitty.enable = true;  # If you want kitty terminal
+    #  stylix.enable = false;
 
     # Add any other features you want
     firefox.enable = true;
-    waybar.enable = true;
     hyprland.enable = true;
+    waybar.enable = true;
   };
 
   programs = {

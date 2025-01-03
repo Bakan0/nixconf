@@ -100,8 +100,8 @@ in {
           gaps_in = 5;
           gaps_out = 10;
           border_size = 2;
-          "col.active_border" = lib.mkForce "rgba(${config.stylix.base16Scheme.base0E}ff) rgba(${config.stylix.base16Scheme.base09}ff) 60deg";
-          "col.inactive_border" = lib.mkForce "rgba(${config.stylix.base16Scheme.base00}ff)";
+          #  "col.active_border" = lib.mkForce "rgba(${config.stylix.base16Scheme.base0E}ff) rgba(${config.stylix.base16Scheme.base09}ff) 60deg";
+          #  "col.inactive_border" = lib.mkForce "rgba(${config.stylix.base16Scheme.base00}ff)";
 
           layout = "dwindle";
         };
@@ -132,7 +132,7 @@ in {
         ];
 
         input = {
-          kb_layout = "us,ru,ua";
+          kb_layout = "us";
           kb_variant = "";
           kb_model = "";
           kb_options = "grp:alt_shift_toggle,caps:escape";

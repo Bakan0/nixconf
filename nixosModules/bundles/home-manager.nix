@@ -35,12 +35,12 @@ in {
   config = {
     programs.zsh.enable = true;
 
-    programs.hyprland.enable = cfg.hyprland.enable;
+    # programs.hyprland.enable = cfg.hyprland.enable;
     # programs.hyprland.package = inputs.hyprland.packages."${pkgs.system}".hyprland;
 
-    services.displayManager = lib.mkIf cfg.hyprland.enable {
-      defaultSession = "hyprland";
-    };
+    #  services.displayManager = lib.mkIf cfg.hyprland.enable {
+    #    defaultSession = "hyprland";
+    #  };
 
     home-manager = {
       useGlobalPkgs = true;

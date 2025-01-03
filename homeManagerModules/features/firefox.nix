@@ -10,11 +10,12 @@
     profiles.emet = {
       extensions = with inputs.firefox-addons.packages."x86_64-linux"; [
         bitwarden
-        ublock-origin
-        sponsorblock
         darkreader
-        vimium
+        kagi-search
         multi-account-containers
+        sponsorblock
+        ublock-origin
+        vimium
         youtube-shorts-block
       ];
 
@@ -63,12 +64,4 @@
       };
     };
   };
-
-  myHomeManager.impermanence.data.directories = [
-    ".mozilla"
-  ];
-
-  myHomeManager.impermanence.cache.directories = [
-    ".cache/mozilla"
-  ];
 }

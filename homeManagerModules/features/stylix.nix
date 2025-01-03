@@ -30,7 +30,7 @@
     targets.rofi.enable = false;
     targets.kde.enable = false;
 
-    autoEnable = true;
-    enable = true;
+    autoEnable = false;
+    enable = false;
   };
 }

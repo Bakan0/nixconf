@@ -23,6 +23,11 @@
     LC_TIME = "en_US.UTF-8";
   };  
 
+  console = {
+    font = "sun12x22";
+    useXkbConfig = true;
+  };
+
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -37,6 +42,14 @@
     nerd-fonts.jetbrains-mono
     nerd-fonts.iosevka
     nerd-fonts.fira-code
+    # fonts for swaybar
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-emoji
+    font-awesome
+    source-han-sans
+    source-han-sans-japanese
+    source-han-serif-japanese
     cm_unicode
     corefonts
   ];
