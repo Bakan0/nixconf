@@ -51,7 +51,12 @@
 
   virtualisation.incus.enable = true;
   networking.nftables.enable = true;
-  networking.firewall.trustedInterfaces = [ "incusbr0" ];
+  networking.firewall = {
+    # NFSv4 nas share
+    allowedTCPPorts = [ 2049];
+    allowedUDPPorts = [ 2049];
+    trustedInterfaces = [ "incusbr0" ];
+  };
 
 
   networking = {
@@ -90,10 +95,6 @@
       nameservers = [ "10.17.19.197" "10.17.19.199" ];
   };
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  services.printing.enable = true;
 
   system.autoUpgrade.enable = false;
 
@@ -204,11 +205,17 @@
   };
 
 
+  # Enable the X11 windowing system.
+  services.xserver.enable = true;
+
   # services.flatpak.enable = true;
   services.fwupd.enable = true;
+  services.nfs.server.enable = true;
   services.openssh.enable = true;
+  services.printing.enable = true;
   services.protonmail-bridge.enable = true;
   services.teamviewer.enable = true;
+
 
   # Incompatible with Flakes
   # system.copySystemConfiguration = true;
