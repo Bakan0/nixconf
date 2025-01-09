@@ -5,6 +5,7 @@
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
       ./nvidia.nix
+      ./nextcloud-nginx.nix
     ];
   
   myNixOS = {
@@ -58,7 +59,6 @@
     trustedInterfaces = [ "incusbr0" ];
   };
 
-
   networking = {
       hostName = "acc01ade";
       hostId = "acc01ade";
@@ -75,26 +75,31 @@
         };
       };
   
-      # Basic bridge configuration
+      # Bridge configuration
       bridges = {
         "incusbr0" = {
           interfaces = [ "bond0" ];
+          rstp = true;  # Enable rapid spanning tree protocol
         };
       };
   
       # Interface configuration
-      interfaces.incusbr0 = {
-        ipv4.addresses = [{
-          address = "10.17.19.250";
-          prefixLength = 24;
-        }];
-        useDHCP = false;
+      interfaces = {
+        eno1.useDHCP = false;
+        eno2.useDHCP = false;
+        bond0.useDHCP = false;
+        incusbr0 = {
+          ipv4.addresses = [{
+            address = "10.17.19.250";
+            prefixLength = 24;
+          }];
+          useDHCP = false;
+        };
       };
   
       defaultGateway = "10.17.19.252";
       nameservers = [ "10.17.19.197" "10.17.19.199" ];
   };
-
 
   system.autoUpgrade.enable = false;
 
@@ -215,7 +220,6 @@
   services.printing.enable = true;
   services.protonmail-bridge.enable = true;
   services.teamviewer.enable = true;
-
 
   # Incompatible with Flakes
   # system.copySystemConfiguration = true;
