@@ -19,6 +19,7 @@
   # myHomeManager.nix-direnv.enable = lib.mkDefault true;
   myHomeManager.nix.enable = lib.mkDefault true;
   myHomeManager.git.enable = lib.mkDefault true;
+  myHomeManager.nvim.enable = lib.mkDefault true;
 
   myHomeManager.stylix.enable = lib.mkDefault true;
 
@@ -41,7 +42,6 @@
     libqalculate
     imagemagick
     killall
-    neovim
 
     fzf
     htop
@@ -50,6 +50,7 @@
     fd
     zoxide
     du-dust
+    tree
     ripgrep
     neofetch
     imv

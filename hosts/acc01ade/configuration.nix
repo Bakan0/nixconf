@@ -165,7 +165,6 @@
     kitty
     libnotify
     neovide
-    neovim
     networkmanagerapplet
     nh
     nix-output-monitor

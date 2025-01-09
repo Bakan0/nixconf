@@ -11,11 +11,12 @@
     bundles.users.enable = true;
     sddm.enable = true;
     hyprland.enable = true;
+    stylix.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
         userSettings = {
-          extraGroups = [ "networkmanager" "wheel" ];
+          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" ];
         };
       };
     };
@@ -52,6 +53,47 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+  
+  environment.systemPackages = with pkgs; [
+    acpi
+    brightnessctl
+    colorls
+    curl
+    dunst
+    fastfetch
+    flatpak
+    font-awesome
+    freerdp
+    fwupd
+    git
+    hypridle
+    hyprland
+    hyprlock
+    kitty
+    libnotify
+    neovide
+    networkmanagerapplet
+    nh
+    nix-output-monitor
+    ntfs3g
+    openconnect
+    pavucontrol
+    rofi-wayland
+    swww
+    tailscale
+    teamviewer
+    tmux
+    unzip
+    vim
+    waybar
+    wayland
+    wget
+    wl-clipboard
+    xorg.xorgserver
+    xwayland
+    zip
+  ];
+
 
   environment.variables.EDITOR = "nvim";
 

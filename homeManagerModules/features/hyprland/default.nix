@@ -63,6 +63,7 @@
     [
       (lib.getExe generalStartScript)
       (lib.getExe monitorScript)
+      "waybar"
 
       # I forgor why i need this
       "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
@@ -85,7 +86,7 @@ in {
   };
 
   config = {
-    myHomeManager.waybar.enable = lib.mkDefault false;
+    myHomeManager.waybar.enable = lib.mkDefault true;
     myHomeManager.keymap.enable = lib.mkDefault true;
 
     wayland.windowManager.hyprland = {
@@ -135,7 +136,7 @@ in {
           kb_layout = "us";
           kb_variant = "";
           kb_model = "";
-          kb_options = "grp:alt_shift_toggle,caps:escape";
+          kb_options = "caps:escape_shifted_capslock";
 
           kb_rules = "";
 
@@ -144,6 +145,8 @@ in {
           touchpad = {
             natural_scroll = true;
           };
+
+          natural_scroll = true;
 
           repeat_rate = 40;
           repeat_delay = 250;

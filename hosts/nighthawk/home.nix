@@ -17,6 +17,7 @@
       eza
       fzf
       htop
+      microsoft-edge
     ];
   };
 
@@ -32,12 +33,12 @@
     zsh.enable = true;    # Enable zsh from features/zsh.nix
     git.enable = true;    # Enable git from features/git.nix
     kitty.enable = true;  # If you want kitty terminal
-    #  stylix.enable = false;
 
     # Add any other features you want
     firefox.enable = true;
     hyprland.enable = true;
     waybar.enable = true;
+    # stylix.enable = false;
   };
 
   programs = {

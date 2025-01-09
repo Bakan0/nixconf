@@ -67,7 +67,7 @@ in {
         initialPassword = "12345";
         description = cfg.userName;
         shell = pkgs.zsh;
-        extraGroups = ["libvirtd" "networkmanager" "wheel"];
+        extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" ];
       }
       // cfg.userNixosSettings;
   };
