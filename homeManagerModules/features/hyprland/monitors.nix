@@ -61,4 +61,47 @@ in {
     });
     default = {};
   };
+
+  config = {
+    myHomeManager.monitors = {
+      "desc:Philips Consumer Electronics Company PHL 499P9" = {
+        primary = true;
+        width = 5120;
+        height = 1440;
+        refreshRate = 29.979;
+        x = 0;
+        y = 0;
+        enabled = true;
+      };
+    };
+
+    myHomeManager.workspaces = {
+      "1" = {
+        monitorId = 1;
+        autostart = [];
+      };
+      "2" = {
+        monitorId = 1;
+        autostart = [];
+      };
+      "3" = {
+        monitorId = 1;
+        autostart = [ "signal" "vivaldi-stable" ];
+      };
+      "4" = {
+        monitorId = 1;
+        autostart = [ "microsoft-edge" ];
+      };
+      "5" = {
+        monitorId = 1;
+        autostart = [ "teamviewer" ];
+      };
+    };
+
+    wayland.windowManager.hyprland.extraConfig = ''
+      # Auto handle monitors
+      monitor = eDP-1, preferred, auto, 1
+      monitor = desc:Philips Consumer Electronics Company PHL 499P9, 5120x1440@29.979, 0x0, 1
+    '';
+  };
 }

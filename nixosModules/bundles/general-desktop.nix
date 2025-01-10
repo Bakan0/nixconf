@@ -29,12 +29,56 @@
   };
 
   security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    jack.enable = true;
+
+  services = {
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      jack.enable = true;
+    };
+
+    # Printing configuration
+    printing = {
+      enable = true;
+      browsing = true;
+      browsedConf = ''
+        BrowseDNSSDSubTypes _cups,_print
+        BrowseProtocols cups dnssd
+      '';
+    };
+
+    avahi = {
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
+    };
+
+    upower.enable = true;
+  };
+
+  hardware = {
+    enableAllFirmware = true;
+
+    bluetooth.enable = true;
+    bluetooth.powerOnBoot = true;
+
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+      # driSupport = true;
+    };
+
+    printers = {
+      ensurePrinters = [{
+        name = "gw-hp-clj-mfp-m283fdw";
+        location = "Home";
+        deviceUri = "ipps://10.17.19.145/ipp/print";
+        model = "everywhere";
+        description = "HP Color LaserJet MFP M283fdw";
+      }];
+    };
   };
 
   fonts.packages = with pkgs; [
@@ -54,23 +98,7 @@
     corefonts
   ];
 
-  # battery
-  services.upower.enable = true;
-
   security.polkit.enable = true;
-
-  hardware = {
-    enableAllFirmware = true;
-
-    bluetooth.enable = true;
-    bluetooth.powerOnBoot = true;
-
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-      # driSupport = true;
-    };
-  };
 
   programs.dconf.enable = true;
 
@@ -92,5 +120,5 @@
       };
     };
   };
-
 }
+

@@ -64,6 +64,7 @@
       (lib.getExe generalStartScript)
       (lib.getExe monitorScript)
       "waybar"
+      "kanshi"
 
       # I forgor why i need this
       "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
@@ -73,6 +74,7 @@ in {
   imports = [
     ./monitors.nix
     ./keymaps.nix
+    ./xdph.nix
   ];
 
   options = {

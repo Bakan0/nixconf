@@ -216,7 +216,6 @@
   services.fwupd.enable = true;
   services.nfs.server.enable = true;
   services.openssh.enable = true;
-  services.printing.enable = true;
   services.protonmail-bridge.enable = true;
   services.teamviewer.enable = true;
 

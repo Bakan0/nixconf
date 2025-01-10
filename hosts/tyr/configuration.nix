@@ -34,8 +34,6 @@
     networkmanager.enable = true;
   };
 
-  services.printing.enable = true;
-
   system.autoUpgrade.enable = false;
 
   users.users.root = {
