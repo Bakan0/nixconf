@@ -13,6 +13,7 @@
     packages = with pkgs; [
       ripgrep
       fd
+      jq
       bat
       eza
       fzf
@@ -29,7 +30,6 @@
     bundles.desktop-full.enable = true;  # From bundles/desktop.nix
 
     # Features
-    kanshi.enable = true; 
     fish.enable = false;  # Explicitly disable fish
     zsh.enable = true;    # Enable zsh from features/zsh.nix
     git.enable = true;    # Enable git from features/git.nix

@@ -12,6 +12,7 @@
     sddm.enable = true;
     hyprland.enable = true;
     stylix.enable = true;
+    kanshi.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;

@@ -83,6 +83,7 @@
       gtk.enable = true;
       plymouth.enable = true;
     };
+    polarity = "dark";
   # opacity.terminal = 1;
   # stylix.targets.nixos-icons.enable = true;
 

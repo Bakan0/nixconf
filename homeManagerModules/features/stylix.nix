@@ -26,11 +26,8 @@
 
     # stylix.image = ./prism/wallpapers/gruvbox-mountain-village.png;
 
-    targets.waybar.enable = false;
-    targets.rofi.enable = false;
+    targets.waybar.enable = true;
+    targets.rofi.enable = true;
     targets.kde.enable = false;
-
-    autoEnable = false;
-    enable = false;
   };
 }

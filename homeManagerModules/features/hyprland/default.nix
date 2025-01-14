@@ -63,8 +63,6 @@
     [
       (lib.getExe generalStartScript)
       (lib.getExe monitorScript)
-      "waybar"
-      "kanshi"
 
       # I forgor why i need this
       "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
@@ -226,6 +224,7 @@ in {
             "$mainMod SHIFT, M, exit,"
             "$mainMod SHIFT, F, togglefloating,"
             "$mainMod, F, fullscreen,"
+            "$mainMod, P, exec, toggle-laptop-display"
             "$mainMod, T, pin,"
             "$mainMod, G, togglegroup,"
             "$mainMod, bracketleft, changegroupactive, b"
