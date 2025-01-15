@@ -23,7 +23,7 @@
     mod = "dock";
     layer = "top";
     gtk-layer-shell = true;
-    height = 14;
+    height = 26;
     position = "top";
 
     modules-left = ["custom/logo" "hyprland/workspaces"];
@@ -212,31 +212,23 @@
     }
 
     #workspaces button {
-        box-shadow: none;
-    	text-shadow: none;
-        padding: 0px;
-        border-radius: 7px;
-        padding-right: 0px;
-        padding-left: 4px;
-        margin-right: 7px;
-        margin-left: 7px;
-        color: @theme_text_color;
-        animation: gradient_f 2s ease-in infinite;
-        transition: all 0.2s cubic-bezier(.55,-0.68,.48,1.682);
+        /* ... other properties ... */
+        margin: 0 4px;  # Adjust spacing between workspace icons
+        padding: 0 4px;
+        min-width: 24px; # Ensure consistent width
     }
-
+    
     #workspaces button.active {
-        color: @accent_color;
-        animation: gradient_f 20s ease-in infinite;
-        transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
+        /* ... other properties ... */
+        background: shade(alpha(@theme_text_colors, 0.9), 1.25);
+        border-radius: 7px;
     }
-
+    
     #workspaces button:hover {
-        color: @accent_color;
-        animation: gradient_f 20s ease-in infinite;
-        transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
+        /* ... other properties ... */
+        background: shade(alpha(@theme_text_colors, 0.7), 1.25);
     }
-
+    
     #cpu,
     #memory,
     #custom-power,
@@ -363,11 +355,12 @@ in {
   programs.waybar = {
     enable = true;
     package = (pkgs.waybar.override {
-    withMediaPlayer = true;
-    hyprlandSupport = true;
-  }).overrideAttrs (oldAttrs: {
-    mesonFlags = oldAttrs.mesonFlags ++ ["-Dexperimental=true"];
-  });
+      withMediaPlayer = true;
+      hyprlandSupport = true;
+    }).overrideAttrs (oldAttrs: {
+      mesonFlags = oldAttrs.mesonFlags ++ ["-Dexperimental=true"];
+    });
+    systemd.enable = true;  # This is the home-manager way
     style = css;
     settings = {mainBar = mainWaybarConfig;};
   };

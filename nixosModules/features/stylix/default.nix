@@ -55,26 +55,26 @@
       };
     };
 
-    cursor.name = "Banana-Gruvbox";
+    # cursor.name = "Banana-Gruvbox";
     # cursor.package = pkgs.bibata-cursors;
 
-    cursor.package = let
-      banana = pkgs.stdenv.mkDerivation {
-        name = "banana-cursor";
+    # cursor.package = let
+    #   banana = pkgs.stdenv.mkDerivation {
+    #     name = "banana-cursor";
 
-        src = builtins.fetchurl {
-          url = "https://github.com/vimjoyer/banana-cursor-gruvbox/releases/download/4/Banana-Gruvbox.tar.gz";
-          sha256 = "sha256-opGDdW7w2eAhwP/fuBES3qA6d7M8I/xhdXiTXoIoGzs=";
-        };
-        unpack = false;
+    #     src = builtins.fetchurl {
+    #       url = "https://github.com/vimjoyer/banana-cursor-gruvbox/releases/download/4/Banana-Gruvbox.tar.gz";
+    #       sha256 = "sha256-opGDdW7w2eAhwP/fuBES3qA6d7M8I/xhdXiTXoIoGzs=";
+    #     };
+    #     unpack = false;
 
-        installPhase = ''
-          mkdir -p $out/share/icons/Banana-Gruvbox
-          tar -xvf $src -C $out/share/icons/Banana-Gruvbox
-        '';
-      };
-    in
-      banana;
+    #     installPhase = ''
+    #       mkdir -p $out/share/icons/Banana-Gruvbox
+    #       tar -xvf $src -C $out/share/icons/Banana-Gruvbox
+    #     '';
+    #   };
+    # in
+    #   banana;
 
     targets = {
       chromium.enable = true;

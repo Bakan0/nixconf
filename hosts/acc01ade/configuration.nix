@@ -130,7 +130,6 @@
        powershell
        remmina
        sidequest
-       signal-desktop
        tree
        vivaldi
        vivaldi-ffmpeg-codecs
