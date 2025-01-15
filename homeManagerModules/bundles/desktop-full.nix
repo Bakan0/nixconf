@@ -15,6 +15,8 @@
   };
 
   home.packages = with pkgs; [
+    evolution
+    evolution-ews
     signal-desktop
     vivaldi
     vivaldi-ffmpeg-codecs
