@@ -122,14 +122,6 @@
     '';
   };
 
-  programs.fish.functions = {
-    lfcd = {
-      body = ''
-        cd "$(command lf -print-last-dir $argv)"
-      '';
-    };
-  };
-
   programs.zsh.initExtra = lib.mkAfter ''
     lfcd () {
         tmp="$(mktemp)"

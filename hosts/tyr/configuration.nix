@@ -51,8 +51,6 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  environment.variables.EDITOR = "nvim";
-
   nix.gc = {
     automatic = true;
     dates = "weekly";
@@ -74,7 +72,6 @@
 
   services.fwupd.enable = true;
   services.openssh.enable = true;
-  services.protonmail-bridge.enable = true;
   services.teamviewer.enable = true;
 
   system.stateVersion = "24.11";

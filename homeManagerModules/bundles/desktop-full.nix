@@ -12,11 +12,13 @@
     rbw.enable = lib.mkDefault true;
     hyprland.enable = true;
     firefox.enable = true;
+    protonmail.enable = true;
   };
 
   home.packages = with pkgs; [
     evolution
     evolution-ews
+    obsidian
     signal-desktop
     vivaldi
     vivaldi-ffmpeg-codecs

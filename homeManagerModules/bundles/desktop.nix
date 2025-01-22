@@ -84,6 +84,7 @@
       wezterm
       kitty
 
+      azure-cli
       onlyoffice-bin
       easyeffects
       gegl

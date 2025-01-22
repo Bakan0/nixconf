@@ -27,7 +27,6 @@ in {
 
   config = {
     programs.zsh.enable = true;
-    programs.fish.enable = true;
 
     programs.hyprland.enable = cfg.hyprland.enable;
 
@@ -62,7 +61,7 @@ in {
           isNormalUser = true;
           initialPassword = "12345";
           description = "";
-          shell = pkgs.fish;
+          shell = pkgs.zsh;
           extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel"];
         }
         // user.userSettings

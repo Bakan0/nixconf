@@ -81,7 +81,7 @@
     };
 
     "custom/logo" = {
-      exec = "echo '󰣇'";
+      exec = "echo ' '";
       format = "{}";
     };
 

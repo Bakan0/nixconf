@@ -7,7 +7,6 @@
     stateVersion = "24.11";
 
     sessionVariables = {
-      EDITOR = "nvim";
     };
 
     packages = with pkgs; [
@@ -30,7 +29,6 @@
     bundles.desktop-full.enable = true;  # From bundles/desktop.nix
 
     # Features
-    fish.enable = false;  # Explicitly disable fish
     zsh.enable = true;    # Enable zsh from features/zsh.nix
     git.enable = true;    # Enable git from features/git.nix
     kitty.enable = true;  # If you want kitty terminal

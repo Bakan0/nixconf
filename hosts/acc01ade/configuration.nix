@@ -117,7 +117,6 @@
     ];
     packages = with pkgs; [
        appimage-run
-       azure-cli
        bitwarden-desktop
        evolution
        evolution-ews
@@ -125,7 +124,6 @@
        meld
        microsoft-edge
        mutter
-       obsidian
        onlyoffice-bin_latest
        powershell
        remmina
@@ -186,8 +184,6 @@
     zip
   ];
 
-  environment.variables.EDITOR = "nvim";
-
   nix.gc = {
     automatic = true;
     dates = "weekly";
@@ -215,7 +211,6 @@
   services.fwupd.enable = true;
   services.nfs.server.enable = true;
   services.openssh.enable = true;
-  services.protonmail-bridge.enable = true;
   services.teamviewer.enable = true;
 
   # Incompatible with Flakes
