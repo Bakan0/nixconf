@@ -27,6 +27,7 @@
     bundles.general.enable = true;  # From bundles/general.nix
     bundles.desktop.enable = true;  # From bundles/desktop.nix
     bundles.desktop-full.enable = true;  # From bundles/desktop.nix
+    bundles.gaming.enable = true;  # From bundles/gaming.nix
 
     # Features
     zsh.enable = true;    # Enable zsh from features/zsh.nix

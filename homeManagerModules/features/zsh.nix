@@ -35,11 +35,25 @@ in {
   };
 
   programs.zsh.initExtra = ''
-    # EXTRACT FUNCTION (needs more nix)
+    # Enhanced completion settings
+    zstyle ':completion:*' menu select
+    zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+    zstyle ':completion:*' special-dirs true
+    zstyle ':completion:*' list-colors ''${(s.:.)LS_COLORS}
 
-    hst() {
-        history 0 | cut -c 8- | uniq | ${pkgs.fzf}/bin/fzf | ${pkgs.wl-clipboard}/bin/wl-copy
-    }
+    # Initialize completion system
+    autoload -Uz compinit
+    compinit
+
+    # Better history search with arrow keys
+    autoload -U up-line-or-beginning-search
+    autoload -U down-line-or-beginning-search
+    zle -N up-line-or-beginning-search
+    zle -N down-line-or-beginning-search
+    bindkey "^[[A" up-line-or-beginning-search
+    bindkey "^[[B" down-line-or-beginning-search
+
+    # EXTRACT FUNCTION (needs more nix)
 
     proj() {
       dir="$(cat ~/.local/share/direnv/allow/* | uniq | xargs dirname | ${pkgs.fzf}/bin/fzf --height 9)"
@@ -129,6 +143,22 @@ in {
       source "$CUSTOMZSHTOSOURCE"
     fi
 
+    hst() {
+        selected=$(print -l "''${history[@]}" | ${pkgs.fzf}/bin/fzf \
+          --height 50% \
+          --layout=reverse \
+          --border \
+          --preview 'echo {}' \
+          --preview-window up:3:wrap)
+        if [ -n "$selected" ]; then
+            echo -n "$selected" | ${pkgs.wl-clipboard}/bin/wl-copy
+            BUFFER=$selected
+            zle reset-prompt
+        fi
+    }
+    zle -N hst
+    bindkey '^R' hst
+    
     chpwdf() {
         if env | grep -q direnv; then
             extra_dev_shell="direnv"
@@ -145,16 +175,15 @@ in {
   '';
 
   programs.zsh.envExtra = ''
-    export TERMINAL="alacritty"
-    export TERM="alacritty"
-    export BROWSER="firefox"
+    export TERMINAL="kitty"
+    export TERM="kitty"
+    export BROWSER="vivaldi-stable"
     export VIDEO="mpv"
     export IMAGE="imv"
     export OPENER="xdg-open"
     export SCRIPTS="$HOME/scripts"
     export LAUNCHER="rofi -dmenu"
-    export FZF_DEFAULT_OPTS="--color=16"
-
+    export FZF_DEFAULT_OPTS="--color=16 --height 50% --layout=reverse --border --inline-info"
     # Less colors
     export LESS_TERMCAP_mb=$'\e[1;32m'
     export LESS_TERMCAP_md=$'\e[1;32m'
