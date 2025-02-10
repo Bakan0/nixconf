@@ -136,7 +136,7 @@ in {
           kb_layout = "us";
           kb_variant = "";
           kb_model = "";
-          kb_options = "caps:escape_shifted_capslock";
+          kb_options = "";
 
           kb_rules = "";
 
@@ -229,6 +229,7 @@ in {
             "$mainMod, G, togglegroup,"
             "$mainMod, bracketleft, changegroupactive, b"
             "$mainMod, bracketright, changegroupactive, f"
+            "$mainMod, backslash, moveoutofgroup"
             "$mainMod, S, exec, rofi -show drun -show-icons"
             "$mainMod, P, pin, active"
 

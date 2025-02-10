@@ -50,6 +50,34 @@
     ];
   };
 
+  users.users.emet = {
+    isNormalUser = true;
+    extraGroups = [ "wheel" "incus-admin" ];
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
+    ];
+    packages = with pkgs; [
+       appimage-run
+       # azure-cli
+       bitwarden-desktop
+       evolution
+       evolution-ews
+       kitty # Terminal emulator, recommended for Hyprland
+       meld
+       microsoft-edge
+       mutter
+       obsidian
+       onlyoffice-bin_latest
+       powershell
+       remmina
+       sidequest
+       tree
+       vivaldi
+       vivaldi-ffmpeg-codecs
+       yazi
+    ];
+  };
+
   # Enable flakes and allow unfree
   nix.settings = {
     experimental-features = [ "nix-command" "flakes" ];
