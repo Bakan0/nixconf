@@ -250,6 +250,12 @@ in {
             "$mainMod SHIFT, l, movewindow, r"
             "$mainMod SHIFT, k, movewindow, u"
             "$mainMod SHIFT, j, movewindow, d"
+
+            "$mainMod ALT, h, movewindoworgroup, l"
+            "$mainMod ALT, l, movewindoworgroup, r"
+            "$mainMod ALT, k, movewindoworgroup, u"
+            "$mainMod ALT, j, movewindoworgroup, d"
+
           ]
           ++ map (n: "$mainMod SHIFT, ${toString n}, movetoworkspace, ${toString (
             if n == 0

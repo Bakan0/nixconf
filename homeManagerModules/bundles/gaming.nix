@@ -10,7 +10,7 @@
   programs.mangohud.enable = true;
 
   home.packages = with pkgs; [
-    lutris
+    # lutris
     steam
     steam-run
     protonup-ng
@@ -18,14 +18,14 @@
     dxvk
     # parsec-bin
 
-    gamescope
+    # gamescope
 
     # heroic
-    mangohud
+    # mangohud
 
-    r2modman
+    # r2modman
 
-    heroic
+    # heroic
 
     er-patcher
     bottles

@@ -28,6 +28,7 @@
     bundles.general.enable = true;  # From bundles/general.nix
     bundles.desktop.enable = true;  # From bundles/desktop.nix
     bundles.desktop-full.enable = true;  # From bundles/desktop.nix
+    bundles.gaming.enable = true;  # From bundles/general.nix
 
     # Features
     fish.enable = false;  # Explicitly disable fish

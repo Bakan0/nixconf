@@ -69,6 +69,7 @@
        obsidian
        onlyoffice-bin_latest
        powershell
+       quickemu
        remmina
        sidequest
        tree

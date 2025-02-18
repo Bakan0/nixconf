@@ -30,6 +30,8 @@
 
   security.rtkit.enable = true;
 
+  environment.etc.hosts.mode = "0644";
+
   services = {
     pipewire = {
       enable = true;
