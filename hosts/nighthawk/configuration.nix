@@ -58,7 +58,7 @@
     ];
     packages = with pkgs; [
        appimage-run
-       # azure-cli
+       azure-cli
        bitwarden-desktop
        evolution
        evolution-ews

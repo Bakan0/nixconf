@@ -4,6 +4,12 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
+    # Add a pinned nixpkgs input for azure-cli
+    nixpkgs-azure = {
+      url = "github:nixos/nixpkgs/94aaf16abcfbbef3fe911822c000c0630744ddd4"; # Commit with azure-cli 2.69.0
+      flake = false; # Prevent updates during `flake update`
+    };
+
     xremap-flake.url = "github:xremap/nix-flake";
 
     home-manager = {
@@ -44,10 +50,15 @@
     #  };
   };
 
-      outputs = {...} @ inputs: let
+  outputs = { self, nixpkgs, nixpkgs-azure, ... }@inputs: let
+    # Import pinned azure-cli from nixpkgs-azure
+    azurePinned = (import nixpkgs-azure {
+      system = "x86_64-linux"; # Adjust for your system architecture
+    }).azure-cli;
+
     # super simple boilerplate-reducing
     # lib with a bunch of functions
-    myLib = import ./myLib/default.nix {inherit inputs;};
+    myLib = import ./myLib/default.nix { inherit inputs; };
   in
     with myLib; {
       nixosConfigurations = {
@@ -69,10 +80,15 @@
         "emet@nighthawk" = mkHome "x86_64-linux" ./hosts/nighthawk/home.nix;
         "emet@tyr" = mkHome "x86_64-linux" ./hosts/tyr/home.nix;
         "emet@dazzle" = mkHome "x86_64-linux" ./hosts/dazzle/home.nix;
-
       };
 
       homeManagerModules.default = ./homeManagerModules;
       nixosModules.default = ./nixosModules;
+
+      # Add pinned azure-cli to systemPackages
+      nixosModules.features.azure-cli = { config, pkgs, ... }: {
+        environment.systemPackages = [ azurePinned ];
+      };
     };
 }
+
