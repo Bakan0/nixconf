@@ -13,6 +13,9 @@
     hyprland.enable = true;
     stylix.enable = true;
     kanshi.enable = true;
+    virtualisation = {
+      username = "emet";
+    };
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
