@@ -4,7 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 #    nixpkgs-azure.url = "github:nixos/nixpkgs/94aaf16abcfbbef3fe911822c000c0630744ddd4"; # Commit with azure-cli 2.69.0
-    nixpkgs-25-05.url = "github:NixOS/nixpkgs/release-25.05";
 
     xremap-flake.url = "github:xremap/nix-flake";
 
@@ -47,18 +46,12 @@
   };
 
   # outputs = { self, nixpkgs, nixpkgs-azure, ... }@inputs: let
-  outputs = { self, nixpkgs, nixpkgs-25-05, ... }@inputs: let
+  outputs = { self, nixpkgs, ... }@inputs: let
     
     # super simple boilerplate-reducing
     # lib with a bunch of functions
     myLib = import ./myLib/default.nix { inherit inputs; };
     
-    pinnedPkgs = {
-      microsoft-edge = (import nixpkgs-25-05 {
-        system = "x86_64-linux";
-        config.allowUnfree = true;
-      }).microsoft-edge;
-    };
   in
     with myLib; {
       nixosConfigurations = {
@@ -93,12 +86,8 @@
             environment.systemPackages = [ pkgs.azure-cli ];
           };
 
-          microsoft-edge = { config, pkgs, ... }: {
-            environment.systemPackages = [ pinnedPkgs.microsoft-edge ];
           };
-        };
-      };
-
+       };
     };
 }
 

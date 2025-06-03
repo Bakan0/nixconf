@@ -299,6 +299,10 @@ in {
         #   "forceinput,^(league of legends.exe)$"
         # ];
 
+        windowrulev2 = [
+          "float,class:^(Vivaldi-stable)$,title:^(Bitwarden - Vivaldi)$"
+        ];
+
         exec-once = exec-once;
       };
     };

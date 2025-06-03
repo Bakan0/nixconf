@@ -4,7 +4,6 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      inputs.self.nixosModules.features.microsoft-edge
     ];
 
   myNixOS = {
@@ -14,7 +13,6 @@
     hyprland.enable = true;
     stylix.enable = true;
     kanshi.enable = true;
-    microsoft-edge.enable = true;
     virtualisation = {
       username = "emet";
     };

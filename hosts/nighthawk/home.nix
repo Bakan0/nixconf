@@ -18,7 +18,6 @@
       eza
       fzf
       htop
-      microsoft-edge
     ];
   };
 

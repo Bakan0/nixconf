@@ -123,7 +123,6 @@
        evolution-ews
        kitty # Terminal emulator, recommended for Hyprland
        meld
-       microsoft-edge
        mutter
        obsidian
        onlyoffice-bin_latest

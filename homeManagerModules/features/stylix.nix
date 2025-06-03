@@ -29,5 +29,6 @@
     targets.waybar.enable = true;
     targets.rofi.enable = true;
     targets.kde.enable = false;
+    targets.mako.enable = false;
   };
 }

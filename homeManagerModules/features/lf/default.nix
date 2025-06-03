@@ -130,7 +130,7 @@
     };
   };
 
-  programs.zsh.initExtra = lib.mkAfter ''
+  programs.zsh.initContent = lib.mkAfter ''
     lfcd () {
         tmp="$(mktemp)"
         lf -last-dir-path="$tmp" "$@"
