@@ -3,6 +3,13 @@
 
   environment.etc."nextcloud-admin-pass".text = "D3F417-changeme2435";
 
+  # Add occ wrapper script
+  environment.systemPackages = with pkgs; [
+    (writeShellScriptBin "occ" ''
+      sudo -u nextcloud php /data/nextcloud/occ "$@"
+    '')
+  ];
+
   # PostgreSQL
   services.postgresql = {
     enable = true;
@@ -62,9 +69,30 @@
 
   services.nginx = {
     enable = true;
-    virtualHosts.${config.services.nextcloud.hostName} = {
-      forceSSL = true;
-      enableACME = true;
+    virtualHosts = {
+      ${config.services.nextcloud.hostName} = {
+        forceSSL = true;
+        enableACME = true;
+      };
+
+      # Add Jellyfin virtual host
+      "jelly.databender.io" = {
+        forceSSL = true;
+        enableACME = true;
+        locations."/" = {
+          proxyPass = "http://127.0.0.1:8096";
+          proxyWebsockets = true;
+          extraConfig = ''
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Protocol $scheme;
+            proxy_set_header X-Forwarded-Host $http_host;
+            proxy_buffering off;
+          '';
+        };
+      };
     };
   };
 
@@ -72,6 +100,7 @@
     acceptTerms = true;
     certs = {
       ${config.services.nextcloud.hostName}.email = "IamJohnMichael@pm.me";
+      "jelly.databender.io".email = "IamJohnMichael@pm.me";
     };
   };
 

@@ -6,6 +6,7 @@
       ./hardware-configuration.nix
       ./nvidia.nix
       ./nextcloud-nginx.nix
+      ./jellyfin.nix
     ];
   
   myNixOS = {
@@ -130,8 +131,8 @@
        remmina
        sidequest
        tree
-       vivaldi
-       vivaldi-ffmpeg-codecs
+       # vivaldi
+       # vivaldi-ffmpeg-codecs
        yazi
     ];
   };
