@@ -173,7 +173,7 @@
     rofi-wayland
     swww
     tailscale
-    teamviewer
+    # teamviewer
     tmux
     unzip
     vim
@@ -216,7 +216,7 @@
   services.nfs.server.enable = true;
   services.openssh.enable = true;
   services.protonmail-bridge.enable = true;
-  services.teamviewer.enable = true;
+  # services.teamviewer.enable = true;
 
   # Incompatible with Flakes
   # system.copySystemConfiguration = true;
