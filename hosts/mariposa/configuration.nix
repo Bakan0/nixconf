@@ -9,8 +9,8 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
-    sddm.enable = true;
-    hyprland.enable = true;
+    sddm.enable = false;
+    hyprland.enable = false;
     stylix.enable = false;
     kanshi.enable = true;
     home-users = {
