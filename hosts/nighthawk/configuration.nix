@@ -13,6 +13,7 @@
     hyprland.enable = true;
     stylix.enable = true;
     kanshi.enable = true;
+    batteryManagement = true;
     virtualisation = {
       username = "emet";
     };
@@ -90,12 +91,18 @@
 
   nixpkgs.config.allowUnfree = true;
   
+  nixpkgs.config.permittedInsecurePackages = [
+    "dotnet-sdk-6.0.428"
+    "dotnet-runtime-6.0.36"
+    ];
+
   environment.systemPackages = with pkgs; [
     acpi
     brightnessctl
     colorls
     curl
     dunst
+    eddie
     fastfetch
     flatpak
     font-awesome
@@ -114,9 +121,9 @@
     ntfs3g
     openconnect
     pavucontrol
+    qbittorrent
     rofi-wayland
     swww
-    tailscale
     teamviewer
     tmux
     unzip

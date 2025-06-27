@@ -54,6 +54,10 @@
     ripgrep
     neofetch
     imv
+    openssl
+    ipcalc
+    dig
+    dnsutils
 
     ffmpeg
     wget

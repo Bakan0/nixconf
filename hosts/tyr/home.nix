@@ -11,8 +11,6 @@
     };
 
     packages = with pkgs; [
-      ripgrep
-      fd
       jq
       bat
       eza
