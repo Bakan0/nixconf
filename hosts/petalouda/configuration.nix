@@ -14,6 +14,7 @@
     stylix.enable = false;
     kanshi.enable = true;
     tpm2.enable = true;
+    plymouth-butterfly.enable = true;
     virtualisation.enable = false;
     home-users = {
       "joelle" = {
