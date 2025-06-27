@@ -13,7 +13,7 @@
     hyprland.enable = true;
     stylix.enable = true;
     kanshi.enable = true;
-    batteryManagement = true;
+    batteryManagement.enable = true;
     virtualisation = {
       username = "emet";
     };

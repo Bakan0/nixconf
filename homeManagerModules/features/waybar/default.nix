@@ -268,7 +268,6 @@ in {
     enable = true;
     package = (pkgs.waybar.override {
       withMediaPlayer = true;
-      hyprlandSupport = true;
     }).overrideAttrs (oldAttrs: {
       mesonFlags = oldAttrs.mesonFlags ++ ["-Dexperimental=true"];
     });
