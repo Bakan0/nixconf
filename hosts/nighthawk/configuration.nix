@@ -14,6 +14,7 @@
     stylix.enable = true;
     kanshi.enable = true;
     batteryManagement.enable = true;
+    tpm2.enable = true;
     virtualisation = {
       username = "emet";
     };

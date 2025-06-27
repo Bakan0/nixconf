@@ -13,6 +13,7 @@
     hyprland.enable = false;
     stylix.enable = false;
     kanshi.enable = true;
+    tpm2.enable = true;
     home-users = {
       "joelle" = {
         userConfig = ./home.nix;
