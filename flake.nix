@@ -59,6 +59,7 @@
 
         acc01ade = mkSystem ./hosts/acc01ade/configuration.nix;
         mariposa = mkSystem ./hosts/mariposa/configuration.nix;
+        petalouda = mkSystem ./hosts/petalouda/configuration.nix;
         nighthawk = mkSystem ./hosts/nighthawk/configuration.nix;
         tyr = mkSystem ./hosts/tyr/configuration.nix;
         dazzle = mkSystem ./hosts/dazzle/configuration.nix;
@@ -71,6 +72,7 @@
         "emet@acc01ade" = mkHome "x86_64-linux" ./hosts/acc01ade/home.nix;
         "emet@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;
         "jvargas@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;
+        "jvargas@petalouda" = mkHome "x86_64-linux" ./hosts/petalouda/home.nix;
         "emet@nighthawk" = mkHome "x86_64-linux" ./hosts/nighthawk/home.nix;
         "emet@tyr" = mkHome "x86_64-linux" ./hosts/tyr/home.nix;
         "emet@dazzle" = mkHome "x86_64-linux" ./hosts/dazzle/home.nix;
