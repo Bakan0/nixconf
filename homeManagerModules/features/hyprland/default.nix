@@ -71,7 +71,6 @@
 in {
   imports = [
     ./monitors.nix
-    ./keymaps.nix
     ./xdph.nix
   ];
 
