@@ -14,7 +14,6 @@
     stylix.enable = false;
     kanshi.enable = true;
     tpm2.enable = true;
-    plymouth-butterfly.enable = true;
     virtualisation.enable = false;
     home-users = {
       "joelle" = {
@@ -75,7 +74,7 @@
   services.printing.enable = true;
 
   # Enable sound.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;

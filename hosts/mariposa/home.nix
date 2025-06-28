@@ -11,6 +11,8 @@
     };
 
     packages = with pkgs; [
+      ripgrep
+      fd
       jq
       bat
       eza
@@ -24,6 +26,7 @@
     # bundles.general.enable = true;
     # bundles.desktop.enable = true;
 
+    nvim.enable = true;
     fish.enable = false;
     zsh.enable = false;  # Temporarily disable zsh to see if it's the culprit
     git.enable = true;
