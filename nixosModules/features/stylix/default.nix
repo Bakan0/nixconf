@@ -81,7 +81,7 @@
       grub.enable = true;
       grub.useImage = true;
       gtk.enable = true;
-      plymouth.enable = true;
+      plymouth.enable = false;
     };
     polarity = "dark";
   # opacity.terminal = 1;
