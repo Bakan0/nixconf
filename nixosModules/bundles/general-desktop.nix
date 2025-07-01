@@ -5,6 +5,7 @@
 }: {
   myNixOS.sddm.enable = lib.mkDefault false;
   myNixOS.autologin.enable = lib.mkDefault true;
+  myNixOS.powerManagement.enable = lib.mkDefault true;
   myNixOS.virtualisation.enable = lib.mkDefault true;
   myNixOS.stylix.enable = lib.mkDefault true;
   myNixOS.plymouth-splash.enable = lib.mkDefault true;
