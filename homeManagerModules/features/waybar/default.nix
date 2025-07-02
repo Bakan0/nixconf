@@ -32,7 +32,7 @@
       "network"
       "bluetooth"
       "pulseaudio-microphone"
-      "custom/battery"
+      "custom/battery-manager"
       "clock"
       "tray"
     ];
@@ -68,12 +68,16 @@
       tooltip-format = "<span size='9pt' font='WenQuanYi Zen Hei Mono'>{calendar}</span>";
     };
 
-    "custom/battery" = {
-      exec = "${scripts.battery}/bin/script";
-      format = "󰁹 {}";
-      interval = 10;
-    };
 
+  "custom/battery-manager" = {
+    exec = "${scripts.waybar-battery}/bin/waybar-battery status";
+    return-type = "json";
+    interval = 30;
+    on-click = "${scripts.waybar-battery}/bin/waybar-battery menu";
+    tooltip = true;
+    format = "{}";
+  };
+  
     "custom/gpu-usage" = {
       exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits";
       format = "󰢮 {}";
@@ -81,7 +85,7 @@
     };
 
     "custom/logo" = {
-      exec = "echo '󰣇'";
+      exec = "echo '❄️'";
       format = "{}";
     };
 
@@ -264,6 +268,8 @@
     }
   '';
 in {
+  home.packages = [scripts.waybar-battery ];
+
   programs.waybar = {
     enable = true;
     package = (pkgs.waybar.override {

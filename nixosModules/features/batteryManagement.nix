@@ -3,9 +3,106 @@
 with lib;
 let
   cfg = config.myNixOS.batteryManagement;
+
+  # D-Bus service for battery management
+  batteryDbusService = pkgs.writeTextFile {
+    name = "battery-manager-dbus-service";
+    destination = "/share/dbus-1/system-services/org.nixos.BatteryManager.service";
+    text = ''
+      [D-BUS Service]
+      Name=org.nixos.BatteryManager
+      Exec=${pkgs.python3.withPackages (ps: with ps; [ dbus-python pygobject3 ])}/bin/python3 ${batteryDbusScript}
+      User=root
+      SystemdService=battery-manager-dbus.service
+    '';
+  };
+
+  batteryDbusScript = pkgs.writeScript "battery-manager-dbus.py" ''
+    #!/usr/bin/env python3
+    # Force rebuild: 2025-07-02-14:10
+    import dbus
+    import dbus.service
+    import dbus.mainloop.glib
+    from gi.repository import GLib
+    import glob
+    import os
+    import threading
+
+    class BatteryManager(dbus.service.Object):
+        def __init__(self):
+            bus_name = dbus.service.BusName('org.nixos.BatteryManager', bus=dbus.SystemBus())
+            dbus.service.Object.__init__(self, bus_name, '/org/nixos/BatteryManager')
+            self.temp_timer = None
+
+        @dbus.service.method("org.nixos.BatteryManager", in_signature="", out_signature="a{sa{sv}}")
+        def GetStatus(self):
+            """Get current battery status and thresholds"""
+            result = {}
+            for battery_path in glob.glob('/sys/class/power_supply/BAT*'):
+                if os.path.isdir(battery_path):
+                    name = os.path.basename(battery_path)
+                    try:
+                        capacity = int(open(battery_path + '/capacity').read().strip())
+                        status = open(battery_path + '/status').read().strip()
+                        start_thresh = int(open(battery_path + '/charge_control_start_threshold').read().strip())
+                        end_thresh = int(open(battery_path + '/charge_control_end_threshold').read().strip())
+
+                        result[name] = {
+                            'capacity': dbus.Int32(capacity),
+                            'status': dbus.String(status),
+                            'start_threshold': dbus.Int32(start_thresh),
+                            'end_threshold': dbus.Int32(end_thresh)
+                        }
+                    except (IOError, ValueError) as e:
+                        result[name] = {'error': dbus.String(f'Could not read battery info: {e}')}
+            return result
+
+        @dbus.service.method("org.nixos.BatteryManager", in_signature="ii", out_signature="b")
+        def SetThresholds(self, start, end):
+            """Set permanent battery thresholds"""
+            try:
+                import subprocess
+                result = subprocess.run(['/run/current-system/sw/bin/battery-thresholds', 'set', str(start), str(end)], 
+                                      capture_output=True, text=True)
+                return result.returncode == 0
+            except Exception as e:
+                print(f"Error setting thresholds: {e}")
+                return False
+
+        @dbus.service.method("org.nixos.BatteryManager", in_signature="", out_signature="b")
+        def ForceCharge(self):
+            """Force immediate charging to 100%"""
+            try:
+                import subprocess
+                result = subprocess.run(['/run/current-system/sw/bin/battery-thresholds', 'force-charge'], 
+                                      capture_output=True, text=True)
+                return result.returncode == 0
+            except Exception as e:
+                print(f"Error forcing charge: {e}")
+                return False
+
+        @dbus.service.method("org.nixos.BatteryManager", in_signature="", out_signature="b")
+        def RestoreDefaults(self):
+            """Restore default thresholds"""
+            try:
+                import subprocess
+                result = subprocess.run(['/run/current-system/sw/bin/battery-thresholds', 'restore'], 
+                                      capture_output=True, text=True)
+                return result.returncode == 0
+            except Exception as e:
+                print(f"Error restoring defaults: {e}")
+                return False
+
+    if __name__ == '__main__':
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+        battery_manager = BatteryManager()
+        loop = GLib.MainLoop()
+        loop.run()
+  '';
+
 in {
   config = mkIf cfg.enable {
-    # Systemd service to set battery charging thresholds
+    # Original systemd service for initial setup
     systemd.services.battery-charge-thresholds = {
       description = "Set battery charging thresholds";
       wantedBy = [ "multi-user.target" ];
@@ -14,15 +111,10 @@ in {
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStart = pkgs.writeShellScript "set-battery-thresholds" ''
-          #!/bin/sh
-
-          # Find all battery power supplies
           for battery in /sys/class/power_supply/BAT*; do
             if [ -d "$battery" ]; then
               battery_name=$(basename "$battery")
-
-              # Check if charging threshold controls exist
-              if [ -w "$battery/charge_control_start_threshold" ] && [ -w "$battery/charge_control_end_threshold" ]; then
+              if [ -f "$battery/charge_control_start_threshold" ] && [ -f "$battery/charge_control_end_threshold" ]; then
                 echo "Setting charging thresholds for $battery_name"
                 echo "${toString cfg.startThreshold}" > "$battery/charge_control_start_threshold"
                 echo "${toString cfg.endThreshold}" > "$battery/charge_control_end_threshold"
@@ -36,33 +128,92 @@ in {
       };
     };
 
-    # Modern udev rule format
+    # D-Bus service for user interaction
+    systemd.services.battery-manager-dbus = {
+      description = "Battery Manager D-Bus Service";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "dbus.service" ];
+      serviceConfig = {
+        Type = "dbus";
+        BusName = "org.nixos.BatteryManager";
+        ExecStart = "${pkgs.python3.withPackages (ps: with ps; [ dbus-python pygobject3 ])}/bin/python3 ${batteryDbusScript}";
+        User = "root";
+        Restart = "on-failure";
+      };
+      environment = {
+        GI_TYPELIB_PATH = "${pkgs.glib.out}/lib/girepository-1.0:${pkgs.gobject-introspection}/lib/girepository-1.0";
+      };
+    };
+
+    # D-Bus configuration
+    services.dbus.packages = [ 
+      batteryDbusService
+      (pkgs.writeTextFile {
+        name = "battery-manager-dbus-policy";
+        destination = "/share/dbus-1/system.d/org.nixos.BatteryManager.conf";
+        text = ''
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE busconfig PUBLIC
+            "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN"
+            "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+          <busconfig>
+            <policy user="root">
+              <allow own="org.nixos.BatteryManager"/>
+              <allow send_destination="org.nixos.BatteryManager"/>
+            </policy>
+            <policy context="default">
+              <allow send_destination="org.nixos.BatteryManager"/>
+            </policy>
+          </busconfig>
+        '';
+      })
+    ];
+
+    # udev rules
     services.udev.packages = [
       (pkgs.writeTextFile {
         name = "battery-thresholds-udev-rules";
         destination = "/etc/udev/rules.d/99-battery-thresholds.rules";
         text = ''
-          # Set battery charging thresholds when battery is detected
           SUBSYSTEM=="power_supply", KERNEL=="BAT*", ACTION=="add", TAG+="systemd", ENV{SYSTEMD_WANTS}="battery-charge-thresholds.service"
         '';
       })
     ];
 
-    # Management script
+    # CLI tool only
     environment.systemPackages = [
       (pkgs.writeShellScriptBin "battery-thresholds" ''
-        #!/bin/sh
+        get_battery_level() {
+          local battery="$1"
+          if [ -r "$battery/capacity" ]; then
+            cat "$battery/capacity"
+          else
+            echo "unknown"
+          fi
+        }
+
+        get_charging_status() {
+          local battery="$1"
+          if [ -r "$battery/status" ]; then
+            cat "$battery/status"
+          else
+            echo "unknown"
+          fi
+        }
+
         case "$1" in
           status)
             for battery in /sys/class/power_supply/BAT*; do
               if [ -d "$battery" ]; then
                 name=$(basename "$battery")
+                level=$(get_battery_level "$battery")
+                status=$(get_charging_status "$battery")
                 if [ -r "$battery/charge_control_start_threshold" ] && [ -r "$battery/charge_control_end_threshold" ]; then
                   start=$(cat "$battery/charge_control_start_threshold" 2>/dev/null || echo "N/A")
                   end=$(cat "$battery/charge_control_end_threshold" 2>/dev/null || echo "N/A")
-                  echo "$name: start=$start%, end=$end%"
+                  echo "$name: $level% ($status) - thresholds: start=$start%, end=$end%"
                 else
-                  echo "$name: threshold controls not available"
+                  echo "$name: $level% ($status) - threshold controls not available"
                 fi
               fi
             done
@@ -73,19 +224,43 @@ in {
               exit 1
             fi
             sudo systemctl stop battery-charge-thresholds.service
+            start_threshold="$2"
+            end_threshold="$3"
             for battery in /sys/class/power_supply/BAT*; do
-              if [ -d "$battery" ] && [ -w "$battery/charge_control_start_threshold" ] && [ -w "$battery/charge_control_end_threshold" ]; then
+              if [ -d "$battery" ] && [ -f "$battery/charge_control_start_threshold" ] && [ -f "$battery/charge_control_end_threshold" ]; then
                 echo "$2" | sudo tee "$battery/charge_control_start_threshold" > /dev/null
                 echo "$3" | sudo tee "$battery/charge_control_end_threshold" > /dev/null
                 echo "Set $(basename "$battery"): start=$2%, end=$3%"
               fi
             done
             ;;
+          force-charge)
+            echo "Forcing immediate charge by temporarily setting thresholds to 0%/100%..."
+            for battery in /sys/class/power_supply/BAT*; do
+              if [ -d "$battery" ] && [ -f "$battery/charge_control_start_threshold" ] && [ -f "$battery/charge_control_end_threshold" ]; then
+                current_level=$(get_battery_level "$battery")
+                force_start=0
+
+                echo "$force_start" | sudo tee "$battery/charge_control_start_threshold" > /dev/null
+                echo "100" | sudo tee "$battery/charge_control_end_threshold" > /dev/null
+                echo "Forced charging for $(basename "$battery") (current: $current_level%)"
+              fi
+            done
+            echo "Charging should start immediately. Use 'battery-thresholds restore' to return to normal."
+            ;;
+          restore)
+            echo "Restoring default battery thresholds..."
+            sudo systemctl restart battery-charge-thresholds.service
+            echo "Restored to defaults: start=${toString cfg.startThreshold}%, end=${toString cfg.endThreshold}%"
+            ;;
           *)
-            echo "Usage: battery-thresholds {status|set <start> <end>}"
-            echo "Examples:"
-            echo "  battery-thresholds status"
-            echo "  battery-thresholds set 55 70"
+            echo "Usage: battery-thresholds {status|set|force-charge|restore}"
+            echo ""
+            echo "Commands:"
+            echo "  status                    - Show current battery status and thresholds"
+            echo "  set <start> <end>         - Set permanent thresholds"
+            echo "  force-charge              - Force immediate charging to 100%"
+            echo "  restore                   - Restore default thresholds"
             ;;
         esac
       '')
@@ -95,13 +270,13 @@ in {
   options.myNixOS.batteryManagement = {
     startThreshold = mkOption {
       type = types.int;
-      default = 55;  # Updated to your preferred value
+      default = 55;
       description = "Battery charging start threshold percentage";
     };
 
     endThreshold = mkOption {
       type = types.int;
-      default = 70;  # Updated to your preferred value
+      default = 70;
       description = "Battery charging end threshold percentage";
     };
   };
