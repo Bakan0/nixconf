@@ -19,7 +19,7 @@ let
 
   batteryDbusScript = pkgs.writeScript "battery-manager-dbus.py" ''
     #!/usr/bin/env python3
-    # Force rebuild: 2025-07-02-14:10
+    # Force rebuild: 2025-07-02-14:50
     import dbus
     import dbus.service
     import dbus.mainloop.glib
@@ -27,13 +27,15 @@ let
     import glob
     import os
     import threading
-
+    import subprocess
+    import sys
+  
     class BatteryManager(dbus.service.Object):
         def __init__(self):
             bus_name = dbus.service.BusName('org.nixos.BatteryManager', bus=dbus.SystemBus())
             dbus.service.Object.__init__(self, bus_name, '/org/nixos/BatteryManager')
             self.temp_timer = None
-
+  
         @dbus.service.method("org.nixos.BatteryManager", in_signature="", out_signature="a{sa{sv}}")
         def GetStatus(self):
             """Get current battery status and thresholds"""
@@ -46,7 +48,7 @@ let
                         status = open(battery_path + '/status').read().strip()
                         start_thresh = int(open(battery_path + '/charge_control_start_threshold').read().strip())
                         end_thresh = int(open(battery_path + '/charge_control_end_threshold').read().strip())
-
+  
                         result[name] = {
                             'capacity': dbus.Int32(capacity),
                             'status': dbus.String(status),
@@ -56,49 +58,62 @@ let
                     except (IOError, ValueError) as e:
                         result[name] = {'error': dbus.String(f'Could not read battery info: {e}')}
             return result
-
+  
         @dbus.service.method("org.nixos.BatteryManager", in_signature="ii", out_signature="b")
         def SetThresholds(self, start, end):
             """Set permanent battery thresholds"""
             try:
-                import subprocess
-                result = subprocess.run(['/run/current-system/sw/bin/battery-thresholds', 'set', str(start), str(end)], 
-                                      capture_output=True, text=True)
-                return result.returncode == 0
-            except Exception as e:
-                print(f"Error setting thresholds: {e}")
+                print(f"DEBUG: Setting thresholds {start}-{end}", file=sys.stderr)
+  
+                # Try direct file writing first (like the CLI tool does)
+                for battery in glob.glob('/sys/class/power_supply/BAT*'):
+                    if os.path.isdir(battery):
+                        start_file = battery + '/charge_control_start_threshold'
+                        end_file = battery + '/charge_control_end_threshold'
+  
+                        if os.path.exists(start_file) and os.path.exists(end_file):
+                            print(f"DEBUG: Writing to {start_file} and {end_file}", file=sys.stderr)
+                            with open(start_file, 'w') as f:
+                                f.write(str(start))
+                            with open(end_file, 'w') as f:
+                                f.write(str(end))
+                            print(f"DEBUG: Successfully set thresholds for {battery}", file=sys.stderr)
+                            return True
+  
+                print("DEBUG: No battery threshold files found", file=sys.stderr)
                 return False
-
+  
+            except Exception as e:
+                print(f"DEBUG: Error setting thresholds: {e}", file=sys.stderr)
+                return False
+  
         @dbus.service.method("org.nixos.BatteryManager", in_signature="", out_signature="b")
         def ForceCharge(self):
             """Force immediate charging to 100%"""
             try:
-                import subprocess
-                result = subprocess.run(['/run/current-system/sw/bin/battery-thresholds', 'force-charge'], 
-                                      capture_output=True, text=True)
-                return result.returncode == 0
+                print("DEBUG: Force charging", file=sys.stderr)
+                return self.SetThresholds(0, 100)
             except Exception as e:
-                print(f"Error forcing charge: {e}")
+                print(f"DEBUG: Error forcing charge: {e}", file=sys.stderr)
                 return False
-
+  
         @dbus.service.method("org.nixos.BatteryManager", in_signature="", out_signature="b")
         def RestoreDefaults(self):
             """Restore default thresholds"""
             try:
-                import subprocess
-                result = subprocess.run(['/run/current-system/sw/bin/battery-thresholds', 'restore'], 
-                                      capture_output=True, text=True)
-                return result.returncode == 0
+                print("DEBUG: Restoring defaults", file=sys.stderr)
+                return self.SetThresholds(55, 70)
             except Exception as e:
-                print(f"Error restoring defaults: {e}")
+                print(f"DEBUG: Error restoring defaults: {e}", file=sys.stderr)
                 return False
-
+  
     if __name__ == '__main__':
         dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         battery_manager = BatteryManager()
         loop = GLib.MainLoop()
         loop.run()
   '';
+
 
 in {
   config = mkIf cfg.enable {

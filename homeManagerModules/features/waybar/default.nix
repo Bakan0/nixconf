@@ -69,14 +69,17 @@
     };
 
 
-  "custom/battery-manager" = {
-    exec = "${scripts.waybar-battery}/bin/waybar-battery status";
-    return-type = "json";
-    interval = 30;
-    on-click = "${scripts.waybar-battery}/bin/waybar-battery menu";
-    tooltip = true;
-    format = "{}";
-  };
+    "custom/battery-manager" = {
+      exec = "${scripts.waybar-battery}/bin/waybar-battery status";
+      return-type = "json";
+      interval = 30;
+      on-click = "${scripts.waybar-battery}/bin/waybar-battery force";           # Left click = Force charge
+      on-click-middle = "${scripts.waybar-battery}/bin/waybar-battery restore";  # Middle click = Restore defaults  
+      on-click-right = "${scripts.waybar-battery}/bin/waybar-battery status-popup"; # Right click = Show status
+      tooltip = true;
+      format = "{}";
+    };
+
   
     "custom/gpu-usage" = {
       exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits";
