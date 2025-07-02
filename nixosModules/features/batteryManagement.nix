@@ -102,7 +102,7 @@ let
             """Restore default thresholds"""
             try:
                 print("DEBUG: Restoring defaults", file=sys.stderr)
-                return self.SetThresholds(55, 70)
+                return self.SetThresholds(40, 60)
             except Exception as e:
                 print(f"DEBUG: Error restoring defaults: {e}", file=sys.stderr)
                 return False
@@ -285,13 +285,13 @@ in {
   options.myNixOS.batteryManagement = {
     startThreshold = mkOption {
       type = types.int;
-      default = 55;
+      default = 40;
       description = "Battery charging start threshold percentage";
     };
 
     endThreshold = mkOption {
       type = types.int;
-      default = 70;
+      default = 60;
       description = "Battery charging end threshold percentage";
     };
   };

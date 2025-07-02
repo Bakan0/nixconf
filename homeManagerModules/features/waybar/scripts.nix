@@ -54,7 +54,7 @@
       restore)
         result=$(dbus-send --system --print-reply --dest=org.nixos.BatteryManager /org/nixos/BatteryManager org.nixos.BatteryManager.RestoreDefaults 2>&1)
         if echo "$result" | grep -q "boolean true"; then
-          notify-send "Battery" "Restored to default thresholds (55%-70%)" -i battery
+          notify-send "Battery" "Restored to default thresholds (40%-60%)" -i battery
         else
           notify-send "Battery Error" "Failed to restore defaults: $result" -i dialog-error
         fi
