@@ -64,21 +64,13 @@
     packages = with pkgs; [
        appimage-run
        azure-cli
-       bitwarden-desktop
-       evolution
-       evolution-ews
        kitty # Terminal emulator, recommended for Hyprland
-       meld
        mutter
-       obsidian
-       onlyoffice-bin_latest
        powershell
        quickemu
        remmina
        sidequest
        tree
-       vivaldi
-       vivaldi-ffmpeg-codecs
        yazi
     ];
   };

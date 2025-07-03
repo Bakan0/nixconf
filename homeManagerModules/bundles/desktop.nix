@@ -86,7 +86,9 @@
       wezterm
       kitty
 
+      bitwarden-desktop
       onlyoffice-bin
+      obsidian
       easyeffects
       gegl
     ];

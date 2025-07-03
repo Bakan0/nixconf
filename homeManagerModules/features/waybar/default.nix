@@ -31,7 +31,9 @@
       "hyprland/language"
       "network"
       "bluetooth"
+      "pulseaudio"
       "pulseaudio-microphone"
+      "backlight"
       "custom/battery-manager"
       "clock"
       "tray"
@@ -48,6 +50,16 @@
       tooltip-format = "󰂯 {device_alias}";
       tooltip-format-connected = "{device_enumerate}";
       tooltip-format-enumerate-connected = "󰂱 {device_alias}";
+      on-click = "blueman-manager";
+    };
+
+    backlight = {
+      format = "󰃞 {percent}%";
+      format-icons = ["󰃞" "󰃟" "󰃠"];
+      on-scroll-up = "brightnessctl set +5%";
+      on-scroll-down = "brightnessctl set 5%-";
+      on-click = "brightnessctl set 50%";  # Click to set to 50%
+      tooltip-format = "Brightness: {percent}%";
     };
 
     mpris = {
@@ -63,8 +75,8 @@
     };
 
     clock = {
-      format = "󰥔 {:%H:%M}";
-      format-alt = "󰃰 {:%A, %B %d, %Y (%R)}";
+      format = "󰃰 {:%A, %B %d, %Y (%R)}";
+      format-alt = "󰥔 {:%H:%M}";
       tooltip-format = "<span size='9pt' font='WenQuanYi Zen Hei Mono'>{calendar}</span>";
     };
 
@@ -120,22 +132,24 @@
 
     pulseaudio = {
       format = "{icon} {volume}%";
+      format-muted = "🔇 Muted";
       format-icons = {
-        car = "󰄋";
-        default = ["󰕿" "󰖀" "󰕾"];
-        hands-free = "󰋎";
-        headphone = "󰋋";
-        headset = "󰋎";
-        phone = "󰄜";
-        portable = "󰄝";
+        headphone = "";
+        hands-free = "";
+        headset = "";
+        phone = "";
+        portable = "";
+        car = "";
+        default = ["" "" ""];
       };
-      format-muted = "󰝟 {volume}%";
-      on-click = "pavucontrol -t 3";
-      on-click-middle = "pamixer -t";
-      on-scroll-down = "pamixer -d 5";
-      on-scroll-up = "pamixer -i 5";
       scroll-step = 5;
-      tooltip-format = "{icon} {desc} {volume}%";
+      on-click = "pamixer --toggle-mute";
+      on-click-right = "pamixer --set-volume 50";
+      on-click-middle = "pavucontrol";
+      on-scroll-up = "pamixer --increase 5";
+      on-scroll-down = "pamixer --decrease 5";
+      tooltip = true;
+      tooltip-format = "Volume: {volume}%";
     };
 
     "pulseaudio-microphone" = {
@@ -246,6 +260,12 @@
         padding-right: 0px;
     }
 
+    #backlight {
+      color: @base0A;  /* Using yellow like your clock */
+      padding-left: 4px;
+      padding-right: 4px;
+    }
+  
     #pulseaudio {
         color: @base0E;
         padding-left: 4px;

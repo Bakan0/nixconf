@@ -42,6 +42,8 @@
     libqalculate
     imagemagick
     killall
+    pamixer
+    rofi-bluetooth
 
     fzf
     htop

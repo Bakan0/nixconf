@@ -35,6 +35,16 @@
 
   environment.etc.hosts.mode = "0644";
 
+  environment.systemPackages = with pkgs; [
+    # Web browsers - available to all users
+    vivaldi
+    vivaldi-ffmpeg-codecs
+  
+    # Desktop utilities - available to all users
+    meld
+  ];
+
+
   services = {
     pipewire = {
       enable = true;

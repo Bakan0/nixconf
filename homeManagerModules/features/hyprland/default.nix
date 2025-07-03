@@ -314,6 +314,7 @@ in {
       swww
 
       networkmanagerapplet
+      blueman
 
       rofi-wayland
     ];

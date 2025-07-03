@@ -42,13 +42,9 @@
     ];
     packages = with pkgs; [
       appimage-run
-      bitwarden-desktop
       kitty
-      onlyoffice-bin_latest
       signal-desktop
       tree
-      vivaldi
-      vivaldi-ffmpeg-codecs
       yazi
     ];
   };
