@@ -23,6 +23,7 @@
       allow_remote_control = "yes";
       listen_on = "unix:/tmp/kitty";
       shell_integration = "enabled";
+      paste_actions = "no-op";
     };
     extraConfig = ''
       # GENERATED

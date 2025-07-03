@@ -65,6 +65,7 @@
        appimage-run
        azure-cli
        kitty # Terminal emulator, recommended for Hyprland
+       microsoft-edge
        mutter
        powershell
        quickemu
