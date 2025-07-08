@@ -73,9 +73,7 @@
     freerdp
     fwupd
     git
-    hypridle
     hyprland
-    hyprlock
     kitty
     libnotify
     neovide

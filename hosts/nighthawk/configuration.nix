@@ -15,6 +15,7 @@
     kanshi.enable = true;
     batteryManagement.enable = true;
     tpm2.enable = true;
+    thunderbolt.enable = true;
     virtualisation = {
       username = "emet";
     };
@@ -31,6 +32,7 @@
   boot = {
     kernelParams = [
       "zfs.zfs_arc_max=25769803776"  # 24GB max ARC size
+      "intel_iommu=on"
     ];
     loader = {
       systemd-boot.enable = true;
@@ -103,9 +105,7 @@
     freerdp
     fwupd
     git
-    hypridle
     hyprland
-    hyprlock
     kitty
     libnotify
     neovide

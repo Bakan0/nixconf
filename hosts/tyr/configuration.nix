@@ -11,6 +11,8 @@
     bundles.users.enable = true;
     sddm.enable = true;
     hyprland.enable = true;
+    tpm2.enable = true;
+    thunderbolt.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;

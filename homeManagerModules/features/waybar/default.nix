@@ -32,7 +32,7 @@
       "network"
       "bluetooth"
       "pulseaudio"
-      "pulseaudio-microphone"
+      "pulseaudio#microphone"
       "backlight"
       "custom/battery-manager"
       "clock"
@@ -130,39 +130,32 @@
       tooltip-format = "󰤪 {ipaddr}  {bandwidthUpBytes}  {bandwidthDownBytes}";
     };
 
-    pulseaudio = {
-      format = "{icon} {volume}%";
-      format-muted = "🔇 Muted";
+    "pulseaudio" = {
+      format = "{volume}% {icon}";
+      format-muted = "{volume}% 󰖁";  # Show volume percentage even when muted
       format-icons = {
-        headphone = "";
-        hands-free = "";
-        headset = "";
-        phone = "";
-        portable = "";
-        car = "";
-        default = ["" "" ""];
+        headphone = "󰋋";
+        headset = "󰋎";
+        default = ["󰕿" "󰖀" "󰕾"];
       };
-      scroll-step = 5;
       on-click = "pamixer --toggle-mute";
-      on-click-right = "pamixer --set-volume 50";
       on-click-middle = "pavucontrol";
-      on-scroll-up = "pamixer --increase 5";
-      on-scroll-down = "pamixer --decrease 5";
       tooltip = true;
-      tooltip-format = "Volume: {volume}%";
+      tooltip-format = "Volume: {volume}% | Left: Toggle mute | Middle: Settings";
     };
 
-    "pulseaudio-microphone" = {
+
+    "pulseaudio#microphone" = {
       format = "{format_source}";
       format-source = "󰍬 {volume}%";
-      format-source-muted = "󰍭 {volume}%";
-      on-click = "pavucontrol -t 4";
-      on-click-middle = "pamixer --default-source -t";
-      on-scroll-down = "pamixer --default-source -d 5";
-      on-scroll-up = "pamixer --default-source -i 5";
-      scroll-step = 5;
+      format-source-muted = "󰍭 Muted";
+      on-click = "pamixer --default-source --toggle-mute";
+      on-click-middle = "pavucontrol -t 4";
+      on-click-right = "wpctl set-default $(wpctl status | awk '/Sources:/{flag=1;next} /Sinks:|Filters:|Streams:/{flag=0} flag && /^[[:space:]]*[0-9]+\./ && !/\\*/ {print $1; exit}' | tr -d '.')";
+      tooltip = true;
+      tooltip-format = "Microphone: {volume}% | Left: Toggle mute | Middle: Settings | Right: Switch input";
     };
-
+   
     tray = {
       icon-size = 15;
       spacing = 5;

@@ -14,6 +14,7 @@
     stylix.enable = false;
     kanshi.enable = true;
     tpm2.enable = true;
+    thunderbolt.enable = true;
     virtualisation.enable = false;
     home-users = {
       "joelle" = {
@@ -95,9 +96,7 @@
     freerdp
     fwupd
     git
-    hypridle
     hyprland
-    hyprlock
     kitty
     libnotify
     neovide

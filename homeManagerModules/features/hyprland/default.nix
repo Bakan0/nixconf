@@ -231,6 +231,7 @@ in {
             "$mainMod, backslash, moveoutofgroup"
             "$mainMod, S, exec, rofi -show drun -show-icons"
             "$mainMod, P, pin, active"
+            "$mainMod, Escape, exec, hyprlock"
 
             ",XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%+"
             ",XF86AudioLowerVolume, exec, wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%-"
@@ -315,8 +316,99 @@ in {
 
       networkmanagerapplet
       blueman
-
       rofi-wayland
+
+      hypridle
+      hyprlock
+      procps
     ];
+    services.hypridle = {
+      enable = true;
+      settings = {
+        general = {
+          after_sleep_cmd = "hyprctl dispatch dpms on";
+          before_sleep_cmd = "hyprlock";
+          ignore_dbus_inhibit = false;
+          lock_cmd = "pidof hyprlock || hyprlock";
+        };
+    
+        listener = [
+          {
+            timeout = 1200;  # 20 minutes
+            on-timeout = "hyprlock";
+          }
+          {
+            timeout = 1500;  # 25 minutes  
+            on-timeout = "hyprctl dispatch dpms off";
+            on-resume = "hyprctl dispatch dpms on";
+          }
+          {
+            timeout = 2700; # 45 minutes
+            on-timeout = "systemctl suspend";
+          }
+        ];
+      };
+    };
+    systemd.user.services.lock-on-suspend = {
+      Unit = {
+        Description = "Lock screen before suspend";
+        Before = [ "sleep.target" ];
+      };
+      Install.WantedBy = [ "sleep.target" ];
+      Service = {
+        Type = "forking";
+        ExecStart = "${pkgs.hyprlock}/bin/hyprlock";
+        TimeoutSec = 5;
+      };
+    };
+    systemd.user.services.qbittorrent-suspend-inhibitor = {
+      Unit = {
+        Description = "Prevent system suspension when qbittorrent is running";
+        After = [ "graphical-session.target" ];
+      };
+      Install.WantedBy = [ "default.target" ];
+      Service = {
+        Type = "simple";
+        Restart = "always";
+        RestartSec = 30;
+        ExecStart = pkgs.writeShellScript "qbt-inhibitor" ''
+          LOCK_FILE="$XDG_RUNTIME_DIR/qbt-inhibitor.lock"
+          INHIBITOR_PID=""
+    
+          cleanup() {
+            if [ -n "$INHIBITOR_PID" ] && kill -0 "$INHIBITOR_PID" 2>/dev/null; then
+              echo "Cleaning up inhibitor lock (PID: $INHIBITOR_PID)"
+              kill "$INHIBITOR_PID" 2>/dev/null || true
+            fi
+            rm -f "$LOCK_FILE"
+            exit 0
+          }
+    
+          trap cleanup EXIT TERM INT
+    
+          while true; do
+            if ${pkgs.procps}/bin/pgrep -f qbittorrent >/dev/null 2>&1; then
+              if [ ! -f "$LOCK_FILE" ]; then
+                echo "qbittorrent detected - creating suspension inhibitor lock"
+                ${pkgs.systemd}/bin/systemd-inhibit --what=sleep --who="qbittorrent-monitor" --why="qbittorrent is running" --mode=block sleep infinity &
+                INHIBITOR_PID=$!
+                echo "$INHIBITOR_PID" > "$LOCK_FILE"
+              fi
+            else
+              if [ -f "$LOCK_FILE" ]; then
+                echo "qbittorrent not running - removing suspension inhibitor lock"
+                INHIBITOR_PID=$(cat "$LOCK_FILE" 2>/dev/null)
+                if [ -n "$INHIBITOR_PID" ]; then
+                  kill "$INHIBITOR_PID" 2>/dev/null || true
+                fi
+                rm -f "$LOCK_FILE"
+                INHIBITOR_PID=""
+              fi
+            fi
+            sleep 30
+          done
+        '';
+      };
+    };
   };
 }
