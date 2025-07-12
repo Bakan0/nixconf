@@ -11,6 +11,9 @@
     bundles.users.enable = true;
     sddm.enable = true;
     hyprland.enable = true;
+    stylix.enable = true;
+    kanshi.enable = true;
+    batteryManagement.enable = true;
     tpm2.enable = true;
     thunderbolt.enable = true;
     home-users = {
@@ -52,6 +55,50 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+
+  nixpkgs.config.permittedInsecurePackages = [
+    "dotnet-sdk-6.0.428"
+    "dotnet-runtime-6.0.36"
+    ];
+
+  environment.systemPackages = with pkgs; [
+    acpi
+    brightnessctl
+    colorls
+    curl
+    dunst
+    eddie
+    fastfetch
+    flatpak
+    font-awesome
+    freerdp
+    fwupd
+    git
+    hyprland
+    kitty
+    libnotify
+    neovide
+    networkmanagerapplet
+    nh
+    nix-output-monitor
+    ntfs3g
+    openconnect
+    pavucontrol
+    qbittorrent
+    rofi-wayland
+    swww
+    teamviewer
+    tmux
+    unzip
+    vim
+    waybar
+    wayland
+    wget
+    wl-clipboard
+    xorg.xorgserver
+    xwayland
+    zip
+  ];
 
   environment.variables.EDITOR = "nvim";
 
