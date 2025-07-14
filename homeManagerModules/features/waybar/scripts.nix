@@ -65,5 +65,26 @@
         ;;
     esac
   '';
+  waybar-microphone = pkgs.writeShellScriptBin "waybar-microphone" ''
+    # Get microphone status using wpctl (PipeWire)
+    if wpctl get-volume 55 | grep -q MUTED; then
+      echo "󰍭 MUTED"
+    else
+      vol=$(wpctl get-volume 55 | awk '{print int($2*100)}')
+      echo "󰍬 $vol%"
+    fi
+  '';
+  
+  waybar-microphone-toggle = pkgs.writeShellScriptBin "waybar-microphone-toggle" ''
+    wpctl set-mute 55 toggle
+  '';
+  
+  waybar-microphone-volume-up = pkgs.writeShellScriptBin "waybar-microphone-volume-up" ''
+    wpctl set-volume 55 5%+
+  '';
+  
+  waybar-microphone-volume-down = pkgs.writeShellScriptBin "waybar-microphone-volume-down" ''
+    wpctl set-volume 55 5%-
+  '';
 }
 

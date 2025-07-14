@@ -43,6 +43,7 @@
     imagemagick
     killall
     pamixer
+    alsa-utils
     rofi-bluetooth
 
     fzf

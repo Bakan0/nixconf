@@ -334,16 +334,16 @@ in {
     
         listener = [
           {
-            timeout = 1200;  # 20 minutes
+            timeout = 3000;  # 50 minutes
             on-timeout = "hyprlock";
           }
           {
-            timeout = 1500;  # 25 minutes  
+            timeout = 2400;  # 40 minutes  
             on-timeout = "hyprctl dispatch dpms off";
             on-resume = "hyprctl dispatch dpms on";
           }
           {
-            timeout = 2700; # 45 minutes
+            timeout = 5400; # 90 minutes
             on-timeout = "systemctl suspend";
           }
         ];

@@ -32,7 +32,7 @@
       "network"
       "bluetooth"
       "pulseaudio"
-      "pulseaudio#microphone"
+      "custom/microphone"
       "backlight"
       "custom/battery-manager"
       "clock"
@@ -144,18 +144,16 @@
       tooltip-format = "Volume: {volume}% | Left: Toggle mute | Middle: Settings";
     };
 
-
-    "pulseaudio#microphone" = {
-      format = "{format_source}";
-      format-source = "󰍬 {volume}%";
-      format-source-muted = "󰍭 Muted";
-      on-click = "pamixer --default-source --toggle-mute";
-      on-click-middle = "pavucontrol -t 4";
-      on-click-right = "wpctl set-default $(wpctl status | awk '/Sources:/{flag=1;next} /Sinks:|Filters:|Streams:/{flag=0} flag && /^[[:space:]]*[0-9]+\./ && !/\\*/ {print $1; exit}' | tr -d '.')";
-      tooltip = true;
-      tooltip-format = "Microphone: {volume}% | Left: Toggle mute | Middle: Settings | Right: Switch input";
+   "custom/microphone" = {
+      format = "{}";
+      exec = "${scripts.waybar-microphone}/bin/waybar-microphone";
+      on-click = "${scripts.waybar-microphone-toggle}/bin/waybar-microphone-toggle";
+      on-scroll-up = "${scripts.waybar-microphone-volume-up}/bin/waybar-microphone-volume-up";
+      on-scroll-down = "${scripts.waybar-microphone-volume-down}/bin/waybar-microphone-volume-down";
+      interval = 2;
+      tooltip = false;
     };
-   
+
     tray = {
       icon-size = 15;
       spacing = 5;
@@ -214,7 +212,7 @@
     #network,
     #bluetooth,
     #pulseaudio,
-    #pulseaudio-microphone,
+    #custom-microphone,
     #custom-wallchange,
     #custom-mode,
     #tray {
@@ -265,10 +263,11 @@
         padding-right: 4px;
     }
 
-    #pulseaudio-microphone {
+    #custom-microphone {
         color: @base08;
-        padding-left: 0px;
+        padding-left: 2px;
         padding-right: 4px;
+        font-weight: bold;
     }
 
     #custom-logo {
@@ -284,7 +283,7 @@
     }
   '';
 in {
-  home.packages = [scripts.waybar-battery ];
+  home.packages = [scripts.waybar-battery scripts.waybar-microphone scripts.waybar-microphone-toggle scripts.waybar-microphone-volume-up scripts.waybar-microphone-volume-down];
 
   programs.waybar = {
     enable = true;
