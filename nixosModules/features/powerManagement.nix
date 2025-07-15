@@ -4,6 +4,11 @@ with lib;
 let
   cfg = config.myNixOS.powerManagement;
 
+  # Desktop environment detection
+  isGnomeEnabled = config.services.xserver.desktopManager.gnome.enable;
+  isKdeEnabled = config.services.xserver.desktopManager.plasma5.enable || config.services.desktopManager.plasma6.enable;
+  hasTraditionalDE = isGnomeEnabled || isKdeEnabled;
+
   # Create a simple CPU detection script that runs at build time
   cpuDetector = pkgs.writeShellScript "detect-cpu" ''
     if ${pkgs.util-linux}/bin/lscpu | grep -q "GenuineIntel"; then
@@ -22,7 +27,11 @@ in {
     };
 
     services = {
-      auto-cpufreq.enable = true;
+      # Use auto-cpufreq for non-traditional DEs (Hyprland, etc.)
+      auto-cpufreq.enable = !hasTraditionalDE;
+
+      # Traditional DEs (GNOME/KDE) use power-profiles-daemon
+      power-profiles-daemon.enable = mkDefault hasTraditionalDE;
     };
 
     # CPU-specific setup at boot time
