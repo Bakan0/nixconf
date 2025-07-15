@@ -361,54 +361,5 @@ in {
         TimeoutSec = 5;
       };
     };
-    systemd.user.services.qbittorrent-suspend-inhibitor = {
-      Unit = {
-        Description = "Prevent system suspension when qbittorrent is running";
-        After = [ "graphical-session.target" ];
-      };
-      Install.WantedBy = [ "default.target" ];
-      Service = {
-        Type = "simple";
-        Restart = "always";
-        RestartSec = 30;
-        ExecStart = pkgs.writeShellScript "qbt-inhibitor" ''
-          LOCK_FILE="$XDG_RUNTIME_DIR/qbt-inhibitor.lock"
-          INHIBITOR_PID=""
-    
-          cleanup() {
-            if [ -n "$INHIBITOR_PID" ] && kill -0 "$INHIBITOR_PID" 2>/dev/null; then
-              echo "Cleaning up inhibitor lock (PID: $INHIBITOR_PID)"
-              kill "$INHIBITOR_PID" 2>/dev/null || true
-            fi
-            rm -f "$LOCK_FILE"
-            exit 0
-          }
-    
-          trap cleanup EXIT TERM INT
-    
-          while true; do
-            if ${pkgs.procps}/bin/pgrep -f qbittorrent >/dev/null 2>&1; then
-              if [ ! -f "$LOCK_FILE" ]; then
-                echo "qbittorrent detected - creating suspension inhibitor lock"
-                ${pkgs.systemd}/bin/systemd-inhibit --what=sleep --who="qbittorrent-monitor" --why="qbittorrent is running" --mode=block sleep infinity &
-                INHIBITOR_PID=$!
-                echo "$INHIBITOR_PID" > "$LOCK_FILE"
-              fi
-            else
-              if [ -f "$LOCK_FILE" ]; then
-                echo "qbittorrent not running - removing suspension inhibitor lock"
-                INHIBITOR_PID=$(cat "$LOCK_FILE" 2>/dev/null)
-                if [ -n "$INHIBITOR_PID" ]; then
-                  kill "$INHIBITOR_PID" 2>/dev/null || true
-                fi
-                rm -f "$LOCK_FILE"
-                INHIBITOR_PID=""
-              fi
-            fi
-            sleep 30
-          done
-        '';
-      };
-    };
   };
 }
