@@ -63,6 +63,7 @@
         nighthawk = mkSystem ./hosts/nighthawk/configuration.nix;
         tyr = mkSystem ./hosts/tyr/configuration.nix;
         dazzle = mkSystem ./hosts/dazzle/configuration.nix;
+        hermit = mkSystem ./hosts/hermit/configuration.nix;
         # liveiso = mkSystem ./hosts/liveiso/configuration.nix;
       };
 
@@ -76,6 +77,7 @@
         "emet@nighthawk" = mkHome "x86_64-linux" ./hosts/nighthawk/home.nix;
         "emet@tyr" = mkHome "x86_64-linux" ./hosts/tyr/home.nix;
         "emet@dazzle" = mkHome "x86_64-linux" ./hosts/dazzle/home.nix;
+        "emet@hermit" = mkHome "x86_64-linux" ./hosts/hermit/home.nix;
       };
 
       homeManagerModules.default = ./homeManagerModules;
