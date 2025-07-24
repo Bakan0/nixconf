@@ -74,6 +74,15 @@ in {
     ./xdph.nix
   ];
 
+    xdg.portal.config = {
+    common = {
+      default = "hyprland";
+    };
+    hyprland = {
+      default = ["hyprland" "gtk"];
+    };
+  };
+
   options = {
     myHomeManager.windowanimation = lib.mkOption {
       default = "workspaces, 1, 3, myBezier, fade";
@@ -155,8 +164,8 @@ in {
         };
 
         misc = {
-          enable_swallow = true;
           force_default_wallpaper = 0;
+          enable_swallow = true;         # Window swallowing
 
           # swallow_regex = "^(Alacritty|wezterm)$";
         };
@@ -223,7 +232,7 @@ in {
             "$mainMod SHIFT, M, exit,"
             "$mainMod SHIFT, F, togglefloating,"
             "$mainMod, F, fullscreen,"
-            "$mainMod, P, exec, toggle-laptop-display"
+            "$mainMod, P, exec, cycle-displays"
             "$mainMod, T, pin,"
             "$mainMod, G, togglegroup,"
             "$mainMod, bracketleft, changegroupactive, b"
@@ -311,6 +320,7 @@ in {
       grim
       slurp
       wl-clipboard
+      wlr-randr
 
       swww
 

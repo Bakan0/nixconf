@@ -22,8 +22,12 @@ in {
         ExecStart = "${pkgs.kanshi}/bin/kanshi -c /etc/kanshi/config";
         Restart = "always";
         RestartSec = 5;
-        Environment = "WAYLAND_DISPLAY=wayland-1 XDG_RUNTIME_DIR=/run/user/1000";
+        Environment = [
+          "WAYLAND_DISPLAY=wayland-1"
+          "XDG_RUNTIME_DIR=/run/user/1000"
+        ];
       };
     };
   };
 }
+

@@ -31,6 +31,7 @@
 
       set -x EDITOR nvim
 
+      set -s PATH $HOME/bin $PATH
     '';
 
     shellAliases = {

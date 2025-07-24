@@ -61,6 +61,8 @@
     ipcalc
     dig
     dnsutils
+    lsof
+    libva-utils
 
     ffmpeg
     wget

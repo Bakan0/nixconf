@@ -4,6 +4,7 @@
   ...
 }: {
   myNixOS.sddm.enable = lib.mkDefault false;
+  myNixOS.greetd.enable = lib.mkDefault false;
   myNixOS.autologin.enable = lib.mkDefault true;
   myNixOS.pipewire.enable = lib.mkDefault true;
   myNixOS.batteryManagement.enable = lib.mkDefault true;
@@ -118,8 +119,10 @@
 
   programs.dconf.enable = true;
 
-  xdg.portal.extraPortals = [pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland];
-  xdg.portal.enable = true;
+  xdg.portal = {
+    enable = true;
+    extraPortals = [pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland];
+   }; 
 
   systemd = {
     user.services.polkit-gnome-authentication-agent-1 = {

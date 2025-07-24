@@ -4,7 +4,8 @@
   pkgs,
   ...
 }: let
-  inherit (lib) mkOption types;
+  inherit (lib) mkOption types mkIf;
+  cfg = config.myHomeManager;
 in {
   options.myHomeManager.monitors = mkOption {
     type = types.attrsOf (types.submodule {
@@ -37,10 +38,6 @@ in {
           type = types.bool;
           default = true;
         };
-        # workspace = mkOption {
-        #   type = types.nullOr types.str;
-        #   default = null;
-        # };
       };
     });
     default = {};
@@ -62,18 +59,16 @@ in {
     default = {};
   };
 
-  config = {
-    myHomeManager.monitors = {
-      "desc:Philips Consumer Electronics Company PHL 499P9" = {
-        primary = true;
-        width = 5120;
-        height = 1440;
-        refreshRate = 29.979;
-        x = 0;
-        y = 0;
-        enabled = true;
-      };
+  options.myHomeManager.eGPU = {
+    enableVirtualDisplays = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable virtual displays for eGPU when connected";
     };
+  };
+
+  config = {
+    myHomeManager.eGPU.enableVirtualDisplays = true;
 
     myHomeManager.workspaces = {
       "1" = {
@@ -98,10 +93,14 @@ in {
       };
     };
 
+    # Create eGPU management scripts
+    home.packages = with pkgs; [
+    ];
+
     wayland.windowManager.hyprland.extraConfig = ''
       # Auto handle monitors
-      monitor = eDP-1, preferred, auto, 1
-      monitor = desc:Philips Consumer Electronics Company PHL 499P9, 5120x1440@29.979, 0x0, 1
+      monitor = , preferred, auto, 1
     '';
   };
 }
+
