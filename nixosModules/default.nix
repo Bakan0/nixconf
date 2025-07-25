@@ -50,6 +50,19 @@
       configExtension = config: (lib.mkIf cfg.services.${name}.enable config);
     })
     (safeFilesIn ./services);
+
+  # ADD THIS: Taking all hardware modules in ./hardware and adding hardware.enables to them
+  hardware =
+    myLib.extendModules
+    (name: {
+      extraOptions = {
+        myNixOS.hardware.${name}.enable = lib.mkEnableOption "enable ${name} hardware configuration";
+      };
+
+      configExtension = config: (lib.mkIf cfg.hardware.${name}.enable config);
+    })
+    (safeFilesIn ./hardware);
+
 in {
   imports =
     [
@@ -57,7 +70,8 @@ in {
     ]
     ++ features
     ++ bundles
-    ++ services;
+    ++ services
+    ++ hardware;
 
   options.myNixOS = {
     hyprland.enable = lib.mkEnableOption "enable hyprland";

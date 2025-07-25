@@ -20,7 +20,15 @@ let
     fi
   '';
 in {
-  config = mkIf cfg.enable {
+  options.myNixOS.powerManagement = {
+    fixSuspendIssues = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Apply fixes for common suspend/resume issues";
+    };
+  };
+
+  config = {
     powerManagement = {
       enable = true;
       cpuFreqGovernor = "schedutil";
@@ -55,13 +63,13 @@ in {
     };
 
     # Set kernel parameters based on common CPU types
-    # Note: This is a simple approach - for more complex detection,
-    # you'd need per-host configuration
     boot.kernelParams = [
       # Intel P-state (will be ignored on AMD)
       "intel_pstate=active"
       # AMD P-state (will be ignored on Intel)  
       "amd_pstate=guided"
+    ] ++ optionals cfg.fixSuspendIssues [
+      "usbcore.autosuspend=-1"  # Fix USB suspend issues
     ];
 
     # USB wakeup service
@@ -84,7 +92,7 @@ in {
     };
 
     # Prevent USB autosuspend issues
-    boot.extraModprobeConfig = ''
+    boot.extraModprobeConfig = mkIf cfg.fixSuspendIssues ''
       options usbcore autosuspend=-1
     '';
   };

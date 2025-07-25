@@ -19,6 +19,7 @@
     thunderbolt.enable = true;
     amd.enable = true;
     asus.enable = true;
+    hardware.rtl8852be.enable = true;
     immersed.enable = true;
     virtualisation = {
       username = "emet";

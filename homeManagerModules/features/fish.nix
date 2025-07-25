@@ -24,6 +24,17 @@
           history | uniq | ${pkgs.fzf}/bin/fzf | ${pkgs.wl-clipboard}/bin/wl-copy -n
         '';
       };
+            # SSH agent helper
+      ssh-check = {
+        body = ''
+          if test -n "$SSH_AUTH_SOCK"
+            echo "SSH agent available (forwarded: $SSH_CONNECTION)"
+            ssh-add -l
+          else
+            echo "No SSH agent available"
+          end
+        '';
+      };
     };
 
     shellInit = ''
