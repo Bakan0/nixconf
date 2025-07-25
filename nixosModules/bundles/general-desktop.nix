@@ -44,6 +44,7 @@
   
     # Desktop utilities - available to all users
     meld
+    dmidecode
   ];
 
 
@@ -121,8 +122,24 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-hyprland];
-   }; 
+    wlr.enable = true;  # GNOME ignores this completely
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk      # GNOME uses this
+      xdg-desktop-portal-hyprland # Hyprland uses this
+    ];
+  
+    config = {
+      hyprland = {
+        default = ["hyprland" "gtk"];
+        "org.freedesktop.impl.portal.FileChooser" = "gtk";
+      };
+  
+      # GNOME automatically uses GTK portal - no config needed
+      common = {
+        default = "gtk";  # Safe fallback for everyone
+      };
+    };
+  }; 
 
   systemd = {
     user.services.polkit-gnome-authentication-agent-1 = {

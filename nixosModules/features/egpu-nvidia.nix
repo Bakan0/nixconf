@@ -23,7 +23,7 @@ let
     amd = {
       libvaDriver = "radeonsi";
       gbmBackend = "radeonsi";
-      extraPackages = with pkgs; [ mesa.drivers ];
+      extraPackages = with pkgs; [ mesa ];
       kernelParams = [ "amdgpu.modeset=1" ];
       drmDevice = "/dev/dri/card0";
     };

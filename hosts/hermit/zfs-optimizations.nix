@@ -81,7 +81,7 @@
   boot.zfs.devNodes = "/dev/disk/by-id";
 
   # Networking with unique hostId
-  networking.hostId = "c64be6bd";
+  networking.hostId = lib.mkDefault "c64be6bd";
 
   # No swap (as requested)
   swapDevices = [ ];
@@ -116,15 +116,6 @@
     usbutils
     tpm2-tools
   ];
-
-  # Enable hardware monitoring
-  # hardware.sensor.hddtemp.enable = true;  # Using smartmontools + nvme-cli instead
-
-  # Power management optimizations
-  powerManagement = {
-    enable = true;
-    cpuFreqGovernor = "performance";
-  };
 
   # Enable fstrim for all SSD filesystems
   services.fstrim = {

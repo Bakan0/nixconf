@@ -17,6 +17,8 @@
     batteryManagement.enable = true;
     tpm2.enable = true;
     thunderbolt.enable = true;
+    amd.enable = true;
+    asus.enable = true;
     immersed.enable = true;
     virtualisation = {
       username = "emet";
@@ -32,10 +34,6 @@
   };
 
   boot = {
-    kernelParams = [
-      "zfs.zfs_arc_max=25769803776"  # 24GB max ARC size
-      "intel_iommu=on"
-    ];
     loader = {
       systemd-boot.enable = true;
       efi = {
@@ -47,7 +45,7 @@
 
   networking = {
     hostName = "hermit";
-    hostId = "5he11";
+    hostId = "c0deba5e";
     networkmanager.enable = true;
     firewall = {
       allowedTCPPorts = [
@@ -61,6 +59,40 @@
         47999  # Sunshine Control
         48000  # Sunshine Audio
         48010  # Sunshine Mic (if needed)
+      ];
+    };
+  };
+
+  # Proper firmware support for AMD GPUs
+  hardware = {
+    enableRedistributableFirmware = true;
+
+    firmware = with pkgs; [
+      linux-firmware        # Contains amdgpu firmware
+    ];
+
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+
+      # AMD-specific packages:
+      extraPackages = with pkgs; [
+        # AMDGPU drivers:
+        mesa
+        amdvlk
+
+        # Video acceleration:
+        libvdpau-va-gl
+        vaapiVdpau
+
+        # OpenCL:
+        rocmPackages.clr
+        rocmPackages.clr.icd
+      ];
+
+      extraPackages32 = with pkgs.driversi686Linux; [
+        mesa.drivers
+        amdvlk
       ];
     };
   };
@@ -111,7 +143,7 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-  
+
   nixpkgs.config.permittedInsecurePackages = [
     "dotnet-sdk-6.0.428"
     "dotnet-runtime-6.0.36"
@@ -130,9 +162,11 @@
     freerdp
     fwupd
     git
+    glxinfo
     hyprland
     kitty
     libnotify
+    mesa-demos
     neovide
     networkmanagerapplet
     nh
@@ -147,6 +181,7 @@
     tmux
     unzip
     vim
+    vulkan-tools
     waybar
     wayland
     wget
@@ -155,7 +190,6 @@
     xwayland
     zip
   ];
-
 
   environment.variables.EDITOR = "nvim";
 
@@ -180,7 +214,7 @@
 
   services.fwupd.enable = true;
   services.openssh.enable = true;
-  services.protonmail-bridge.enable = true;
+  services.protonmail-bridge.enable = false;
   services.teamviewer.enable = false;
 
   system.stateVersion = "25.05";

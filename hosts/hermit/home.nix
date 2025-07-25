@@ -4,7 +4,7 @@
   home = {
     username = "emet";
     homeDirectory = "/home/emet";
-    stateVersion = "24.11";
+    stateVersion = "25.05";
 
     sessionVariables = {
       EDITOR = "nvim";
@@ -17,6 +17,21 @@
       fzf
       htop
     ];
+  };
+
+  xdg.userDirs = {
+    enable = true;
+    createDirectories = true;
+
+    # Standard directories (optional - these are defaults):
+    desktop = "$HOME/Desktop";
+    documents = "$HOME/Documents";
+    download = "$HOME/Downloads";
+    music = "$HOME/Music";
+    pictures = "$HOME/Pictures";
+    videos = "$HOME/Videos";
+    # templates = "$HOME/Templates";
+    # publicShare = "$HOME/Public";
   };
 
   # Enable your existing modules

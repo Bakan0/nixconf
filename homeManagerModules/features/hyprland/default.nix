@@ -64,7 +64,7 @@
       (lib.getExe generalStartScript)
       (lib.getExe monitorScript)
 
-      # I forgor why i need this
+      # I forgot why i need this - Vimjoyer
       "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
     ]
     ++ autostarts;
@@ -73,15 +73,6 @@ in {
     ./monitors.nix
     ./xdph.nix
   ];
-
-    xdg.portal.config = {
-    common = {
-      default = "hyprland";
-    };
-    hyprland = {
-      default = ["hyprland" "gtk"];
-    };
-  };
 
   options = {
     myHomeManager.windowanimation = lib.mkOption {
@@ -138,6 +129,12 @@ in {
 
         env = [
           "XCURSOR_SIZE,24"
+          "NIXOS_OZONE_WL,1"
+          "XDG_CURRENT_DESKTOP,Hyprland"
+          "XDG_SESSION_TYPE,wayland"
+          "WLR_NO_HARDWARE_CURSORS,1"
+          "GDK_BACKEND,wayland,x11"
+          "QT_QPA_PLATFORM,wayland;xcb"
         ];
 
         input = {

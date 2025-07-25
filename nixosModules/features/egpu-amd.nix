@@ -68,7 +68,7 @@ in {
         vaapiIntel
 
         # AMD eGPU support (enhanced from gpuConfigs.amd)
-        mesa.drivers         # Includes AMD VAAPI
+        mesa                 # Includes AMD VAAPI
         libvdpau-va-gl       # VDPAU-to-VAAPI bridge
         amdvlk               # AMD Vulkan
         rocmPackages.clr.icd # OpenCL
@@ -77,7 +77,7 @@ in {
       extraPackages32 = with pkgs.pkgsi686Linux; [
         vaapiIntel
         amdvlk
-        mesa.drivers
+        mesa
       ];
     };
 

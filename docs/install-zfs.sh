@@ -285,7 +285,7 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
   boot.zfs.devNodes = \"/dev/disk/by-id\";
 
   # Networking with unique hostId
-  networking.hostId = \"HOSTID_PLACEHOLDER\";
+  networking.hostId = lib.mkDefault \"HOSTID_PLACEHOLDER\";
 
   # No swap (as requested)
   swapDevices = [ ];
@@ -320,18 +320,6 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
     usbutils
     tpm2-tools
   ];
-
-  # Remove problematic hddtemp configuration (we have better monitoring tools)
-  echo '🔧 Removing hddtemp configuration...'
-  sed -i '/hardware.sensor.hddtemp.enable = true;/d' /mnt/etc/nixos/zfs-optimizations.nix
-  echo '✅ hddtemp removed - using better monitoring tools (smartmontools, nvme-cli, lm_sensors)'
-
-
-  # Power management optimizations
-  powerManagement = {
-    enable = true;
-    cpuFreqGovernor = \"performance\";
-  };
 
   # Enable fstrim for all SSD filesystems
   services.fstrim = {

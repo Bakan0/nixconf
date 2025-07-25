@@ -7,8 +7,8 @@ in {
   config = mkIf cfg.enable {
     # Use liquid theme (which we know works)
     boot.plymouth = {
-      enable = true;
-      theme = "liquid";
+      enable = lib.mkDefault cfg.enable;
+      theme = lib.mkIf cfg.enable "liquid";
       themePackages = [ pkgs.adi1090x-plymouth-themes ];
       extraConfig = ''
         [Daemon]
