@@ -3,9 +3,9 @@
 {
   # ZFS kernel module optimization with 25% ARC
   boot.extraModprobeConfig = ''
-    # ARC settings: 25% of system RAM (16 GB detected)
-    options zfs zfs_arc_max=4294967296
-    options zfs zfs_arc_min=4294967296
+    # ARC settings: 25% of system RAM (64 GB detected)
+    options zfs zfs_arc_max=17179869184
+    options zfs zfs_arc_min=17179869184
     options zfs zfs_prefetch_disable=0
     options zfs zfs_txg_timeout=5
     options zfs zfs_vdev_scrub_max_active=3
@@ -81,7 +81,7 @@
   boot.zfs.devNodes = "/dev/disk/by-id";
 
   # Networking with unique hostId
-  networking.hostId = lib.mkDefault "c64be6bd";
+  networking.hostId = lib.mkDefault "224b4cd5";
 
   # No swap (as requested)
   swapDevices = [ ];

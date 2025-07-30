@@ -48,20 +48,20 @@
     hostName = "hermit";
     hostId = "c0deba5e";
     networkmanager.enable = true;
-    firewall = {
-      allowedTCPPorts = [
-        47989  # Sunshine HTTPS Web UI
-        47984  # Sunshine HTTP Web UI  
-        47990  # Sunshine RTSP
-        48010  # Sunshine additional TCP
-      ];
-      allowedUDPPorts = [
-        47998  # Sunshine Video
-        47999  # Sunshine Control
-        48000  # Sunshine Audio
-        48010  # Sunshine Mic (if needed)
-      ];
-    };
+    # firewall = {
+    #   allowedTCPPorts = [
+    #     47989  # Sunshine HTTPS Web UI
+    #     47984  # Sunshine HTTP Web UI  
+    #     47990  # Sunshine RTSP
+    #     48010  # Sunshine additional TCP
+    #   ];
+    #   allowedUDPPorts = [
+    #     47998  # Sunshine Video
+    #     47999  # Sunshine Control
+    #     48000  # Sunshine Audio
+    #     48010  # Sunshine Mic (if needed)
+    #   ];
+    # };
   };
 
   # Proper firmware support for AMD GPUs
