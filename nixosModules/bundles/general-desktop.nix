@@ -14,7 +14,7 @@
   myNixOS.plymouth-splash.enable = lib.mkDefault true;
 
   # US Central time zone
-  time.timeZone = "America/Chicago";
+  time.timeZone = lib.mkDefault "America/Chicago";
   i18n.defaultLocale = "en_US.UTF-8";
     i18n.extraLocaleSettings = { 
     LC_ADDRESS = "en_US.UTF-8";
@@ -34,6 +34,27 @@
   };
 
   security.rtkit.enable = true;
+
+  xdg.portal = {
+    enable = true;
+    extraPortals = with pkgs; [
+      xdg-desktop-portal-gtk
+      xdg-desktop-portal-hyprland
+    ];
+    config = {
+      preferred = {
+        default = ["hyprland" "gtk"];
+      };
+      hyprland = {
+        "org.freedesktop.impl.portal.FileChooser" = "hyprland";
+        "org.freedesktop.impl.portal.ScreenCast" = "hyprland";
+        "org.freedesktop.impl.portal.Screenshot" = "hyprland";
+      };
+      common = {
+        "org.freedesktop.impl.portal.FileChooser" = "gtk";
+      };
+    };
+  };
 
   environment.etc.hosts.mode = "0644";
 
@@ -119,27 +140,6 @@
   security.polkit.enable = true;
 
   programs.dconf.enable = true;
-
-  xdg.portal = {
-    enable = true;
-    wlr.enable = true;  # GNOME ignores this completely
-    extraPortals = with pkgs; [
-      xdg-desktop-portal-gtk      # GNOME uses this
-      xdg-desktop-portal-hyprland # Hyprland uses this
-    ];
-  
-    config = {
-      hyprland = {
-        default = ["hyprland" "gtk"];
-        "org.freedesktop.impl.portal.FileChooser" = "gtk";
-      };
-  
-      # GNOME automatically uses GTK portal - no config needed
-      common = {
-        default = "gtk";  # Safe fallback for everyone
-      };
-    };
-  }; 
 
   systemd = {
     user.services.polkit-gnome-authentication-agent-1 = {

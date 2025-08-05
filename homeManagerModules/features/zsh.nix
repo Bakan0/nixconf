@@ -23,7 +23,7 @@ in {
 
   programs.zsh = {
     enable = true;
-    dotDir = ".config/zsh";
+    dotDir = "${config.xdg.configHome}/zsh";
     shellAliases = {
       ls = "${pkgs.eza}/bin/eza --icons -a --group-directories-first";
       tree = "${pkgs.eza}/bin/eza --color=auto --tree";

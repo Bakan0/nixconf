@@ -89,7 +89,7 @@ in {
       };
       "5" = {
         monitorId = 1;
-        autostart = [ "teamviewer" ];
+        autostart = [ "" ];
       };
     };
 

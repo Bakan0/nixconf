@@ -23,9 +23,6 @@ in {
     bottles
     steamtinkerlaunch
     er-patcher
-
-    # addition attempt at VR
-    sunshine # to pair with moonlight sideload
   ];
 
   myHomeManager.impermanence.cache.directories = [

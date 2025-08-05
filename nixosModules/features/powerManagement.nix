@@ -5,7 +5,7 @@ let
   cfg = config.myNixOS.powerManagement;
 
   # Desktop environment detection
-  isGnomeEnabled = config.services.xserver.desktopManager.gnome.enable;
+  isGnomeEnabled = config.services.desktopManager.gnome.enable;
   isKdeEnabled = config.services.xserver.desktopManager.plasma5.enable || config.services.desktopManager.plasma6.enable;
   hasTraditionalDE = isGnomeEnabled || isKdeEnabled;
 
@@ -41,6 +41,9 @@ in {
       # Traditional DEs (GNOME/KDE) use power-profiles-daemon
       power-profiles-daemon.enable = mkDefault hasTraditionalDE;
     };
+
+    # Add ASUS-specific kernel modules for battery management compatibility
+    boot.kernelModules = [ "asus-wmi" "asus-nb-wmi" ];
 
     # CPU-specific setup at boot time
     systemd.services."cpu-power-setup" = {

@@ -356,7 +356,7 @@ NIXEOF
 
   # Basic system configuration
   networking.networkmanager.enable = true;
-  time.timeZone = \"America/Chicago\";  # Adjust as needed
+  time.timeZone = lib.mkDefault \"America/Chicago\";  # Adjust as needed
 
   # Enable SSH for remote management
   services.openssh.enable = true;

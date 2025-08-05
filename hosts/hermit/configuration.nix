@@ -21,6 +21,11 @@
     asus.enable = true;
     hardware.rtl8852be.enable = true;
     immersed.enable = true;
+    sunshine = {
+      enable = true;
+     # customResolution = "3104x1664 Your VR headset's native resolution
+     # scale = "1.0";
+    };
     virtualisation = {
       username = "emet";
     };
@@ -44,24 +49,12 @@
     };
   };
 
+  time.timeZone = "America/New_York";
+
   networking = {
     hostName = "hermit";
     hostId = "c0deba5e";
     networkmanager.enable = true;
-    # firewall = {
-    #   allowedTCPPorts = [
-    #     47989  # Sunshine HTTPS Web UI
-    #     47984  # Sunshine HTTP Web UI  
-    #     47990  # Sunshine RTSP
-    #     48010  # Sunshine additional TCP
-    #   ];
-    #   allowedUDPPorts = [
-    #     47998  # Sunshine Video
-    #     47999  # Sunshine Control
-    #     48000  # Sunshine Audio
-    #     48010  # Sunshine Mic (if needed)
-    #   ];
-    # };
   };
 
   # Proper firmware support for AMD GPUs
@@ -92,7 +85,7 @@
       ];
 
       extraPackages32 = with pkgs.driversi686Linux; [
-        mesa.drivers
+        mesa
         amdvlk
       ];
     };

@@ -25,6 +25,7 @@
 
     systemctl --user import-environment PATH &
     systemctl --user restart xdg-desktop-portal.service &
+    systemctl --user restart xdg-desktop-portal-hyprland.service &
 
 
     # wait a tiny bit for wallpaper
