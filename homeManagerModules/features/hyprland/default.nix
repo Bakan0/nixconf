@@ -318,7 +318,6 @@ in {
       grim
       slurp
       wl-clipboard
-      wlr-randr
 
       swww
 

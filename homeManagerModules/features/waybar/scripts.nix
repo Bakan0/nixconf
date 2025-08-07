@@ -73,93 +73,143 @@
     esac
   '';
 
-  # Keep your working volume scripts exactly as they are
   waybar-volume = pkgs.writeShellScriptBin "waybar-volume" ''
-    if wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED; then
-      vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}')
-      echo "$vol% 󰖁"
+    volume_info=$(pamixer --get-volume-human)
+  
+    if [ "$volume_info" = "muted" ]; then
+      echo "󰖁 0%"     # Volume muted
     else
-      vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}')
-      if [ "$vol" -gt 66 ]; then
-        icon="󰕾"
-      elif [ "$vol" -gt 33 ]; then
-        icon="󰖀"
-      else
-        icon="󰕿"
-      fi
-      echo "$vol% $icon"
+      echo "󰕾 $volume_info"  # Volume unmuted
     fi
   '';
-
+  
   waybar-volume-toggle = pkgs.writeShellScriptBin "waybar-volume-toggle" ''
-    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    # Auto-unmute hardware controls first (prevent ALSA stuck muting)
+    amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+  
+    # Then toggle the software mute
+    pamixer --toggle-mute
   '';
-
+  
   waybar-volume-up = pkgs.writeShellScriptBin "waybar-volume-up" ''
-    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+    # Auto-unmute hardware controls first
+    amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+  
+    # Then increase volume
+    pamixer --increase 5
   '';
-
+  
   waybar-volume-down = pkgs.writeShellScriptBin "waybar-volume-down" ''
-    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+    # Auto-unmute hardware controls first
+    amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+  
+    # Then decrease volume
+    pamixer --decrease 5
   '';
 
-  # Fixed microphone control - manages both hardware and filtered sources
-  waybar-microphone = pkgs.writeShellScriptBin "waybar-microphone" ''
-    # Get hardware source ID dynamically
-    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
+  waybar-volume-cycle = pkgs.writeShellScriptBin "waybar-volume-cycle" ''
+    # Get ONLY the sinks section (stop at next section)
+    sinks_only=$(wpctl status | sed -n '/├─ Sinks:/,/├─ Sources:/p' | head -n -1)
   
-    # Check if rnnoise source exists
-    if wpctl status | grep -q "rnnoise_source"; then
-      # Show filtered source status but check hardware mute state
-      if wpctl get-volume "$hw_source" 2>/dev/null | grep -q MUTED; then
-        vol=$(wpctl get-volume 39 2>/dev/null | awk '{print int($2*100)}' || echo "0")
-        echo "$vol% 󰍭"
-      else
-        vol=$(wpctl get-volume 39 2>/dev/null | awk '{print int($2*100)}' || echo "0")
-        echo "$vol% 󰍬"
-      fi
+    # Extract device IDs with correct regex for wpctl format
+    built_in=$(echo "$sinks_only" | grep "Family 17h" | grep -o '[0-9]\+' | head -1)
+    bluetooth=$(echo "$sinks_only" | grep "Shokz\|OpenRun" | grep -o '[0-9]\+' | head -1)
+    hdmi=$(echo "$sinks_only" | grep -i "hdmi\|navi" | grep -o '[0-9]\+' | head -1)
+  
+    # Get current default (look for the * marker)
+    current_default=$(echo "$sinks_only" | grep "\*" | grep -o '[0-9]\+' | head -1)
+  
+    echo "Debug: built_in='$built_in', bluetooth='$bluetooth', hdmi='$hdmi', current='$current_default'"
+  
+    # Count available outputs
+    available_count=0
+    [ -n "$built_in" ] && available_count=$((available_count + 1))
+    [ -n "$bluetooth" ] && available_count=$((available_count + 1))
+    [ -n "$hdmi" ] && available_count=$((available_count + 1))
+  
+    if [ $available_count -lt 2 ]; then
+      notify-send "Audio Output" "No additional outputs available (found: $available_count)" -i audio-speakers
+      exit 0
+    fi
+  
+    # Cycle: Built-in → Bluetooth → HDMI → Built-in
+    if [ "$current_default" = "$built_in" ] && [ -n "$bluetooth" ]; then
+      wpctl set-default "$bluetooth"
+      notify-send "Audio Output" "Switched to Bluetooth headset" -i audio-headphones
+    elif [ "$current_default" = "$bluetooth" ] && [ -n "$hdmi" ]; then
+      wpctl set-default "$hdmi"
+      notify-send "Audio Output" "Switched to HDMI output" -i video-display
     else
-      # Fallback to hardware source only
-      if wpctl get-volume "$hw_source" 2>/dev/null | grep -q MUTED; then
-        vol=$(wpctl get-volume "$hw_source" 2>/dev/null | awk '{print int($2*100)}' || echo "0")
-        echo "$vol% 󰍭"
-      else
-        vol=$(wpctl get-volume "$hw_source" 2>/dev/null | awk '{print int($2*100)}' || echo "0")
-        echo "$vol% 󰍬"
-      fi
+      wpctl set-default "$built_in"
+      notify-send "Audio Output" "Switched to built-in speakers" -i audio-speakers
     fi
   '';
+
+  # Fixed microphone control - follows system default
+  waybar-microphone = pkgs.writeShellScriptBin "waybar-microphone" ''
+    # Get volume info for default audio source
+    volume_info=$(wpctl get-volume @DEFAULT_AUDIO_SOURCE@)
+    percentage=$(echo "$volume_info" | awk '{printf "%.0f", $2 * 100}')
   
+    # Check mute state and display with working Nerd Font icons
+    if echo "$volume_info" | grep -q "MUTED"; then
+      echo "󰍭 $percentage%"  # Microphone muted (this should work)
+    else
+      echo "󰍬 $percentage%"  # Microphone unmuted (this should work)
+    fi
+  '';
+
   waybar-microphone-toggle = pkgs.writeShellScriptBin "waybar-microphone-toggle" ''
-    # Get hardware source ID dynamically
-    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
+    # Auto-unmute hardware controls first (prevent ALSA stuck muting)
+    amixer -c 2 sset Capture unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset "Internal Mic" unmute >/dev/null 2>&1 || true
+    amixer -c 2 sset "Headset Mic" unmute >/dev/null 2>&1 || true
   
-    # Toggle both hardware and filtered sources
-    wpctl set-mute "$hw_source" toggle
-    if wpctl status | grep -q "rnnoise_source"; then
-      wpctl set-mute 39 toggle
-    fi
+    # Then toggle the PipeWire software mute
+    wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
   '';
-  
+
   waybar-microphone-volume-up = pkgs.writeShellScriptBin "waybar-microphone-volume-up" ''
-    # Get hardware source ID dynamically
-    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
-  
-    # Adjust both hardware and filtered sources
-    wpctl set-volume "$hw_source" 5%+
-    if wpctl status | grep -q "rnnoise_source"; then
-      wpctl set-volume 39 5%+
-    fi
+    # Adjust system default source
+    wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+
   '';
   
   waybar-microphone-volume-down = pkgs.writeShellScriptBin "waybar-microphone-volume-down" ''
-    # Get hardware source ID dynamically  
-    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
+    # Adjust system default source
+    wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-
+  '';
+
+  waybar-microphone-cycle = pkgs.writeShellScriptBin "waybar-microphone-cycle" ''
+    # Get current default source by name, then find its ID
+    current_name=$(wpctl inspect @DEFAULT_AUDIO_SOURCE@ | grep 'node.name' | sed 's/.*node.name = "\([^"]*\)".*/\1/')
+    current_source=$(wpctl status | grep "$current_name" | grep -o '[0-9]\+' | head -1)
   
-    # Adjust both hardware and filtered sources
-    wpctl set-volume "$hw_source" 5%-
-    if wpctl status | grep -q "rnnoise_source"; then
-      wpctl set-volume 39 5%-
+    # Find built-in microphone (Family 17h Analog Stereo - in Sources section only)
+    built_in_mic=$(wpctl status | sed -n '/Sources:/,/Filters:/p' | grep "Family 17h.*Analog Stereo" | grep -o '[0-9]\+' | head -1)
+  
+    # Find Bluetooth microphone (bluez_input)
+    bluetooth_mic=$(wpctl status | grep "bluez_input\." | grep -o '[0-9]\+' | head -1)
+  
+    echo "Debug: built_in_mic='$built_in_mic', bluetooth_mic='$bluetooth_mic', current='$current_source' (name: $current_name)"
+  
+    # Cycle logic: built-in -> bluetooth -> built-in
+    if [ "$current_source" = "$built_in_mic" ] && [ -n "$bluetooth_mic" ]; then
+      echo "Switching to Bluetooth microphone"
+      wpctl set-default "$bluetooth_mic"
+    elif [ "$current_source" = "$bluetooth_mic" ] && [ -n "$built_in_mic" ]; then
+      echo "Switching to built-in microphone"
+      wpctl set-default "$built_in_mic"
+    elif [ -n "$built_in_mic" ]; then
+      echo "Defaulting to built-in microphone"
+      wpctl set-default "$built_in_mic"
+    else
+      echo "No microphones found"
     fi
   '';
 }

@@ -3,34 +3,44 @@ with lib;
 let cfg = config.myNixOS.pipewire;
 in {
   config = mkIf cfg.enable {
+    # Enhanced Bluetooth with A2DP support
+    hardware.bluetooth = {
+      enable = true;
+      settings = {
+        General = {
+          Enable = "Source,Sink,Media,Socket";
+          Experimental = true;
+        };
+        Policy = {
+          AutoEnable = true;
+        };
+      };
+    };
+
+    services.blueman.enable = true;
+
     services.pipewire = {
       enable = true;
       alsa.enable = true;
       alsa.support32Bit = true;
       pulse.enable = true;
       jack.enable = true;
+      wireplumber.enable = true;
 
-      wireplumber = {
-        enable = true;
-        extraConfig = {
-          "50-alsa-config" = {
-            "monitor.alsa.rules" = [
-              {
-                matches = [
-                  { "device.name" = "alsa_card.pci-0000_00_1f.3"; }
-                ];
-                actions = {
-                  update-props = {
-                    "device.profile" = "HiFi";
-                  };
-                };
-              }
-            ];
+      # Updated Bluetooth config with A2DP priority
+      wireplumber.extraConfig = {
+        "50-bluez-config" = {
+          "monitor.bluez.properties" = {
+            "bluez5.enable-sbc-xq" = true;
+            "bluez5.enable-msbc" = true;
+            "bluez5.enable-hw-volume" = true;
+            # Prioritize high-quality A2DP over low-quality HSP/HFP
+            "bluez5.roles" = [ "a2dp_sink" "a2dp_source" ];
           };
         };
       };
 
-      # Noise canceling configuration using new extraConfig format
+      # Keep noise canceling (unchanged)
       extraConfig.pipewire."99-input-denoising" = {
         "context.modules" = [
           {
@@ -67,26 +77,6 @@ in {
           }
         ];
       };
-
-      # Force ALSA capture source creation
-#      extraConfig.pipewire."99-force-alsa-capture" = {
-#        "context.modules" = [
-#          {
-#            args = {
-#              "alsa.card" = "0";
-#              "alsa.device" = "0";
-#              "alsa.subdevice" = "0";
-#              "alsa.stream" = "capture";
-#              "audio.channels" = "2";
-#              "audio.rate" = "44100";
-#              "audio.format" = "S16LE";
-#              "node.name" = "alsa-capture-internal";
-#              "media.class" = "Audio/Source";
-#              "node.description" = "Internal Microphone";
-#            };
-#          }
-#        ];
-#      };
     };
   };
 }

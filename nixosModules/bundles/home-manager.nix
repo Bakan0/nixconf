@@ -61,14 +61,15 @@ in {
       };
     };
 
-    users.users.${cfg.userName} =
-      {
-        isNormalUser = true;
-        initialPassword = "12345";
-        description = cfg.userName;
-        shell = pkgs.zsh;
-        extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" ];
-      }
-      // cfg.userNixosSettings;
+    users.users.${cfg.userName} = {
+      isNormalUser = true;
+      initialPassword = "12345";
+      description = cfg.userName;
+      shell = pkgs.fish;
+      extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" ];
+    } // cfg.userNixosSettings // {
+      # Ensure extraGroups merge instead of replace
+      extraGroups = (cfg.userNixosSettings.extraGroups or []) ++ [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" ];
+    };
   };
 }

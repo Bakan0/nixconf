@@ -33,7 +33,7 @@
       "emet" = {
         userConfig = ./home.nix;
         userSettings = {
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" ];
+          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" ];
         };
       };
     };

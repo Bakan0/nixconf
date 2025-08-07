@@ -63,7 +63,7 @@ in {
           initialPassword = "12345";
           description = "";
           shell = pkgs.fish;
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel"];
+          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" ];
         }
         // user.userSettings
     ) (config.myNixOS.home-users);

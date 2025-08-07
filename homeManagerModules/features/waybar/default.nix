@@ -40,7 +40,6 @@
     ];
     modules-center = ["mpris"];
 
-    "wlr/workspaces" = workspaces;
     "hyprland/workspaces" = workspaces;
 
     bluetooth = {
@@ -126,28 +125,31 @@
       tooltip-format = "󰤪 {ipaddr}  {bandwidthUpBytes}  {bandwidthDownBytes}";
     };
 
-    # Modern PipeWire volume widget
-    "custom/volume" = {
-      format = "{}";
-      exec = "${scripts.waybar-volume}/bin/waybar-volume";
-      on-click = "${scripts.waybar-volume-toggle}/bin/waybar-volume-toggle";
-      on-click-middle = "pavucontrol";
-      on-scroll-up = "${scripts.waybar-volume-up}/bin/waybar-volume-up";
-      on-scroll-down = "${scripts.waybar-volume-down}/bin/waybar-volume-down";
-      interval = 1;
-      tooltip-format = "Volume | Left: Toggle mute | Middle: Settings | Scroll: Adjust";
-    };
-
-    # Modern PipeWire microphone widget
-    "custom/microphone" = {
-      format = "{}";
-      exec = "${scripts.waybar-microphone}/bin/waybar-microphone";
-      on-click = "${scripts.waybar-microphone-toggle}/bin/waybar-microphone-toggle";
-      on-scroll-up = "${scripts.waybar-microphone-volume-up}/bin/waybar-microphone-volume-up";
-      on-scroll-down = "${scripts.waybar-microphone-volume-down}/bin/waybar-microphone-volume-down";
-      interval = 2;
-      tooltip-format = "Microphone | Left: Toggle mute | Scroll: Adjust volume";
-    };
+  # Modern PipeWire volume widget
+  "custom/volume" = {
+    format = "{}";
+    exec = "${scripts.waybar-volume}/bin/waybar-volume";
+    on-click = "${scripts.waybar-volume-toggle}/bin/waybar-volume-toggle";
+    on-click-middle = "pavucontrol";
+    on-click-right = "${scripts.waybar-volume-cycle}/bin/waybar-volume-cycle";  # ← NEW
+    on-scroll-up = "${scripts.waybar-volume-up}/bin/waybar-volume-up";
+    on-scroll-down = "${scripts.waybar-volume-down}/bin/waybar-volume-down";
+    interval = 1;
+    tooltip-format = "Volume | Left: Toggle mute | Middle: Settings | Right: Cycle outputs | Scroll: Adjust";
+  };
+  
+  # Modern PipeWire microphone widget
+  "custom/microphone" = {
+    format = "{}";
+    exec = "${scripts.waybar-microphone}/bin/waybar-microphone";
+    on-click = "${scripts.waybar-microphone-toggle}/bin/waybar-microphone-toggle";
+    on-click-middle = "pavucontrol";  # ← CHANGED from cycle to pavucontrol
+    on-click-right = "${scripts.waybar-microphone-cycle}/bin/waybar-microphone-cycle";  # ← MOVED here
+    on-scroll-up = "${scripts.waybar-microphone-volume-up}/bin/waybar-microphone-volume-up";
+    on-scroll-down = "${scripts.waybar-microphone-volume-down}/bin/waybar-microphone-volume-down";
+    interval = 2;
+    tooltip-format = "Microphone | Left: Toggle mute | Middle: Settings | Right: Cycle sources | Scroll: Adjust volume";
+  };
 
     tray = {
       icon-size = 15;
@@ -284,10 +286,12 @@ in {
     scripts.waybar-volume-toggle
     scripts.waybar-volume-up
     scripts.waybar-volume-down
+    scripts.waybar-volume-cycle
     scripts.waybar-microphone 
     scripts.waybar-microphone-toggle 
     scripts.waybar-microphone-volume-up 
     scripts.waybar-microphone-volume-down
+    scripts.waybar-microphone-cycle
   ];
 
   programs.waybar = {
