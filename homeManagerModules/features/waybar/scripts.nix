@@ -3,7 +3,6 @@
 {
   waybar-battery = pkgs.writeShellScriptBin "waybar-battery" ''
     get_battery_info() {
-      # Use the new CLI tool instead of D-Bus
       battery-thresholds status 2>/dev/null
     }
 
@@ -11,11 +10,9 @@
       status)
         info=$(get_battery_info)
         if echo "$info" | grep -q "BAT0:"; then
-          # Parse the new format: "BAT0: 60% (Not charging) - ASUS: end=60%, mode=Balanced (80%)"
           capacity=$(echo "$info" | sed 's/.*BAT0: \([0-9]*\)%.*/\1/')
           status=$(echo "$info" | sed 's/.*(\([^)]*\)).*/\1/' | tr -d '\n\r')
 
-          # Extract thresholds based on hardware type
           if echo "$info" | grep -q "ASUS:"; then
             start_thresh="N/A"
             end_thresh=$(echo "$info" | sed 's/.*end=\([0-9]*\)%.*/\1/')
@@ -27,7 +24,6 @@
             end_thresh="N/A"
           fi
         else
-          # Fallback to direct file reading
           capacity=$(cat /sys/class/power_supply/BAT0/capacity 2>/dev/null || echo "0")
           status=$(cat /sys/class/power_supply/BAT0/status 2>/dev/null | tr -d '\n\r' || echo "Unknown")
           start_thresh="N/A"
@@ -76,26 +72,94 @@
         ;;
     esac
   '';
-  waybar-microphone = pkgs.writeShellScriptBin "waybar-microphone" ''
-    # Get microphone status using wpctl (PipeWire)
-    if wpctl get-volume 55 | grep -q MUTED; then
-      echo "󰍭 MUTED"
+
+  # Keep your working volume scripts exactly as they are
+  waybar-volume = pkgs.writeShellScriptBin "waybar-volume" ''
+    if wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED; then
+      vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}')
+      echo "$vol% 󰖁"
     else
-      vol=$(wpctl get-volume 55 | awk '{print int($2*100)}')
-      echo "󰍬 $vol%"
+      vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100)}')
+      if [ "$vol" -gt 66 ]; then
+        icon="󰕾"
+      elif [ "$vol" -gt 33 ]; then
+        icon="󰖀"
+      else
+        icon="󰕿"
+      fi
+      echo "$vol% $icon"
     fi
   '';
 
+  waybar-volume-toggle = pkgs.writeShellScriptBin "waybar-volume-toggle" ''
+    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+  '';
+
+  waybar-volume-up = pkgs.writeShellScriptBin "waybar-volume-up" ''
+    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+  '';
+
+  waybar-volume-down = pkgs.writeShellScriptBin "waybar-volume-down" ''
+    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+  '';
+
+  # Fixed microphone control - manages both hardware and filtered sources
+  waybar-microphone = pkgs.writeShellScriptBin "waybar-microphone" ''
+    # Get hardware source ID dynamically
+    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
+  
+    # Check if rnnoise source exists
+    if wpctl status | grep -q "rnnoise_source"; then
+      # Show filtered source status but check hardware mute state
+      if wpctl get-volume "$hw_source" 2>/dev/null | grep -q MUTED; then
+        vol=$(wpctl get-volume 39 2>/dev/null | awk '{print int($2*100)}' || echo "0")
+        echo "$vol% 󰍭"
+      else
+        vol=$(wpctl get-volume 39 2>/dev/null | awk '{print int($2*100)}' || echo "0")
+        echo "$vol% 󰍬"
+      fi
+    else
+      # Fallback to hardware source only
+      if wpctl get-volume "$hw_source" 2>/dev/null | grep -q MUTED; then
+        vol=$(wpctl get-volume "$hw_source" 2>/dev/null | awk '{print int($2*100)}' || echo "0")
+        echo "$vol% 󰍭"
+      else
+        vol=$(wpctl get-volume "$hw_source" 2>/dev/null | awk '{print int($2*100)}' || echo "0")
+        echo "$vol% 󰍬"
+      fi
+    fi
+  '';
+  
   waybar-microphone-toggle = pkgs.writeShellScriptBin "waybar-microphone-toggle" ''
-    wpctl set-mute 55 toggle
+    # Get hardware source ID dynamically
+    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
+  
+    # Toggle both hardware and filtered sources
+    wpctl set-mute "$hw_source" toggle
+    if wpctl status | grep -q "rnnoise_source"; then
+      wpctl set-mute 39 toggle
+    fi
   '';
-
+  
   waybar-microphone-volume-up = pkgs.writeShellScriptBin "waybar-microphone-volume-up" ''
-    wpctl set-volume 55 5%+
+    # Get hardware source ID dynamically
+    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
+  
+    # Adjust both hardware and filtered sources
+    wpctl set-volume "$hw_source" 5%+
+    if wpctl status | grep -q "rnnoise_source"; then
+      wpctl set-volume 39 5%+
+    fi
   '';
-
+  
   waybar-microphone-volume-down = pkgs.writeShellScriptBin "waybar-microphone-volume-down" ''
-    wpctl set-volume 55 5%-
+    # Get hardware source ID dynamically  
+    hw_source=$(wpctl status | grep "Family 17h" | grep "Sources:" -A 10 | grep "\*" | sed 's/.*\([0-9]\+\)\..*/\1/')
+  
+    # Adjust both hardware and filtered sources
+    wpctl set-volume "$hw_source" 5%-
+    if wpctl status | grep -q "rnnoise_source"; then
+      wpctl set-volume 39 5%-
+    fi
   '';
 }
-

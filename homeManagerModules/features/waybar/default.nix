@@ -31,7 +31,7 @@
       "hyprland/language"
       "network"
       "bluetooth"
-      "pulseaudio"
+      "custom/volume"
       "custom/microphone"
       "backlight"
       "custom/battery-manager"
@@ -58,7 +58,7 @@
       format-icons = ["󰃞" "󰃟" "󰃠"];
       on-scroll-up = "brightnessctl set +5%";
       on-scroll-down = "brightnessctl set 5%-";
-      on-click = "brightnessctl set 50%";  # Click to set to 50%
+      on-click = "brightnessctl set 50%";
       tooltip-format = "Brightness: {percent}%";
     };
 
@@ -80,19 +80,17 @@
       tooltip-format = "<span size='9pt' font='WenQuanYi Zen Hei Mono'>{calendar}</span>";
     };
 
-
     "custom/battery-manager" = {
       exec = "${scripts.waybar-battery}/bin/waybar-battery status";
       return-type = "json";
       interval = 30;
-      on-click = "${scripts.waybar-battery}/bin/waybar-battery force";           # Left click = Force charge
-      on-click-middle = "${scripts.waybar-battery}/bin/waybar-battery restore";  # Middle click = Restore defaults  
-      on-click-right = "${scripts.waybar-battery}/bin/waybar-battery status-popup"; # Right click = Show status
+      on-click = "${scripts.waybar-battery}/bin/waybar-battery force";
+      on-click-middle = "${scripts.waybar-battery}/bin/waybar-battery restore";
+      on-click-right = "${scripts.waybar-battery}/bin/waybar-battery status-popup";
       tooltip = true;
       format = "{}";
     };
 
-  
     "custom/gpu-usage" = {
       exec = "nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits";
       format = "󰢮 {}";
@@ -115,9 +113,7 @@
 
     "hyprland/language" = {
       format = "󰌌 {}";
-      format-uk = "державна";
       format-en = "english";
-      format-ru = "русский";
     };
 
     network = {
@@ -130,28 +126,27 @@
       tooltip-format = "󰤪 {ipaddr}  {bandwidthUpBytes}  {bandwidthDownBytes}";
     };
 
-    "pulseaudio" = {
-      format = "{volume}% {icon}";
-      format-muted = "{volume}% 󰖁";  # Show volume percentage even when muted
-      format-icons = {
-        headphone = "󰋋";
-        headset = "󰋎";
-        default = ["󰕿" "󰖀" "󰕾"];
-      };
-      on-click = "pamixer --toggle-mute";
+    # Modern PipeWire volume widget
+    "custom/volume" = {
+      format = "{}";
+      exec = "${scripts.waybar-volume}/bin/waybar-volume";
+      on-click = "${scripts.waybar-volume-toggle}/bin/waybar-volume-toggle";
       on-click-middle = "pavucontrol";
-      tooltip = true;
-      tooltip-format = "Volume: {volume}% | Left: Toggle mute | Middle: Settings";
+      on-scroll-up = "${scripts.waybar-volume-up}/bin/waybar-volume-up";
+      on-scroll-down = "${scripts.waybar-volume-down}/bin/waybar-volume-down";
+      interval = 1;
+      tooltip-format = "Volume | Left: Toggle mute | Middle: Settings | Scroll: Adjust";
     };
 
-   "custom/microphone" = {
+    # Modern PipeWire microphone widget
+    "custom/microphone" = {
       format = "{}";
       exec = "${scripts.waybar-microphone}/bin/waybar-microphone";
       on-click = "${scripts.waybar-microphone-toggle}/bin/waybar-microphone-toggle";
       on-scroll-up = "${scripts.waybar-microphone-volume-up}/bin/waybar-microphone-volume-up";
       on-scroll-down = "${scripts.waybar-microphone-volume-down}/bin/waybar-microphone-volume-down";
       interval = 2;
-      tooltip = false;
+      tooltip-format = "Microphone | Left: Toggle mute | Scroll: Adjust volume";
     };
 
     tray = {
@@ -211,7 +206,7 @@
     #custom-updates,
     #network,
     #bluetooth,
-    #pulseaudio,
+    #custom-volume,
     #custom-microphone,
     #custom-wallchange,
     #custom-mode,
@@ -252,12 +247,12 @@
     }
 
     #backlight {
-      color: @base0A;  /* Using yellow like your clock */
+      color: @base0A;
       padding-left: 4px;
       padding-right: 4px;
     }
-  
-    #pulseaudio {
+
+    #custom-volume {
         color: @base0E;
         padding-left: 4px;
         padding-right: 4px;
@@ -283,7 +278,17 @@
     }
   '';
 in {
-  home.packages = [scripts.waybar-battery scripts.waybar-microphone scripts.waybar-microphone-toggle scripts.waybar-microphone-volume-up scripts.waybar-microphone-volume-down];
+  home.packages = [
+    scripts.waybar-battery 
+    scripts.waybar-volume
+    scripts.waybar-volume-toggle
+    scripts.waybar-volume-up
+    scripts.waybar-volume-down
+    scripts.waybar-microphone 
+    scripts.waybar-microphone-toggle 
+    scripts.waybar-microphone-volume-up 
+    scripts.waybar-microphone-volume-down
+  ];
 
   programs.waybar = {
     enable = true;
@@ -297,3 +302,4 @@ in {
     settings = {mainBar = mainWaybarConfig;};
   };
 }
+
