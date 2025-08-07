@@ -15,7 +15,6 @@
     kanshi.enable = true;
     batteryManagement.enable = true;
     tpm2.enable = true;
-    thunderbolt.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;

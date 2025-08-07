@@ -4,7 +4,6 @@ let cfg = config.myNixOS.amd;
 in {
   # OPTIONS AT TOP LEVEL:
   options.myNixOS.amd = {
-
     conservativePowerManagement = mkOption {
       type = types.bool;
       default = false;
@@ -17,24 +16,23 @@ in {
     # AMD GPU kernel parameters and modules
     boot = {
       kernelParams = [
-        "amd_iommu=on"
-        "iommu=pt"
-        "amdgpu.si_support=1"
-        "amdgpu.cik_support=1" 
-        "radeon.si_support=0"
-        "radeon.cik_support=0"
-        "swiotlb=65536"
-        "amdgpu.noretry=0"
-        "amdgpu.lockup_timeout=10000"
-        "amdgpu.gpu_recovery=1"
-        "pci=realloc"           # Reallocate PCI resources
+        # FIXED: Use minimal parameters like the working ISO
+        "nohibernate"                       # From working ISO
+        "amdgpu.noretry=0"                  # Keep essential recovery params
+        "amdgpu.lockup_timeout=10000"       # Keep essential recovery params
+        "amdgpu.gpu_recovery=1"             # Keep essential recovery params
       ] ++ optionals cfg.conservativePowerManagement [
         "amd_pstate=passive"
         "processor.max_cstate=2"
+        "amdgpu.runpm=0"                    # Disable runtime PM conflicts
+        "amdgpu.bapm=0"                     # Disable bidirectional application power management
+        "amdgpu.dc=1"                       # Force display core (sometimes helps)
+        "amdgpu.audio=1"                    # Ensure audio doesn't interfere
       ];
 
       kernelModules = [ "amdgpu" ];
-      initrd.kernelModules = [ "amdgpu" ];
+
+      # CRITICAL FIX: Removed initrd.kernelModules - this was breaking iGPU ROM access
     };
 
     # AMD firmware and hardware support

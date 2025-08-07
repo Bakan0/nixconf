@@ -8,17 +8,6 @@ let
   isGnomeEnabled = config.services.desktopManager.gnome.enable;
   isKdeEnabled = config.services.xserver.desktopManager.plasma5.enable || config.services.desktopManager.plasma6.enable;
   hasTraditionalDE = isGnomeEnabled || isKdeEnabled;
-
-  # Create a simple CPU detection script that runs at build time
-  cpuDetector = pkgs.writeShellScript "detect-cpu" ''
-    if ${pkgs.util-linux}/bin/lscpu | grep -q "GenuineIntel"; then
-      echo "intel_pstate=active"
-    elif ${pkgs.util-linux}/bin/lscpu | grep -q "AuthenticAMD"; then
-      echo "amd_pstate=guided"
-    else
-      echo ""
-    fi
-  '';
 in {
   options.myNixOS.powerManagement = {
     fixSuspendIssues = mkOption {
@@ -26,9 +15,15 @@ in {
       default = true;
       description = "Apply fixes for common suspend/resume issues";
     };
+
+    cpuType = mkOption {
+      type = types.enum [ "intel" "amd" "both" ];
+      default = "both";
+      description = "CPU type for power management parameters";
+    };
   };
 
-  config = {
+  config = mkIf cfg.enable {
     powerManagement = {
       enable = true;
       cpuFreqGovernor = "schedutil";
@@ -45,35 +40,33 @@ in {
     # Add ASUS-specific kernel modules for battery management compatibility
     boot.kernelModules = [ "asus-wmi" "asus-nb-wmi" ];
 
-    # CPU-specific setup at boot time
+    # PROPERLY MODULAR: Let user choose or include both (kernel ignores wrong ones)
+    boot.kernelParams = [
+      # Include both by default - kernel ignores the wrong one
+    ] ++ optionals (cfg.cpuType == "intel" || cfg.cpuType == "both") [
+      "intel_pstate=active"
+    ] ++ optionals (cfg.cpuType == "amd" || cfg.cpuType == "both") [
+      "amd_pstate=guided"
+    ] ++ optionals cfg.fixSuspendIssues [
+      "usbcore.autosuspend=-1"
+    ];
+
+    # CPU detection service
     systemd.services."cpu-power-setup" = {
-      description = "Set CPU-specific power management parameters";
+      description = "Log CPU-specific power management parameters";
       wantedBy = [ "multi-user.target" ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
       };
       script = ''
-        # Detect CPU type and log the appropriate setting
         if ${pkgs.util-linux}/bin/lscpu | grep -q "GenuineIntel"; then
-          echo "Detected Intel CPU - intel_pstate should be active"
+          echo "Detected Intel CPU - intel_pstate=active should be active"
         elif ${pkgs.util-linux}/bin/lscpu | grep -q "AuthenticAMD"; then
-          echo "Detected AMD CPU - amd_pstate should be guided"
-        else
-          echo "Unknown CPU type detected"
+          echo "Detected AMD CPU - amd_pstate=guided should be active"
         fi
       '';
     };
-
-    # Set kernel parameters based on common CPU types
-    boot.kernelParams = [
-      # Intel P-state (will be ignored on AMD)
-      "intel_pstate=active"
-      # AMD P-state (will be ignored on Intel)  
-      "amd_pstate=guided"
-    ] ++ optionals cfg.fixSuspendIssues [
-      "usbcore.autosuspend=-1"  # Fix USB suspend issues
-    ];
 
     # USB wakeup service
     systemd.services."usb-wakeup-enable" = {
@@ -85,11 +78,9 @@ in {
         RemainAfterExit = true;
       };
       script = ''
-        # Enable wakeup for all USB devices and hubs
         find /sys/bus/usb/devices/*/power/wakeup -type f 2>/dev/null | while read -r wakeup_file; do
           echo enabled > "$wakeup_file" 2>/dev/null || true
         done
-
         echo "USB wakeup configuration completed successfully"
       '';
     };

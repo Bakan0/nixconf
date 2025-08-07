@@ -15,7 +15,6 @@
     kanshi.enable = true;
     batteryManagement.enable = true;
     tpm2.enable = true;
-    thunderbolt.enable = true;
     immersed.enable = true;
     virtualisation = {
       username = "emet";

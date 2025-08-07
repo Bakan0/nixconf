@@ -3,6 +3,14 @@
   lib,
   ...
 }: {
+  # System-wide nixpkgs configuration (moved from Home Manager)
+  nixpkgs.config = {
+    allowUnfree = true;
+  };
+
+  # Nix experimental features (correct location)
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   myNixOS.sddm.enable = lib.mkDefault false;
   myNixOS.greetd.enable = lib.mkDefault false;
   myNixOS.autologin.enable = lib.mkDefault true;
@@ -16,7 +24,7 @@
   # US Central time zone
   time.timeZone = lib.mkDefault "America/Chicago";
   i18n.defaultLocale = "en_US.UTF-8";
-    i18n.extraLocaleSettings = { 
+  i18n.extraLocaleSettings = { 
     LC_ADDRESS = "en_US.UTF-8";
     LC_IDENTIFICATION = "en_US.UTF-8";
     LC_MEASUREMENT = "en_US.UTF-8";
@@ -62,12 +70,11 @@
     # Web browsers - available to all users
     vivaldi
     vivaldi-ffmpeg-codecs
-  
+
     # Desktop utilities - available to all users
     meld
     dmidecode
   ];
-
 
   services = {
     pipewire = {
@@ -78,7 +85,7 @@
       jack.enable = true;
     };
 
-    # Printing configuration
+    # Printing configuration - fixed to not block boot
     printing = {
       enable = true;
       browsing = true;
@@ -106,9 +113,9 @@
     graphics = {
       enable = true;
       enable32Bit = true;
-      # driSupport = true;
     };
 
+    # Fixed printer configuration - won't block boot if network unavailable
     printers = {
       ensurePrinters = [{
         name = "gw-hp-clj-mfp-m283fdw";
@@ -117,6 +124,17 @@
         model = "everywhere";
         description = "HP Color LaserJet MFP M283fdw";
       }];
+      ensureDefaultPrinter = "gw-hp-clj-mfp-m283fdw";
+    };
+  };
+
+  # Make printer service non-blocking during boot
+  systemd.services.cups-browsed = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      Restart = "on-failure";
+      RestartSec = "30s";
     };
   };
 
@@ -157,3 +175,4 @@
     };
   };
 }
+

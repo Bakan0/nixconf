@@ -14,7 +14,6 @@
     stylix.enable = false;
     kanshi.enable = true;
     tpm2.enable = true;
-    thunderbolt.enable = true;
     virtualisation.enable = false;
     home-users = {
       "joelle" = {

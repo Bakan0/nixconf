@@ -5,13 +5,6 @@
   inputs,
   ...
 }: {
-  nixpkgs = {
-    config = {
-      allowUnfree = true;
-      experimental-features = "nix-command flakes";
-    };
-  };
-
   myHomeManager.lf.enable = lib.mkDefault true;
   myHomeManager.yazi.enable = lib.mkDefault true;
   myHomeManager.nix-extra.enable = lib.mkDefault true;

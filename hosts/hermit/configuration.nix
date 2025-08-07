@@ -16,7 +16,6 @@
     kanshi.enable = true;
     batteryManagement.enable = true;
     tpm2.enable = true;
-    thunderbolt.enable = true;
     amd.enable = true;
     asus.enable = true;
     hardware.rtl8852be.enable = true;
