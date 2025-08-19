@@ -157,6 +157,7 @@
     font-awesome
     freerdp
     fwupd
+    geany
     git
     glxinfo
     hyprland
@@ -184,6 +185,7 @@
     wl-clipboard
     xorg.xorgserver
     xwayland
+    zed-editor
     zip
   ];
 
