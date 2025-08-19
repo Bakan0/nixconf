@@ -1,27 +1,55 @@
 { config, lib, pkgs, ... }:
 
-{
-  environment.systemPackages = [
-    (pkgs.writeShellScriptBin "toggle-laptop-display" ''
-      LAPTOP_EXISTS=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[] | select(.name == "eDP-1") | .name' 2>/dev/null)
-    
-      if [ -n "$LAPTOP_EXISTS" ]; then
-        # Laptop is on, switch to disable profile
-        echo "Switching to laptop-disabled profile..."
-        systemctl --user stop kanshi
-        ${pkgs.hyprland}/bin/hyprctl keyword monitor "eDP-1,disable"
-        systemctl --user start kanshi
-      else
-        # Laptop is off, switch to laptop-enabled profile
-        echo "Switching to laptop-enabled profile..."
-        systemctl --user stop kanshi
-        ${pkgs.hyprland}/bin/hyprctl keyword monitor "eDP-1,1920x1080@60,5120x0,1"
-    
-        # Give kanshi time to see the new state, then it will match the laptop-enabled profile
-        sleep 2
-        systemctl --user start kanshi
-      fi
-    '')
-  ];
-}
+with lib;
+let
+  cfg = config.myNixOS.kanshi;
+in {
+  config = mkIf cfg.enable {
+    environment.systemPackages = [
+      (pkgs.writeShellScriptBin "toggle-laptop-display" ''
+        #!/usr/bin/env bash
 
+        echo "=== LAPTOP DISPLAY TOGGLE ==="
+
+        KANSHI_STATUS=$(systemctl --user is-active kanshi)
+
+        if [ "$KANSHI_STATUS" = "active" ]; then
+          echo "Kanshi active, disabling laptop display"
+          MONITORS_JSON=$(${pkgs.hyprland}/bin/hyprctl monitors -j)
+          LAPTOP_DISPLAY=$(echo "$MONITORS_JSON" | ${pkgs.jq}/bin/jq -r '[.[] | select(.name | startswith("eDP-")) | .name] | first')
+          echo "Laptop display: $LAPTOP_DISPLAY"
+          OTHER_DISPLAYS=$(echo "$MONITORS_JSON" | ${pkgs.jq}/bin/jq -r '[.[] | select(.name | startswith("eDP-") | not) | .name] | join(" ")')
+          if [ -z "$OTHER_DISPLAYS" ]; then
+            echo "SAFETY: No other displays, cannot disable"
+            exit 1
+          fi
+          echo "Other displays: $OTHER_DISPLAYS"
+          MIN_X=$(echo "$MONITORS_JSON" | ${pkgs.jq}/bin/jq '[.[] | select(.name | startswith("eDP-") | not) | .x] | min')
+          MIN_Y=$(echo "$MONITORS_JSON" | ${pkgs.jq}/bin/jq '[.[] | select(.name | startswith("eDP-") | not) | .y] | min')
+          systemctl --user stop kanshi
+          ${pkgs.hyprland}/bin/hyprctl keyword monitor "$LAPTOP_DISPLAY,disable"
+          for OTHER in $OTHER_DISPLAYS; do
+            THIS_JSON=$(echo "$MONITORS_JSON" | ${pkgs.jq}/bin/jq ".[] | select(.name == \"$OTHER\")")
+            WIDTH=$(echo "$THIS_JSON" | ${pkgs.jq}/bin/jq -r '.width')
+            HEIGHT=$(echo "$THIS_JSON" | ${pkgs.jq}/bin/jq -r '.height')
+            REFRESH=$(echo "$THIS_JSON" | ${pkgs.jq}/bin/jq -r '.refreshRate | round')
+            SCALE=$(echo "$THIS_JSON" | ${pkgs.jq}/bin/jq -r '.scale')
+            TRANSFORM=$(echo "$THIS_JSON" | ${pkgs.jq}/bin/jq -r '.transform')
+            X=$(echo "$THIS_JSON" | ${pkgs.jq}/bin/jq -r '.x')
+            Y=$(echo "$THIS_JSON" | ${pkgs.jq}/bin/jq -r '.y')
+            NEW_X=$((X - MIN_X))
+            NEW_Y=$((Y - MIN_Y))
+            MODE="''${WIDTH}x''${HEIGHT}@''${REFRESH}"
+            POS="''${NEW_X}x''${NEW_Y}"
+            ${pkgs.hyprland}/bin/hyprctl keyword monitor "$OTHER,$MODE,$POS,$SCALE,transform,$TRANSFORM"
+          done
+        else
+          echo "Kanshi inactive, starting kanshi"
+          systemctl --user start kanshi
+        fi
+
+        echo "=== TOGGLE COMPLETE ==="
+      '')
+    ];
+  };
+}

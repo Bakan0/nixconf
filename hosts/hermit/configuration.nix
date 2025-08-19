@@ -13,7 +13,11 @@
     greetd.enable = true;
     hyprland.enable = true;
     stylix.enable = true;
-    kanshi.enable = true;
+    kanshi = {
+      enable = true;
+      laptopResolution = "1920x1200@165Hz";
+      laptopModel = "ASUS_A16_FA617NT";
+    };
     batteryManagement.enable = true;
     tpm2.enable = true;
     amd.enable = true;
@@ -22,8 +26,7 @@
     immersed.enable = true;
     sunshine = {
       enable = true;
-     # customResolution = "3104x1664 Your VR headset's native resolution
-     # scale = "1.0";
+      autoToggleLaptop = true;
     };
     virtualisation = {
       username = "emet";
@@ -32,7 +35,7 @@
       "emet" = {
         userConfig = ./home.nix;
         userSettings = {
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" ];
+          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" ];
         };
       };
     };
@@ -208,7 +211,7 @@
   services.fwupd.enable = true;
   services.openssh.enable = true;
   services.protonmail-bridge.enable = false;
-  services.teamviewer.enable = false;
+  services.teamviewer.enable = true;
 
   system.stateVersion = "25.05";
 }

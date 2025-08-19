@@ -12,7 +12,10 @@
     greetd.enable = true;
     hyprland.enable = true;
     stylix.enable = true;
-    kanshi.enable = true;
+    kanshi = {
+      enable = true;
+      laptopResolution = "1920x1080@60Hz";
+    };
     batteryManagement.enable = true;
     tpm2.enable = true;
     immersed.enable = true;

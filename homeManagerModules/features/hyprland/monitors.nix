@@ -98,9 +98,8 @@ in {
     ];
 
     wayland.windowManager.hyprland.extraConfig = ''
-      # Auto handle monitors
-      monitor = , preferred, auto, 1
+      # Auto handle monitors with v2 syntax
+      monitor=,preferred,auto,1
     '';
   };
 }
-

@@ -1,30 +1,21 @@
+# In your plymouth-splash module - just add the critical kernel params:
 { config, lib, pkgs, ... }:
-
-with lib;
-let
-  cfg = config.myNixOS.plymouth-splash;
+let cfg = config.myNixOS.plymouth-splash;
 in {
-  config = mkIf cfg.enable {
-    # Use liquid theme (which we know works)
+  config = lib.mkIf cfg.enable {
     boot.plymouth = {
-      enable = lib.mkDefault cfg.enable;
-      theme = lib.mkIf cfg.enable "liquid";
+      enable = true;
+      theme = "liquid";
       themePackages = [ pkgs.adi1090x-plymouth-themes ];
-      extraConfig = ''
-        [Daemon]
-        Theme=liquid
-        ShowDelay=0
-        DeviceTimeout=30
-      '';
     };
 
+    # The ONLY fix needed - suppress stage 1 messages
     boot.kernelParams = [
-      "splash"
       "quiet"
+      "splash" 
       "rd.systemd.show_status=false"
-      "rd.udev.log_level=3"
-      "udev.log_priority=3"
     ];
+
+    boot.initrd.verbose = false;
   };
 }
-

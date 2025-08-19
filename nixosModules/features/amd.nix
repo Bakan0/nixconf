@@ -50,6 +50,12 @@ in {
       };
     };
 
+    # VAAPI environment variables for Hybrid mode encoding fix
+    environment.sessionVariables = {
+      VAAPI_DISABLE_VBV = "1";
+      LIBVA_MESSAGING_LEVEL = "2";
+    };
+
     # ROCm support
     systemd.tmpfiles.rules = [
       "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"

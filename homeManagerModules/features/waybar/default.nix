@@ -23,7 +23,7 @@
     mod = "dock";
     layer = "top";
     gtk-layer-shell = true;
-    height = 26;
+    height = 29;
     position = "top";
 
     modules-left = ["custom/logo" "hyprland/workspaces"];

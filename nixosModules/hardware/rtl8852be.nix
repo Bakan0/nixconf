@@ -7,8 +7,6 @@ with lib;
     hardware.enableRedistributableFirmware = true;
 
     boot.extraModprobeConfig = ''
-      options rtw89_pci disable_aspm=1
-      options rtw89_core power_save_mode=0
     '';
 
     powerManagement.resumeCommands = ''

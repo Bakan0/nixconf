@@ -74,12 +74,13 @@
   '';
 
   waybar-volume = pkgs.writeShellScriptBin "waybar-volume" ''
-    volume_info=$(pamixer --get-volume-human)
-  
-    if [ "$volume_info" = "muted" ]; then
-      echo "󰖁 0%"     # Volume muted
+    volume=$(pamixer --get-volume)
+    is_muted=$(pamixer --get-mute)
+    
+    if [ "$is_muted" = "true" ]; then
+      echo "󰖁 $volume%"
     else
-      echo "󰕾 $volume_info"  # Volume unmuted
+      echo "󰕾 $volume%"
     fi
   '';
   

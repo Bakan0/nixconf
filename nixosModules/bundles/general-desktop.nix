@@ -37,6 +37,7 @@
   };  
 
   console = {
+    earlySetup = true;
     font = "sun12x22";
     useXkbConfig = true;
   };

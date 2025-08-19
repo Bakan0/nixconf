@@ -37,9 +37,6 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Enable KVM virtualization
-    boot.kernelModules = [ "kvm-intel" "kvm-amd" ];
-
     # Enable libvirtd with explicit QEMU configuration
     virtualisation = {
       libvirtd = {

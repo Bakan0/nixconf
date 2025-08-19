@@ -1,110 +1,81 @@
-# nixosModules/features/sunshine.nix
 { config, lib, pkgs, ... }:
 with lib;
 let 
   cfg = config.myNixOS.sunshine;
 
-  # Smart positioning calculation
-  calculatePosition = resolution: 
-    let
-      # Parse resolution (e.g., "3104x1664" -> width=3104, height=1664)
-      parts = builtins.split "x" resolution;
-      width = builtins.elemAt parts 0;
-      height = builtins.elemAt parts 2;
-
-      # Laptop screen specs
-      laptopWidth = 1920;
-      laptopHeight = 1200;
-
-      # Calculate centered position above laptop
-      # X: Center headless display above laptop screen
-      centerX = (laptopWidth - (builtins.fromJSON width)) / 2;
-      # Y: Position above laptop (negative Y moves up)
-      posY = -(builtins.fromJSON height);
-    in
-      "${toString (builtins.floor centerX)}x${toString posY}";
-
-  # Get the resolution to use
-  activeResolution = if cfg.customResolution != null then cfg.customResolution else cfg.resolution;
-
-  # Calculate smart position
-  smartPosition = calculatePosition activeResolution;
-
   sunshineStream = pkgs.writeShellScript "sunshine-headless" ''
     echo "Setting up headless display for Sunshine streaming..."
 
-    # Wait for Hyprland to be ready
     while ! ${pkgs.hyprland}/bin/hyprctl version >/dev/null 2>&1; do
       sleep 0.1
     done
 
-    # Create headless display
+    # Step 1: Create headless display
     ${pkgs.hyprland}/bin/hyprctl output add headless sunshine-ultrawide
 
-    # Configure headless display (auto-centered above laptop screen)
-    ${pkgs.hyprland}/bin/hyprctl keyword monitor "sunshine-ultrawide,${activeResolution}@60.00,${smartPosition},${cfg.scale}"
+    # Step 2: Toggle laptop display OFF if autoToggleLaptop is enabled
+    ${if cfg.autoToggleLaptop then ''
+      echo "Toggling laptop display off for streaming..."
+      toggle-laptop-display
+    '' else ''
+      echo "Skipping laptop display toggle (autoToggleLaptop disabled)"
+    ''}
 
-    # Fix laptop screen position to be properly aligned
-    ${pkgs.hyprland}/bin/hyprctl keyword monitor "eDP-1,1920x1200@165.00,960x0,1"
-
-    echo "Headless display configured: ${activeResolution} at ${smartPosition} (scale ${cfg.scale})"
-    echo "Laptop screen repositioned to: 960x0"
-
-    # Give Hyprland time to register the display changes
+    # Wait for display change to complete
     sleep 3
 
-    # Create sunshine config with monitor selection
     mkdir -p ~/.config/sunshine
     cat > ~/.config/sunshine/sunshine.conf << 'EOF'
 output_name = 1
+av1_mode = 2
+hevc_mode = 1
+encoder = vaapi
+vaapi_strict_rc_buffer = enabled
+
+# local phone hotspot optimizations
+max_bitrate = 25000
+fec_percentage = 20
+lan_encryption_mode = 0 # BE SURE ON OWN LOCAL NETWORK
+qp = 28
 EOF
 
-    echo "Starting Sunshine with discrete GPU and monitor 1 selection..."
+    echo "Starting Sunshine with discrete GPU and optimized encoding settings..."
 
-    # Launch sunshine with discrete GPU
-    DRI_PRIME=1 ${pkgs.sunshine}/bin/sunshine &
+    ${pkgs.sunshine}/bin/sunshine &
+
     SUNSHINE_PID=$!
 
-    echo "Sunshine started! Monitor 1 (sunshine-ultrawide) should be selected."
+    echo "Sunshine started with AV1 enabled, HEVC disabled, and local hotspot optimizations."
     echo "Web interface: https://localhost:47990"
 
-    # Cleanup function
     cleanup() {
       echo "Cleaning up..."
       kill $SUNSHINE_PID 2>/dev/null || true
+
+      # Step 3: Restart kanshi to restore laptop display and handle configuration
+      echo "Restarting kanshi to restore display configuration..."
+      systemctl --user restart kanshi
+
+      # Wait for kanshi to stabilize displays
+      sleep 2
+
+      # Step 4: Destroy headless display
       ${pkgs.hyprland}/bin/hyprctl output destroy sunshine-ultrawide >/dev/null 2>&1 || true
-      # Reset laptop screen to original position
-      ${pkgs.hyprland}/bin/hyprctl keyword monitor "eDP-1,1920x1200@165.00,0x0,1" >/dev/null 2>&1 || true
       rm -f ~/.config/sunshine/sunshine.conf
-      echo "Sunshine streaming stopped."
+
+      echo "Sunshine streaming stopped and kanshi restarted."
     }
 
-    # Setup cleanup on exit
     trap cleanup EXIT INT TERM
-
-    # Wait for sunshine to finish
     wait $SUNSHINE_PID
   '';
 
 in {
   options.myNixOS.sunshine = {
-    resolution = mkOption {
-      type = types.str;
-      default = "3104x1664";  # Lower Meta Quest Native - optimal performance
-      description = "Resolution for headless display";
-    };
-
-    scale = mkOption {
-      type = types.str;
-      default = "1.0";  # Native scale for VR resolution
-      description = "Scale factor for headless display";
-    };
-
-    customResolution = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-      example = "4128x2208";
-      description = "Custom resolution for headless display (overrides default)";
+    autoToggleLaptop = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Automatically toggle laptop display off during streaming and back on during cleanup";
     };
   };
 
@@ -129,21 +100,9 @@ in {
       })
     ];
 
-    # Firewall configuration for Sunshine
     networking.firewall = {
-      allowedTCPPorts = [
-        47989  # Sunshine HTTPS Web UI
-        47984  # Sunshine HTTP Web UI  
-        47990  # Sunshine RTSP
-        48010  # Sunshine additional TCP
-      ];
-      allowedUDPPorts = [
-        47998  # Sunshine Video
-        47999  # Sunshine Control
-        48000  # Sunshine Audio
-        48010  # Sunshine Mic (if needed)
-      ];
+      allowedTCPPorts = [ 47989 47984 47990 48010 ];
+      allowedUDPPorts = [ 47998 47999 48000 48010 ];
     };
   };
 }
-

@@ -56,6 +56,7 @@
     dnsutils
     lsof
     libva-utils
+    bc
 
     ffmpeg
     wget
