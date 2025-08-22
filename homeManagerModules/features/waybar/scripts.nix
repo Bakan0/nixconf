@@ -87,33 +87,46 @@
   '';
   
   waybar-volume-toggle = pkgs.writeShellScriptBin "waybar-volume-toggle" ''
-    # Auto-unmute hardware controls first (prevent ALSA stuck muting)
-    amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
-    amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
-    amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
-  
-    # Then toggle the WirePlumber software mute
-    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+    # Get current mute state first
+    current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+    
+    if echo "$current_volume" | grep -q "MUTED"; then
+      # If currently muted, unmute both PipeWire and ALSA
+      wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
+      # Fix ALSA hardware controls that might be stuck muted
+      amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
+      amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
+      amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+    else
+      # If currently unmuted, just mute PipeWire (leave ALSA unmuted)
+      wpctl set-mute @DEFAULT_AUDIO_SINK@ 1
+    fi
   '';
   
   waybar-volume-up = pkgs.writeShellScriptBin "waybar-volume-up" ''
-    # Keep hardware controls unmuted (prevent ALSA stuck muting)
-    amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
-    amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
-    amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
-  
-    # Then increase volume using WirePlumber (don't interfere with software mute state)
+    # Only increase volume, don't change mute state
+    current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+    
+    # Only fix ALSA hardware controls if PipeWire is not muted
+    if ! echo "$current_volume" | grep -q "MUTED"; then
+      amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
+      amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
+      amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+    fi
   '';
   
   waybar-volume-down = pkgs.writeShellScriptBin "waybar-volume-down" ''
-    # Keep hardware controls unmuted (prevent ALSA stuck muting)
-    amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
-    amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
-    amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
-  
-    # Then decrease volume using WirePlumber (don't interfere with software mute state)
+    # Only decrease volume, don't change mute state
+    current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+    
+    # Only fix ALSA hardware controls if PipeWire is not muted
+    if ! echo "$current_volume" | grep -q "MUTED"; then
+      amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
+      amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
+      amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+    fi
   '';
 
   waybar-volume-cycle = pkgs.writeShellScriptBin "waybar-volume-cycle" ''
