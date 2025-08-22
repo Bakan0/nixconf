@@ -144,3 +144,5 @@ bat /path/to/file | wl-copy
 - Ask clarifying questions before suggesting code changes
 - Keep commit messages clean and focused on actual changes
 - Treat collaboration as editing/debugging assistance, not co-authoring
+- Always run `git add -A` before committing, especially when creating new files
+- Remember that `nh os switch` and `sudo` commands cannot be run by Claude
