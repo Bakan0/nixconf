@@ -22,11 +22,11 @@
     tpm2.enable = true;
     amd.enable = true;
     asus.enable = true;
-    hardware.rtl8852be.enable = true;
+    # hardware.rtl8852be.enable = true;
     immersed.enable = true;
     sunshine = {
       enable = true;
-      autoToggleLaptop = true;
+      # autoToggleLaptop = true;
     };
     virtualisation = {
       username = "emet";
@@ -149,6 +149,7 @@
     acpi
     brightnessctl
     colorls
+    claude-code
     curl
     dunst
     eddie
@@ -158,6 +159,7 @@
     freerdp
     fwupd
     geany
+    gh
     git
     glxinfo
     hyprland
@@ -185,6 +187,7 @@
     wl-clipboard
     xorg.xorgserver
     xwayland
+    vscode
     zed-editor
     zip
   ];

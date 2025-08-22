@@ -74,13 +74,15 @@
   '';
 
   waybar-volume = pkgs.writeShellScriptBin "waybar-volume" ''
-    volume=$(pamixer --get-volume)
-    is_muted=$(pamixer --get-mute)
+    # Get volume info for default audio sink using WirePlumber
+    volume_info=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+    volume_percent=$(echo "$volume_info" | awk '{printf "%.0f", $2 * 100}')
     
-    if [ "$is_muted" = "true" ]; then
-      echo "󰖁 $volume%"
+    # Check mute state and display with working Nerd Font icons
+    if echo "$volume_info" | grep -q "MUTED"; then
+      echo "󰖁 $volume_percent%"  # Volume muted
     else
-      echo "󰕾 $volume%"
+      echo "󰕾 $volume_percent%"  # Volume unmuted
     fi
   '';
   
@@ -90,28 +92,28 @@
     amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
     amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
   
-    # Then toggle the software mute
-    pamixer --toggle-mute
+    # Then toggle the WirePlumber software mute
+    wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
   '';
   
   waybar-volume-up = pkgs.writeShellScriptBin "waybar-volume-up" ''
-    # Auto-unmute hardware controls first
+    # Keep hardware controls unmuted (prevent ALSA stuck muting)
     amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
     amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
     amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
   
-    # Then increase volume
-    pamixer --increase 5
+    # Then increase volume using WirePlumber (don't interfere with software mute state)
+    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
   '';
   
   waybar-volume-down = pkgs.writeShellScriptBin "waybar-volume-down" ''
-    # Auto-unmute hardware controls first
+    # Keep hardware controls unmuted (prevent ALSA stuck muting)
     amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
     amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
     amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
   
-    # Then decrease volume
-    pamixer --decrease 5
+    # Then decrease volume using WirePlumber (don't interfere with software mute state)
+    wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
   '';
 
   waybar-volume-cycle = pkgs.writeShellScriptBin "waybar-volume-cycle" ''
