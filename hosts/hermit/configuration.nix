@@ -10,7 +10,8 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
-    sysadmin-claude.enable = true;
+    sysadmin.enable = true;
+      sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
     greetd.enable = true;
     hyprland.enable = true;
     stylix.enable = true;

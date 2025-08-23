@@ -9,8 +9,7 @@
   myHomeManager.git.enable = lib.mkDefault true;
   
   home.packages = with pkgs; [
-    # Claude and AI tools
-    claude-code
+    # Claude and AI tools (claude-code removed - using VS Code marketplace version)
     
     # Git and version control
     gh
