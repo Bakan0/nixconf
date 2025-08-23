@@ -129,13 +129,24 @@
     };
   };
 
-  # Make printer service non-blocking during boot
+  # Make printer services non-blocking during boot
   systemd.services.cups-browsed = {
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     serviceConfig = {
       Restart = "on-failure";
       RestartSec = "30s";
+    };
+  };
+
+  # Make ensure-printers service non-blocking and optional
+  systemd.services.ensure-printers = {
+    wantedBy = lib.mkForce [ ];
+    after = [ "cups.service" "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      TimeoutStartSec = "10s";
+      Restart = "no";
     };
   };
 

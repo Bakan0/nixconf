@@ -65,14 +65,12 @@
     acpi
     brightnessctl
     colorls
-    curl
     dunst
     fastfetch
     flatpak
     font-awesome
     freerdp
     fwupd
-    git
     hyprland
     kitty
     libnotify

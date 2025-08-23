@@ -49,9 +49,16 @@ in {
       users =
         builtins.mapAttrs (name: user: {...}: {
           imports = [
-            (import user.userConfig)
             outputs.homeManagerModules.default
           ];
+          
+          # Auto-enable matching profile if it exists
+          myHomeManager.profiles.${name}.enable = lib.mkDefault true;
+          
+          # Set username, homeDirectory and inherit stateVersion from system
+          home.username = name;
+          home.homeDirectory = "/home/${name}";
+          home.stateVersion = config.system.stateVersion;
         })
         (config.myNixOS.home-users);
     };

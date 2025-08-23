@@ -136,6 +136,7 @@ bat /path/to/file | wl-copy
 - Breaking modular structure
 - Ignoring Stylix theming compatibility
 - Home-manager user configs for system-wide features
+- Using `lib.mkForce` (99% of the time it's unnecessary and indicates poor design)
 - Adding "Generated with Claude Code" or "Co-Authored-By: Claude" to commit messages
 
 **✅ REQUIRED:**

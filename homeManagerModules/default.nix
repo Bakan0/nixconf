@@ -32,9 +32,22 @@
       configExtension = config: (lib.mkIf cfg.bundles.${name}.enable config);
     })
     (myLib.filesIn ./bundles);
+
+  # Taking all profiles in ./profiles and making them available
+  profiles =
+    myLib.extendModules
+    (name: {
+      extraOptions = {
+        myHomeManager.profiles.${name}.enable = lib.mkEnableOption "enable ${name} user profile";
+      };
+
+      configExtension = config: (lib.mkIf cfg.profiles.${name}.enable config);
+    })
+    (myLib.filesIn ./profiles);
 in {
   imports =
     []
     ++ features
-    ++ bundles;
+    ++ bundles
+    ++ profiles;
 }

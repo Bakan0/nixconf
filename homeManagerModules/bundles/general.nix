@@ -28,7 +28,6 @@
 
     pistol
     file
-    git
     p7zip
     unzip
     zip
