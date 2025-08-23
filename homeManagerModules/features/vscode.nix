@@ -25,7 +25,40 @@
       # Terminal settings (Linux + Kitty)
       "terminal.integrated.fontFamily" = lib.mkDefault "'JetBrainsMono Nerd Font Mono'";
       "terminal.external.linuxExec" = lib.mkDefault "kitty";
-      "terminal.integrated.defaultProfile.linux" = lib.mkDefault "bash";
+      "terminal.integrated.defaultProfile.linux" = lib.mkDefault "fish";
+      
+      # Vim extension settings
+      "vim.leader" = lib.mkDefault "<space>";
+      "vim.useSystemClipboard" = lib.mkDefault true;
+      "vim.hlsearch" = lib.mkDefault true;
+      "vim.insertModeKeyBindings" = [
+        {
+          "before" = ["j" "k"];
+          "after" = ["<Esc>"];
+        }
+      ];
+      "vim.normalModeKeyBindingsNonRecursive" = [
+        {
+          "before" = ["<leader>" "w"];
+          "commands" = ["workbench.action.files.save"];
+        }
+        {
+          "before" = ["<C-h>"];
+          "commands" = ["workbench.action.navigateLeft"];
+        }
+        {
+          "before" = ["<C-l>"];
+          "commands" = ["workbench.action.navigateRight"];
+        }
+        {
+          "before" = ["<C-k>"];
+          "commands" = ["workbench.action.navigateUp"];
+        }
+        {
+          "before" = ["<C-j>"];
+          "commands" = ["workbench.action.navigateDown"];
+        }
+      ];
       
       # Git settings
       "git.enableSmartCommit" = lib.mkDefault true;

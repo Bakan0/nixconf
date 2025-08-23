@@ -171,6 +171,9 @@
 
   programs.dconf.enable = true;
 
+  # Prevent systemd-boot permission issues on FAT32 boot partitions
+  system.activationScripts.fix-boot-perms.text = "chmod 755 /boot; chmod 600 /boot/loader/random-seed 2>/dev/null || true";
+
   systemd = {
     user.services.polkit-gnome-authentication-agent-1 = {
       description = "polkit-gnome-authentication-agent-1";

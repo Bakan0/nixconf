@@ -4,11 +4,9 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      "${builtins.fetchGit { url = "https://github.com/NixOS/nixos-hardware.git"; }}/apple/t2"
+      inputs.nixos-hardware.nixosModules.apple-t2
     ];
 
-  hardware.apple-t2.enableAppleSetOsLoader = true;
-  hardware.apple-t2.enableTinyDfr = false;
   hardware.apple.touchBar.enable = true;
 
   myNixOS = {
@@ -40,7 +38,7 @@
 
   networking = {
     hostName = "dazzle";
-    hostId = "dazz1ing";
+    hostId = "da221e01";
     networkmanager.enable = true;
   };
 

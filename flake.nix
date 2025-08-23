@@ -39,6 +39,8 @@
 
     persist-retro.url = "github:Geometer1729/persist-retro";
 
+    nixos-hardware.url = "github:NixOS/nixos-hardware";
+
     #  woomer = {
     #    url = "github:coffeeispower/woomer";
     #    inputs.nixpkgs.follows = "nixpkgs";
