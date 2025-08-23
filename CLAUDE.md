@@ -35,6 +35,14 @@ Each host directory contains:
 nh os switch ~/nixconf/. -- --show-trace
 ```
 
+**⚠️ CRITICAL: Always stage new files before rebuilding:**
+```fish
+# Before any rebuild, if you created/renamed files, run:
+git add -A
+# Then rebuild:
+nh os switch ~/nixconf/. -- --show-trace
+```
+
 **Initial system build (for new machines):**
 ```fish
 sudo nixos-rebuild switch --flake ~/nixconf#HOSTNAME --show-trace --option extra-experimental-features "nix-command flakes"
@@ -147,3 +155,6 @@ bat /path/to/file | wl-copy
 - Treat collaboration as editing/debugging assistance, not co-authoring
 - Always run `git add -A` before committing, especially when creating new files
 - Remember that `nh os switch` and `sudo` commands cannot be run by Claude
+- **ALWAYS prefer "correct" and best practice approaches over quick fixes or patches**
+- **Avoid shortcuts, workarounds, or temporary solutions - implement proper, maintainable solutions**
+- **Use proper NixOS patterns and configuration methods (e.g., `${config.system.build.environment.systemPath}` instead of hardcoded paths)**

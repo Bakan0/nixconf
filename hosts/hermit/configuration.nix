@@ -10,7 +10,7 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
-    sysadmin-readonly.enable = true;
+    sysadmin-claude.enable = true;
     greetd.enable = true;
     hyprland.enable = true;
     stylix.enable = true;

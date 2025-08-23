@@ -90,42 +90,76 @@
     # Get current mute state first
     current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
     
+    # Find the ALSA card with Master and Speaker controls (more robust than hardcoded -c 2)
+    audio_card=""
+    for card in /proc/asound/card*; do
+      if [ -d "$card" ]; then
+        card_num=$(basename "$card" | sed 's/card//')
+        if amixer -c "$card_num" sget Master >/dev/null 2>&1 && amixer -c "$card_num" sget Speaker >/dev/null 2>&1; then
+          audio_card="$card_num"
+          break
+        fi
+      fi
+    done
+    
     if echo "$current_volume" | grep -q "MUTED"; then
       # If currently muted, unmute both PipeWire and ALSA
       wpctl set-mute @DEFAULT_AUDIO_SINK@ 0
-      # Fix ALSA hardware controls that might be stuck muted
-      amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
-      amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
-      amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+      # CRITICAL: Also unmute ALSA hardware controls that get stuck
+      if [ -n "$audio_card" ]; then
+        amixer -c "$audio_card" sset Master unmute >/dev/null 2>&1 || true
+        amixer -c "$audio_card" sset Speaker unmute >/dev/null 2>&1 || true
+        amixer -c "$audio_card" sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+      fi
     else
-      # If currently unmuted, just mute PipeWire (leave ALSA unmuted)
+      # If currently unmuted, mute PipeWire only (keep ALSA unmuted for next toggle)
       wpctl set-mute @DEFAULT_AUDIO_SINK@ 1
     fi
   '';
   
   waybar-volume-up = pkgs.writeShellScriptBin "waybar-volume-up" ''
-    # Only increase volume, don't change mute state
-    current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+    # Increase volume and ensure ALSA hardware isn't stuck muted
     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
     
-    # Only fix ALSA hardware controls if PipeWire is not muted
+    # Critical: Fix ALSA hardware controls that get stuck muted independently
+    # Only when PipeWire is not intentionally muted
+    current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
     if ! echo "$current_volume" | grep -q "MUTED"; then
-      amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
-      amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
-      amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+      # Find the right ALSA card dynamically (robust across reboots)
+      for card in /proc/asound/card*; do
+        if [ -d "$card" ]; then
+          card_num=$(basename "$card" | sed 's/card//')
+          if amixer -c "$card_num" sget Master >/dev/null 2>&1; then
+            amixer -c "$card_num" sset Master unmute >/dev/null 2>&1 || true
+            amixer -c "$card_num" sset Speaker unmute >/dev/null 2>&1 || true
+            amixer -c "$card_num" sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+            break
+          fi
+        fi
+      done
     fi
   '';
   
   waybar-volume-down = pkgs.writeShellScriptBin "waybar-volume-down" ''
-    # Only decrease volume, don't change mute state
-    current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
+    # Decrease volume and ensure ALSA hardware isn't stuck muted
     wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
     
-    # Only fix ALSA hardware controls if PipeWire is not muted
+    # Critical: Fix ALSA hardware controls that get stuck muted independently  
+    # Only when PipeWire is not intentionally muted
+    current_volume=$(wpctl get-volume @DEFAULT_AUDIO_SINK@)
     if ! echo "$current_volume" | grep -q "MUTED"; then
-      amixer -c 2 sset Master unmute >/dev/null 2>&1 || true
-      amixer -c 2 sset Speaker unmute >/dev/null 2>&1 || true
-      amixer -c 2 sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+      # Find the right ALSA card dynamically (robust across reboots)
+      for card in /proc/asound/card*; do
+        if [ -d "$card" ]; then
+          card_num=$(basename "$card" | sed 's/card//')
+          if amixer -c "$card_num" sget Master >/dev/null 2>&1; then
+            amixer -c "$card_num" sset Master unmute >/dev/null 2>&1 || true
+            amixer -c "$card_num" sset Speaker unmute >/dev/null 2>&1 || true
+            amixer -c "$card_num" sset "Auto-Mute Mode" Disabled >/dev/null 2>&1 || true
+            break
+          fi
+        fi
+      done
     fi
   '';
 
