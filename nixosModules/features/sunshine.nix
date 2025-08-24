@@ -39,6 +39,22 @@ lan_encryption_mode = 0 # BE SURE ON OWN LOCAL NETWORK
 qp = 28
 EOF
 
+    # Create clean apps.json with only Desktop (removes useless Low Res Desktop with xrandr)
+    chmod +w ~/.config/sunshine/apps.json 2>/dev/null || true
+    cat > ~/.config/sunshine/apps.json << 'EOF'
+{
+  "env": {
+    "PATH": "$(PATH):$(HOME)/.local/bin"
+  },
+  "apps": [
+    {
+      "name": "Desktop",
+      "image-path": "desktop.png"
+    }
+  ]
+}
+EOF
+
     echo "Starting Sunshine with discrete GPU and optimized encoding settings..."
 
     ${pkgs.sunshine}/bin/sunshine &
@@ -48,9 +64,23 @@ EOF
     echo "Sunshine started with AV1 enabled, HEVC disabled, and local hotspot optimizations."
     echo "Web interface: https://localhost:47990"
 
+    # Create temporary Avahi service for 3 minutes to allow Quest discovery
+    echo "Creating temporary mDNS advertisement for 3 minutes..."
+    
+    avahi-publish-service -s "$(hostname) Sunshine" _nvstream._tcp 47989 \
+      "uuid=$(cat /proc/sys/kernel/random/uuid | tr -d '-')" \
+      "version=7" \
+      "localname=$(hostname)" &
+    
+    AVAHI_PID=$!
+    
+    # Remove service advertisement after 3 minutes
+    (sleep 180 && kill $AVAHI_PID 2>/dev/null && echo "mDNS advertisement removed") &
+
     cleanup() {
       echo "Cleaning up..."
       kill $SUNSHINE_PID 2>/dev/null || true
+      kill $AVAHI_PID 2>/dev/null || true
 
       # Step 3: Restart kanshi to restore laptop display and handle configuration
       echo "Restarting kanshi to restore display configuration..."
@@ -62,6 +92,7 @@ EOF
       # Step 4: Destroy headless display
       ${pkgs.hyprland}/bin/hyprctl output destroy sunshine-ultrawide >/dev/null 2>&1 || true
       rm -f ~/.config/sunshine/sunshine.conf
+      rm -f ~/.config/sunshine/apps.json
 
       echo "Sunshine streaming stopped and kanshi restarted."
     }

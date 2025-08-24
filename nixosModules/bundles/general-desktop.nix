@@ -109,7 +109,16 @@
     avahi = {
       enable = true;
       nssmdns4 = true;
+      nssmdns6 = true;
       openFirewall = true;
+      publish = {
+        enable = true;
+        addresses = true;
+        domain = true;
+        hinfo = true;
+        userServices = true;  # This allows user applications to publish services
+        workstation = true;
+      };
     };
 
     upower.enable = true;
