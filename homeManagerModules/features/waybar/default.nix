@@ -74,9 +74,31 @@
     };
 
     clock = {
-      format = "󰃰 {:%A, %B %d, %Y (%R)}";
+      format = "󰃰 {:%A, %B %d, %Y (%H:%M:%S)}";
       format-alt = "󰥔 {:%H:%M}";
       tooltip-format = "<span size='9pt' font='WenQuanYi Zen Hei Mono'>{calendar}</span>";
+      interval = 1;
+      actions = {
+        on-click-backward = "tz_down";
+        on-click-forward = "tz_up";
+        on-click-right = "mode";
+        on-scroll-down = "shift_down";
+        on-scroll-up = "shift_up";
+      };
+      calendar = {
+        mode = "year";
+        mode-mon-col = 3;
+        on-click-right = "mode";
+        on-scroll = 1;
+        weeks-pos = "right";
+        format = {
+          days = "<span color='#ecc6d9'><b>{}</b></span>";
+          months = "<span color='#ffead3'><b>{}</b></span>";
+          today = "<span color='#ff6699'><b><u>{}</u></b></span>";
+          weekdays = "<span color='#ffcc66'><b>{}</b></span>";
+          weeks = "<span color='#99ffdd'><b>W{}</b></span>";
+        };
+      };
     };
 
     "custom/battery-manager" = {

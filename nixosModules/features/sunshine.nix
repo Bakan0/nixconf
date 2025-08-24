@@ -27,16 +27,35 @@ let
     mkdir -p ~/.config/sunshine
     cat > ~/.config/sunshine/sunshine.conf << 'EOF'
 output_name = 1
-av1_mode = 2
-hevc_mode = 1
+# DEBUG: If AV1 not working despite av1_mode=0, check client codec preference
+# (e.g., Moonlight: set to "prefer AV1" not "automatic")
+# VA-API encoder settings 
 encoder = vaapi
 vaapi_strict_rc_buffer = enabled
 
-# local phone hotspot optimizations
+# AMD AMF encoder settings (not available - missing dependencies)
+# encoder = amdvce
+# amd_usage = transcoding
+# amd_rc = vbr_peak
+# amd_quality = quality
+# amd_vbaq = enabled
+
+
+${if cfg.lowPower then ''
+# Conservative settings for battery/thermal constrained environments
 max_bitrate = 25000
 fec_percentage = 20
-lan_encryption_mode = 0 # BE SURE ON OWN LOCAL NETWORK
 qp = 28
+'' else ''
+# High-performance settings optimized for modern hardware (OnePlus 12 Pro / Snapdragon 8 Gen 3)
+# Text quality optimization: lower QP for better quality
+max_bitrate = 80000
+min_bitrate = 35000
+fec_percentage = 25
+qp = 8
+rc_mode = vbr
+coder = cabac
+''}
 EOF
 
     # Create clean apps.json with only Desktop (removes useless Low Res Desktop with xrandr)
@@ -107,6 +126,12 @@ in {
       type = types.bool;
       default = false;
       description = "Automatically toggle laptop display off during streaming and back on during cleanup";
+    };
+    
+    lowPower = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Enable conservative settings for battery/thermal constrained environments";
     };
   };
 

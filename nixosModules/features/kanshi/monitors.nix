@@ -49,7 +49,7 @@ in {
     };
     sunshineScale = mkOption {
       type = types.float;
-      default = 1.066667;
+      default = 1.0;
       description = "Sunshine scale factor";
     };
   };
