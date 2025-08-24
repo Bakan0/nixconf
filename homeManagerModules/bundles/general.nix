@@ -69,6 +69,6 @@
   ];
 
   home.sessionVariables = {
-    FLAKE = "${config.home.homeDirectory}/nixconf";
+    NH_FLAKE = "${config.home.homeDirectory}/nixconf";
   };
 }

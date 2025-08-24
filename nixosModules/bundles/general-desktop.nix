@@ -10,6 +10,16 @@
 
   # Nix experimental features (correct location)
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  
+  # Automatic generation cleanup - keep max 17 generations  
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 7d";
+  };
+  
+  # Automatically clean up old boot entries (keep 17 generations)
+  boot.loader.systemd-boot.configurationLimit = 17;
 
   myNixOS.sddm.enable = lib.mkDefault false;
   myNixOS.greetd.enable = lib.mkDefault false;
@@ -170,9 +180,6 @@
   security.polkit.enable = true;
 
   programs.dconf.enable = true;
-
-  # Prevent systemd-boot permission issues on FAT32 boot partitions
-  system.activationScripts.fix-boot-perms.text = "chmod 755 /boot; chmod 600 /boot/loader/random-seed 2>/dev/null || true";
 
   systemd = {
     user.services.polkit-gnome-authentication-agent-1 = {

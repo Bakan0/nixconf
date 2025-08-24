@@ -24,7 +24,6 @@
     tpm2.enable = true;
     amd.enable = true;
     asus.enable = true;
-    hardware.rtl8852be.enable = true;
     immersed.enable = true;
     sunshine = {
       enable = true;
@@ -191,12 +190,6 @@
   ];
 
   environment.variables.EDITOR = "nvim";
-
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
 
   nix.optimise.automatic = true;
   nix.optimise.dates = [ "01:30" ];
