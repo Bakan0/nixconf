@@ -29,16 +29,19 @@ let
 output_name = 1
 # DEBUG: If AV1 not working despite av1_mode=0, check client codec preference
 # (e.g., Moonlight: set to "prefer AV1" not "automatic")
-# VA-API encoder settings 
+${if config.myNixOS.amd.enable or false then ''
+# AMD AMF encoder settings (hardware-accelerated with better quality control)
+encoder = amdvce
+amd_usage = transcoding
+amd_rc = vbr_peak
+amd_quality = quality
+amd_vbaq = enabled
+'' else ''
+# VA-API encoder settings (fallback for non-AMD systems)
 encoder = vaapi
 vaapi_strict_rc_buffer = enabled
+''}
 
-# AMD AMF encoder settings (not available - missing dependencies)
-# encoder = amdvce
-# amd_usage = transcoding
-# amd_rc = vbr_peak
-# amd_quality = quality
-# amd_vbaq = enabled
 
 
 ${if cfg.lowPower then ''
@@ -50,11 +53,8 @@ qp = 28
 # High-performance settings optimized for modern hardware (OnePlus 12 Pro / Snapdragon 8 Gen 3)
 # Text quality optimization: lower QP for better quality
 max_bitrate = 80000
-min_bitrate = 35000
 fec_percentage = 25
 qp = 8
-rc_mode = vbr
-coder = cabac
 ''}
 EOF
 

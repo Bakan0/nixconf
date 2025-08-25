@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 with lib;
 let cfg = config.myNixOS.amd;
 in {
@@ -61,13 +61,14 @@ in {
       "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"
     ];
 
-    # AMD monitoring tools
+    # AMD monitoring and media tools
     environment.systemPackages = with pkgs; [
       radeontop
       rocmPackages.rocminfo
       mesa-demos
       vulkan-tools
       glxinfo
+      amf  # AMD's Advanced Media Framework for hardware encoding
     ];
   };
 }

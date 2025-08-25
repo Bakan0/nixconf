@@ -151,10 +151,27 @@ bat /path/to/file | wl-copy
 - Ensure Hyprland/Wayland compatibility for all GUI applications
 - Build upon existing solutions in conversation context
 - Ask clarifying questions before suggesting code changes
-- Keep commit messages clean and focused on actual changes
+- **Follow Conventional Commits specification for all commit messages**
 - Treat collaboration as editing/debugging assistance, not co-authoring
 - Always run `git add -A` before committing, especially when creating new files
 - Remember that `nh os switch` and `sudo` commands cannot be run by Claude
 - **ALWAYS prefer "correct" and best practice approaches over quick fixes or patches**
 - **Avoid shortcuts, workarounds, or temporary solutions - implement proper, maintainable solutions**
 - **Use proper NixOS patterns and configuration methods (e.g., `${config.system.build.environment.systemPath}` instead of hardcoded paths)**
+
+### Git Commit Standards
+
+**Conventional Commits (MANDATORY):**
+- **Format:** `<type>[optional scope]: <description>`
+- **Types:** `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`, `build`, `ci`
+- **Scopes:** `hyprland`, `stylix`, `home`, `system`, `flake`, `modules`, `hosts`
+- **Breaking changes:** Use `!` after type/scope
+
+**NixOS-Specific Examples:**
+```
+feat(hyprland): add new keybinding configuration
+fix(stylix): resolve theme loading for terminal
+refactor(modules): restructure nixosModules organization  
+chore(flake): update input dependencies
+docs: update module development guidelines
+```

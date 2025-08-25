@@ -1,4 +1,10 @@
 { pkgs, lib, ... }: {
+  # Runtime dependencies for SonarLint extension
+  home.packages = with pkgs; [
+    jdk21    # LTS Java for SonarLint language server (requires Java 17+)
+    nodejs   # Node.js for JavaScript/TypeScript/JSON analysis (requires 18.20.0+)
+  ];
+
   programs.vscode = {
     enable = true;
     extensions = with pkgs.vscode-extensions; [
@@ -7,6 +13,12 @@
       
       # Nix support  
       bbenoist.nix
+      
+      # Code quality and linting
+      sonarsource.sonarlint-vscode
+      
+      # YAML support with yamllint
+      redhat.vscode-yaml
       
       # Note: Using official Anthropic Claude Code extension (installed manually)
     ];
@@ -67,6 +79,10 @@
       # Nix language support
       "nix.enableLanguageServer" = lib.mkDefault true;
       "nix.serverPath" = lib.mkDefault "nil";
+      
+      # SonarLint runtime configuration
+      "sonarlint.ls.javaHome" = lib.mkDefault "${pkgs.jdk21}/lib/openjdk";
+      "sonarlint.pathToNodeExecutable" = lib.mkDefault "${pkgs.nodejs}/bin/node";
       
       # Privacy and telemetry settings - DISABLE ALL THE THINGS!
       "telemetry.telemetryLevel" = "off";
