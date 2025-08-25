@@ -46,6 +46,7 @@
       flake = false;
     };
 
+
     #  woomer = {
     #    url = "github:coffeeispower/woomer";
     #    inputs.nixpkgs.follows = "nixpkgs";
@@ -79,8 +80,8 @@
 
         "emet@acc01ade" = mkHome "x86_64-linux" ./hosts/acc01ade/home.nix;
         "emet@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;
-        "jvargas@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;
-        "jvargas@petalouda" = mkHome "x86_64-linux" ./hosts/petalouda/home.nix;
+        "joelle@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;
+        "joelle@petalouda" = mkHome "x86_64-linux" ./hosts/petalouda/home.nix;
         "emet@nighthawk" = mkHome "x86_64-linux" ./hosts/nighthawk/home.nix;
         "emet@tyr" = mkHome "x86_64-linux" ./hosts/tyr/home.nix;
         "emet@dazzle" = mkHome "x86_64-linux" ./hosts/dazzle/home.nix;

@@ -2,17 +2,15 @@
   pkgs,
   config,
   lib,
+  inputs,
   ...
 }: {
   # Enable databending/technical tools features
   myHomeManager.vscode.enable = lib.mkDefault true;
   myHomeManager.git.enable = lib.mkDefault true;
+  myHomeManager.claude-code-latest.enable = lib.mkDefault true;
   
   home.packages = with pkgs; [
-    # Claude and AI tools (claude-code readded - using VS Code marketplace version requires it installed...)
-    (if config.myNixOS.claude-code-latest.enable or false 
-     then claude-code-latest 
-     else claude-code)
     
     # Git and version control
     gh

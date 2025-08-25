@@ -31,7 +31,7 @@
 
     # Features
     fish.enable = false;  # Explicitly disable fish
-    zsh.enable = true;
+    zsh.enable = false;   # Disable zsh - not used
     kitty.enable = true;
     firefox.enable = true;
     hyprland.enable = true;
@@ -43,7 +43,7 @@
 
     nix-index = {
       enable = true;
-      enableZshIntegration = true;
+      enableZshIntegration = false;
     };
   };
 }
