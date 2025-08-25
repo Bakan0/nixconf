@@ -107,7 +107,7 @@ in {
 - **NixOS**: unstable branch
 - **Window Manager**: Hyprland (Wayland) - ensure all configs are Wayland-compatible
 - **Theming**: Stylix with base16 colors (system-wide theming)
-- **Shell**: Fish (use fish syntax exclusively, never bash/zsh)
+- **Shell**: Fish for interactive use (scripts/configs use appropriate system defaults)
 
 **Key Features:**
 - **Impermanence**: System designed for ephemeral root filesystem
@@ -140,7 +140,7 @@ bat /path/to/file | wl-copy
 ### Critical Rules
 
 **❌ FORBIDDEN:**
-- Using bash/zsh syntax (always use fish)
+- Using bash/zsh syntax for interactive commands (Fish preferred for manual operations)
 - Breaking modular structure
 - Ignoring Stylix theming compatibility
 - Home-manager user configs for system-wide features
