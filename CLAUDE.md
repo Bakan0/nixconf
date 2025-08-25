@@ -158,6 +158,7 @@ bat /path/to/file | wl-copy
 - **ALWAYS prefer "correct" and best practice approaches over quick fixes or patches**
 - **Avoid shortcuts, workarounds, or temporary solutions - implement proper, maintainable solutions**
 - **Use proper NixOS patterns and configuration methods (e.g., `${config.system.build.environment.systemPath}` instead of hardcoded paths)**
+- **ALWAYS add final newline to ALL configuration files (required by POSIX and linters)**
 
 ### Git Commit Standards
 

@@ -48,7 +48,6 @@ in {
     nxd
     nxs
     nxr
-    nil
-    alejandra
+    nil           # Nix LSP server (for IDE integration)
   ];
 }
