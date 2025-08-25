@@ -74,13 +74,35 @@ EOF
 }
 EOF
 
-    echo "Starting Sunshine with discrete GPU and optimized encoding settings..."
+    echo "Starting Sunshine with optimal GPU and encoding settings..."
 
+    # Auto-detect best GPU for hardware encoding (works on any hardware)
+    DISCRETE_PRIME=""
+    for i in 0 1 2 3; do
+      if DRI_PRIME=$i ${pkgs.glxinfo}/bin/glxinfo >/dev/null 2>&1; then
+        renderer=$(DRI_PRIME=$i ${pkgs.glxinfo}/bin/glxinfo 2>/dev/null | grep "OpenGL renderer" | cut -d: -f2 | xargs)
+        # Check if this looks like discrete GPU (AMD RX/Radeon, NVIDIA GTX/RTX, Intel Arc)
+        if echo "$renderer" | grep -qE "(RX [67][0-9][0-9][0-9]|GTX [1-4][0-9][0-9][0-9]|RTX [2-4][0-9][0-9][0-9]|Arc A[0-9]|Navi [12][0-9])"; then
+          DISCRETE_PRIME=$i
+          echo "Detected discrete GPU: $renderer (DRI_PRIME=$i)"
+          break
+        fi
+      fi
+    done
+
+    if [ -n "$DISCRETE_PRIME" ]; then
+      export DRI_PRIME="$DISCRETE_PRIME"
+      export __GLX_VENDOR_LIBRARY_NAME=mesa
+      echo "Using discrete GPU for hardware encoding"
+    else
+      echo "No discrete GPU detected, using system default"
+    fi
+    
     ${pkgs.sunshine}/bin/sunshine &
 
     SUNSHINE_PID=$!
 
-    echo "Sunshine started with AV1 enabled, HEVC disabled, and local hotspot optimizations."
+    echo "Sunshine started with encoding optimizations enabled."
     echo "Web interface: https://localhost:47990"
 
     # Create temporary Avahi service for 3 minutes to allow Quest discovery

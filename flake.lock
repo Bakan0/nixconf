@@ -152,6 +152,22 @@
         "type": "github"
       }
     },
+    "claude-code": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1756087084,
+        "narHash": "sha256-XUMp3NrZq3e+0q8EYE9l3JO7GNJs7nI1gnNfOrMUh0I=",
+        "owner": "anthropics",
+        "repo": "claude-code",
+        "rev": "cc09d58e8eb79c93935bcdf1d56e8f90f1850723",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "claude-code",
+        "type": "github"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1751562746,
@@ -1282,6 +1298,7 @@
     },
     "root": {
       "inputs": {
+        "claude-code": "claude-code",
         "disko": "disko",
         "firefox-addons": "firefox-addons",
         "home-manager": "home-manager",

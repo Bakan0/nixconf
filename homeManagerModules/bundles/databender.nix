@@ -10,7 +10,9 @@
   
   home.packages = with pkgs; [
     # Claude and AI tools (claude-code readded - using VS Code marketplace version requires it installed...)
-    claude-code
+    (if config.myNixOS.claude-code-latest.enable or false 
+     then claude-code-latest 
+     else claude-code)
     
     # Git and version control
     gh

@@ -41,6 +41,11 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
+    claude-code = {
+      url = "github:anthropics/claude-code";
+      flake = false;
+    };
+
     #  woomer = {
     #    url = "github:coffeeispower/woomer";
     #    inputs.nixpkgs.follows = "nixpkgs";

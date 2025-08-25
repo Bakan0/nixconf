@@ -24,6 +24,7 @@
     tpm2.enable = true;
     amd.enable = true;
     asus.enable = true;
+    claude-code-latest.enable = true;
     immersed.enable = true;
     sunshine = {
       enable = true;
