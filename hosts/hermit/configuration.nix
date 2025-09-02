@@ -54,7 +54,7 @@
     };
   };
 
-  time.timeZone = "America/New_York";
+  # time.timeZone = "America/New_York";
 
   networking = {
     hostName = "hermit";
@@ -112,7 +112,9 @@
     ];
     packages = with pkgs; [
        appimage-run
-       azure-cli
+       (azure-cli.overrideAttrs (oldAttrs: {
+         doInstallCheck = false;
+       }))
        azure-cli-extensions.azure-firewall
        # azure-cli-extensions.costmanagement
        azure-cli-extensions.fzf
@@ -129,6 +131,7 @@
        quickemu
        remmina
        sidequest
+       teamviewer
        tree
        yazi
     ];
@@ -175,7 +178,6 @@
     qbittorrent
     rofi-wayland
     swww
-    teamviewer
     tmux
     unzip
     vim
@@ -207,7 +209,7 @@
   services.fwupd.enable = true;
   services.openssh.enable = true;
   services.protonmail-bridge.enable = false;
-  services.teamviewer.enable = true;
+  services.teamviewer.enable = false;
 
   system.stateVersion = "25.05";
 }

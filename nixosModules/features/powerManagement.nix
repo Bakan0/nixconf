@@ -6,7 +6,7 @@ let
 
   # Desktop environment detection
   isGnomeEnabled = config.services.desktopManager.gnome.enable;
-  isKdeEnabled = config.services.xserver.desktopManager.plasma5.enable || config.services.desktopManager.plasma6.enable;
+  isKdeEnabled = config.services.desktopManager.plasma6.enable;
   hasTraditionalDE = isGnomeEnabled || isKdeEnabled;
 in {
   options.myNixOS.powerManagement = {

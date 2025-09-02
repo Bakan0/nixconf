@@ -13,57 +13,131 @@ let
   # Use immersed from the custom package set
   immersedFixed = immersedPkgs.immersed;
 
-  # Monitor setup script - exact match to your working commands
-  setupMonitors = pkgs.writeShellScript "immersed-setup-monitors" ''
-    # Wait for Hyprland to be ready
+  immersedStream = pkgs.writeShellScript "immersed-headless" ''
+    echo "Setting up headless displays for Immersed streaming..."
+
     while ! ${pkgs.hyprland}/bin/hyprctl version >/dev/null 2>&1; do
       sleep 0.1
     done
-  
-    # Add headless outputs (you said "obviously headless first")
+
+    # Step 1: Create headless displays
     ${pkgs.hyprland}/bin/hyprctl output add headless immersed-1
     ${pkgs.hyprland}/bin/hyprctl output add headless immersed-2
-  
-    # Your exact working command
-    ${pkgs.hyprland}/bin/hyprctl keyword monitor "immersed-1,5120x1440@60.00,0x-1440,1"
-    ${pkgs.hyprland}/bin/hyprctl keyword monitor "immersed-2,1920x1080@60.00,5120x-1080,1"
-  '';
 
-  # Monitor cleanup script - restore state
-  cleanupMonitors = pkgs.writeShellScript "immersed-cleanup-monitors" ''
-    if ${pkgs.hyprland}/bin/hyprctl version >/dev/null 2>&1; then
-      # Save current workspace before cleanup
-      CURRENT_WORKSPACE=$(${pkgs.hyprland}/bin/hyprctl activeworkspace -j | ${pkgs.jq}/bin/jq -r '.id')
+    # Step 1.5: Wait for displays to be ready then move workspaces > 1 to immersed-1
+    sleep 2
+    echo "Moving workspaces 2+ to immersed-1 for streaming..."
+    for workspace in {2..10}; do
+      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor "$workspace" immersed-1 2>/dev/null || true
+    done
 
-      # Destroy virtual monitors
+    # Step 2: Toggle laptop display OFF if autoToggleLaptop is enabled
+    ${if cfg.autoToggleLaptop then ''
+      echo "Toggling laptop display off for streaming..."
+      toggle-laptop-display
+    '' else ''
+      echo "Skipping laptop display toggle (autoToggleLaptop disabled)"
+    ''}
+
+    # Wait for display change to complete
+    sleep 3
+
+    # Create or update Immersed config while preserving authentication
+    echo "Configuring hardware encoding settings..."
+    
+    # If config file exists and contains auth data, preserve it and only update GPU settings
+    if [[ -f ~/.ImmersedConf ]] && grep -q "Client=" ~/.ImmersedConf; then
+      echo "Existing authenticated config found, updating GPU settings only..."
+      
+      # Update GPU-related settings in existing config
+      sed -i 's/^DisableNVENC=.*/DisableNVENC=0/' ~/.ImmersedConf
+      sed -i 's/^DisableQuickSync=.*/DisableQuickSync=1/' ~/.ImmersedConf  
+      sed -i 's/^DisableVAAPI=.*/DisableVAAPI=0/' ~/.ImmersedConf
+      sed -i 's/^DisableHEVC=.*/DisableHEVC=0/' ~/.ImmersedConf
+      sed -i 's/^DisableAMF=.*/DisableAMF=1/' ~/.ImmersedConf
+      sed -i 's/^DisableGPUResize=.*/DisableGPUResize=0/' ~/.ImmersedConf
+      
+      # Add missing GPU settings if they don't exist
+      grep -q "^DisableGPUResize=" ~/.ImmersedConf || echo "DisableGPUResize=0" >> ~/.ImmersedConf
+      grep -q "^IgnoreHWCheck=" ~/.ImmersedConf || echo "IgnoreHWCheck=1" >> ~/.ImmersedConf
+      grep -q "^IgnoreCameraCheck=" ~/.ImmersedConf || echo "IgnoreCameraCheck=1" >> ~/.ImmersedConf
+      
+    else
+      echo "Creating new basic config (you'll need to login)..."
+      cat > ~/.ImmersedConf << 'EOF'
+DisableNVENC=0
+DisableQuickSync=1
+DisableVAAPI=0
+DisableHEVC=0
+DisableAMF=1
+DisableGPUResize=0
+EnableAudio=1
+IgnoreHWCheck=1
+IgnoreCameraCheck=1
+EOF
+    fi
+
+    echo "Starting Immersed with virtual displays and hardware encoding..."
+
+    # Don't set DRI_PRIME=1 - it breaks VAAPI driver initialization
+    # Let system use default GPU selection (same approach as Sunshine)
+
+    ${immersedFixed}/bin/immersed &
+
+    IMMERSED_PID=$!
+
+    echo "Immersed started with virtual displays."
+
+    cleanup() {
+      echo "Cleaning up..."
+      kill $IMMERSED_PID 2>/dev/null || true
+
+      # Step 3: Restart kanshi to restore laptop display and handle configuration
+      echo "Restarting kanshi to restore display configuration..."
+      systemctl --user restart kanshi
+
+      # Wait for kanshi to stabilize displays
+      sleep 2
+
+      # Step 4: Destroy headless displays
       ${pkgs.hyprland}/bin/hyprctl output destroy immersed-1 >/dev/null 2>&1 || true
       ${pkgs.hyprland}/bin/hyprctl output destroy immersed-2 >/dev/null 2>&1 || true
 
-      # Return to original workspace and focus laptop
-      ${pkgs.hyprland}/bin/hyprctl dispatch workspace $CURRENT_WORKSPACE >/dev/null 2>&1
-      ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor eDP-1 >/dev/null 2>&1
+      # Keep config file to preserve authentication (don't clean it up)
+      echo "Immersed streaming stopped and kanshi restarted. Config preserved."
+    }
 
-      # Restart waybar to restore proper layout
-      ${pkgs.systemd}/bin/systemctl --user restart waybar >/dev/null 2>&1 || true
-    fi
+    trap cleanup EXIT INT TERM
+    wait $IMMERSED_PID
   '';
 
 in {
+  options.myNixOS.immersed = {
+    autoToggleLaptop = mkOption {
+      type = types.bool;
+      default = false;
+      description = "Automatically toggle laptop display off during streaming and back on during cleanup";
+    };
+  };
+
   config = mkIf cfg.enable {
     # Install Immersed with the fixed gjs dependency + desktop wrapper
     environment.systemPackages = [
       immersedFixed
+      (pkgs.writeShellScriptBin "immersed-headless" ''exec ${immersedStream}'')
       (pkgs.writeTextFile {
-        name = "immersed-with-monitors";
-        destination = "/share/applications/immersed-monitors.desktop";
+        name = "immersed-headless-desktop";
+        destination = "/share/applications/immersed-headless.desktop";
         text = ''
           [Desktop Entry]
-          Name=Immersed (with Virtual Monitors)
-          Exec=${pkgs.bash}/bin/bash -c "${setupMonitors} && ${immersedFixed}/bin/immersed; ${cleanupMonitors}"
+          Name=Immersed (Headless)
+          Exec=${immersedStream}
           Icon=immersed
           Type=Application
-          Categories=Network;
-          Comment=VR workspace with virtual monitors
+          Categories=Network;VR;
+          Comment=Stream headless displays via Immersed
+          Terminal=false
+          StartupNotify=false
         '';
       })
     ];

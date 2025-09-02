@@ -73,7 +73,7 @@ in {
     myHomeManager.workspaces = {
       "1" = {
         monitorId = 1;
-        autostart = [];
+        autostart = [ "kitty --session ~/.config/kitty/sessions/monitoring.conf" ];
       };
       "2" = {
         monitorId = 1;

@@ -52,6 +52,27 @@ in {
       default = 1.0;
       description = "Sunshine scale factor";
     };
+
+    immersedWideResolution = mkOption {
+      type = types.str;
+      default = "5120x1440@60.00";
+      description = "Immersed wide virtual display resolution";
+    };
+    immersedSecondaryResolution = mkOption {
+      type = types.str;  
+      default = "1920x1080@60.00";
+      description = "Immersed secondary virtual display resolution";
+    };
+    immersedWideScale = mkOption {
+      type = types.float;
+      default = 1.0;
+      description = "Immersed wide display scale factor";
+    };
+    immersedSecondaryScale = mkOption {
+      type = types.float;
+      default = 1.0;
+      description = "Immersed secondary display scale factor";
+    };
   };
 
   config = mkIf cfg.enable {
@@ -77,6 +98,12 @@ in {
       profile sunshine-streaming-only {
         output sunshine-ultrawide mode --custom ${cfg.sunshineResolution} position 0,0 scale ${toString cfg.sunshineScale}
         output "${laptopMatch}" disable
+      }
+
+      profile immersed-streaming-with-laptop {
+        output "${laptopMatch}" enable mode ${cfg.laptopResolution} position 0,0
+        output immersed-1 mode --custom ${cfg.immersedWideResolution} position ${toString (calcCenterX cfg.laptopResolution 1.0 cfg.immersedWideResolution cfg.immersedWideScale)},${toString (- (parseLogical cfg.immersedWideResolution cfg.immersedWideScale).height)} scale ${toString cfg.immersedWideScale}
+        output immersed-2 mode --custom ${cfg.immersedSecondaryResolution} position ${toString ((calcCenterX cfg.laptopResolution 1.0 cfg.immersedWideResolution cfg.immersedWideScale) + (calcCenterX cfg.immersedWideResolution cfg.immersedWideScale cfg.immersedSecondaryResolution cfg.immersedSecondaryScale))},${toString (- (parseLogical cfg.immersedWideResolution cfg.immersedWideScale).height - (parseLogical cfg.immersedSecondaryResolution cfg.immersedSecondaryScale).height)} scale ${toString cfg.immersedSecondaryScale}
       }
     '';
   };

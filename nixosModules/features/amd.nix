@@ -61,14 +61,14 @@ in {
       "L+    /opt/rocm/hip   -    -    -     -    ${pkgs.rocmPackages.clr}"
     ];
 
-    # AMD monitoring and media tools
+    # AMD monitoring and hardware encoding tools
     environment.systemPackages = with pkgs; [
       radeontop
       rocmPackages.rocminfo
       mesa-demos
       vulkan-tools
       glxinfo
-      amf  # AMD's Advanced Media Framework for hardware encoding
+      libva-utils        # vainfo for VAAPI debugging
     ];
   };
 }

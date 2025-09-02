@@ -80,6 +80,10 @@ in {
           ${getExe grim} -g "$(${getExe slurp} -w 0)" - \
           | ${wl-clipboard}/bin/wl-copy
         '';
+        "SUPERALT, S".script = ''
+          ${getExe grim} -g "$(${getExe slurp} -w 0)" \
+          "$HOME/Pictures/screenshot-$(date +%Y%m%d-%H%M%S).png"
+        '';
         # SCREEN RECORDING
         "$mainMod, F1".script = ''
           mkdir -p "$HOME/Videos/recorded"

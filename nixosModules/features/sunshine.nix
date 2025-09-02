@@ -13,6 +13,13 @@ let
     # Step 1: Create headless display
     ${pkgs.hyprland}/bin/hyprctl output add headless sunshine-ultrawide
 
+    # Step 1.5: Wait for display to be ready then move workspaces > 1 to headless display
+    sleep 2
+    echo "Moving workspaces 2+ to sunshine-ultrawide for streaming..."
+    for workspace in {2..10}; do
+      ${pkgs.hyprland}/bin/hyprctl dispatch moveworkspacetomonitor "$workspace" sunshine-ultrawide 2>/dev/null || true
+    done
+
     # Step 2: Toggle laptop display OFF if autoToggleLaptop is enabled
     ${if cfg.autoToggleLaptop then ''
       echo "Toggling laptop display off for streaming..."
@@ -27,35 +34,12 @@ let
     mkdir -p ~/.config/sunshine
     cat > ~/.config/sunshine/sunshine.conf << 'EOF'
 output_name = 1
-# DEBUG: If AV1 not working despite av1_mode=0, check client codec preference
-# (e.g., Moonlight: set to "prefer AV1" not "automatic")
-${if config.myNixOS.amd.enable or false then ''
-# AMD AMF encoder settings (hardware-accelerated with better quality control)
-encoder = amdvce
-amd_usage = transcoding
-amd_rc = vbr_peak
-amd_quality = quality
-amd_vbaq = enabled
-'' else ''
-# VA-API encoder settings (fallback for non-AMD systems)
-encoder = vaapi
-vaapi_strict_rc_buffer = enabled
-''}
-
-
-
-${if cfg.lowPower then ''
-# Conservative settings for battery/thermal constrained environments
-max_bitrate = 25000
-fec_percentage = 20
-qp = 28
-'' else ''
-# High-performance settings optimized for modern hardware (OnePlus 12 Pro / Snapdragon 8 Gen 3)
-# Text quality optimization: lower QP for better quality
-max_bitrate = 80000
-fec_percentage = 25
-qp = 8
-''}
+# encoder = vaapi
+# vaapi_strict_rc_buffer = enabled
+# hevc_mode = 3
+# av1_mode = 3
+# max_bitrate = 100000
+# qp = 16
 EOF
 
     # Create clean apps.json with only Desktop (removes useless Low Res Desktop with xrandr)
@@ -74,35 +58,13 @@ EOF
 }
 EOF
 
-    echo "Starting Sunshine with optimal GPU and encoding settings..."
+    echo "Starting Sunshine with discrete GPU and optimized encoding settings..."
 
-    # Auto-detect best GPU for hardware encoding (works on any hardware)
-    DISCRETE_PRIME=""
-    for i in 0 1 2 3; do
-      if DRI_PRIME=$i ${pkgs.glxinfo}/bin/glxinfo >/dev/null 2>&1; then
-        renderer=$(DRI_PRIME=$i ${pkgs.glxinfo}/bin/glxinfo 2>/dev/null | grep "OpenGL renderer" | cut -d: -f2 | xargs)
-        # Check if this looks like discrete GPU (AMD RX/Radeon, NVIDIA GTX/RTX, Intel Arc)
-        if echo "$renderer" | grep -qE "(RX [67][0-9][0-9][0-9]|GTX [1-4][0-9][0-9][0-9]|RTX [2-4][0-9][0-9][0-9]|Arc A[0-9]|Navi [12][0-9])"; then
-          DISCRETE_PRIME=$i
-          echo "Detected discrete GPU: $renderer (DRI_PRIME=$i)"
-          break
-        fi
-      fi
-    done
-
-    if [ -n "$DISCRETE_PRIME" ]; then
-      export DRI_PRIME="$DISCRETE_PRIME"
-      export __GLX_VENDOR_LIBRARY_NAME=mesa
-      echo "Using discrete GPU for hardware encoding"
-    else
-      echo "No discrete GPU detected, using system default"
-    fi
-    
     ${pkgs.sunshine}/bin/sunshine &
 
     SUNSHINE_PID=$!
 
-    echo "Sunshine started with encoding optimizations enabled."
+    echo "Sunshine started with H.264 only (near-lossless), AV1/HEVC disabled, and local hotspot optimizations."
     echo "Web interface: https://localhost:47990"
 
     # Create temporary Avahi service for 3 minutes to allow Quest discovery
@@ -148,12 +110,6 @@ in {
       type = types.bool;
       default = false;
       description = "Automatically toggle laptop display off during streaming and back on during cleanup";
-    };
-    
-    lowPower = mkOption {
-      type = types.bool;
-      default = false;
-      description = "Enable conservative settings for battery/thermal constrained environments";
     };
   };
 
