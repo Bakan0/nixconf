@@ -34,12 +34,7 @@ let
     mkdir -p ~/.config/sunshine
     cat > ~/.config/sunshine/sunshine.conf << 'EOF'
 output_name = 1
-# encoder = vaapi
-# vaapi_strict_rc_buffer = enabled
-# hevc_mode = 3
-# av1_mode = 3
-# max_bitrate = 100000
-# qp = 16
+vaapi_strict_rc_buffer = enabled
 EOF
 
     # Create clean apps.json with only Desktop (removes useless Low Res Desktop with xrandr)

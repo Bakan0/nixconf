@@ -4,14 +4,14 @@ let
   cfg = config.myNixOS.immersed;
 
   # Create a custom package set with gjs tests disabled, only for immersed's dependency chain
-  immersedPkgs = pkgs.extend (final: prev: {
-    gjs = prev.gjs.overrideAttrs (oldAttrs: {
-      doCheck = false;  # Skip flaky GIMarshalling test
-    });
-  });
+  # immersedPkgs = pkgs.extend (final: prev: {
+  #   gjs = prev.gjs.overrideAttrs (oldAttrs: {
+  #     doCheck = false;  # Skip flaky GIMarshalling test
+  #   });
+  # });
 
   # Use immersed from the custom package set
-  immersedFixed = immersedPkgs.immersed;
+  # immersedFixed = immersedPkgs.immersed;
 
   immersedStream = pkgs.writeShellScript "immersed-headless" ''
     echo "Setting up headless displays for Immersed streaming..."
@@ -42,47 +42,10 @@ let
     # Wait for display change to complete
     sleep 3
 
-    # Create or update Immersed config while preserving authentication
-    echo "Configuring hardware encoding settings..."
-    
-    # If config file exists and contains auth data, preserve it and only update GPU settings
-    if [[ -f ~/.ImmersedConf ]] && grep -q "Client=" ~/.ImmersedConf; then
-      echo "Existing authenticated config found, updating GPU settings only..."
-      
-      # Update GPU-related settings in existing config
-      sed -i 's/^DisableNVENC=.*/DisableNVENC=0/' ~/.ImmersedConf
-      sed -i 's/^DisableQuickSync=.*/DisableQuickSync=1/' ~/.ImmersedConf  
-      sed -i 's/^DisableVAAPI=.*/DisableVAAPI=0/' ~/.ImmersedConf
-      sed -i 's/^DisableHEVC=.*/DisableHEVC=0/' ~/.ImmersedConf
-      sed -i 's/^DisableAMF=.*/DisableAMF=1/' ~/.ImmersedConf
-      sed -i 's/^DisableGPUResize=.*/DisableGPUResize=0/' ~/.ImmersedConf
-      
-      # Add missing GPU settings if they don't exist
-      grep -q "^DisableGPUResize=" ~/.ImmersedConf || echo "DisableGPUResize=0" >> ~/.ImmersedConf
-      grep -q "^IgnoreHWCheck=" ~/.ImmersedConf || echo "IgnoreHWCheck=1" >> ~/.ImmersedConf
-      grep -q "^IgnoreCameraCheck=" ~/.ImmersedConf || echo "IgnoreCameraCheck=1" >> ~/.ImmersedConf
-      
-    else
-      echo "Creating new basic config (you'll need to login)..."
-      cat > ~/.ImmersedConf << 'EOF'
-DisableNVENC=0
-DisableQuickSync=1
-DisableVAAPI=0
-DisableHEVC=0
-DisableAMF=1
-DisableGPUResize=0
-EnableAudio=1
-IgnoreHWCheck=1
-IgnoreCameraCheck=1
-EOF
-    fi
 
-    echo "Starting Immersed with virtual displays and hardware encoding..."
+    echo "Starting Immersed with virtual displays..."
 
-    # Don't set DRI_PRIME=1 - it breaks VAAPI driver initialization
-    # Let system use default GPU selection (same approach as Sunshine)
-
-    ${immersedFixed}/bin/immersed &
+    ${pkgs.immersed}/bin/immersed &
 
     IMMERSED_PID=$!
 
@@ -123,7 +86,7 @@ in {
   config = mkIf cfg.enable {
     # Install Immersed with the fixed gjs dependency + desktop wrapper
     environment.systemPackages = [
-      immersedFixed
+      pkgs.immersed
       (pkgs.writeShellScriptBin "immersed-headless" ''exec ${immersedStream}'')
       (pkgs.writeTextFile {
         name = "immersed-headless-desktop";

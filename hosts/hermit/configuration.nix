@@ -36,7 +36,7 @@
       "emet" = {
         # Profile automatically selected as profiles/emet.nix
         userSettings = {
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" ];
+          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
         };
         # Optional per-host overrides:
         # myHomeManager.bundles.databender.enable = false;
@@ -106,7 +106,6 @@
 
   users.users.emet = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "incus-admin" ];
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
     ];
