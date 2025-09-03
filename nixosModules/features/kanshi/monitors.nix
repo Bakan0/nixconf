@@ -44,8 +44,8 @@ in {
 
     sunshineResolution = mkOption {
       type = types.str;
-      default = "3104x1664@60Hz";
-      description = "Sunshine headless resolution";
+      default = "3840x2160@60Hz";
+      description = "Sunshine headless resolution (4K UHD)";
     };
     sunshineScale = mkOption {
       type = types.float;
@@ -55,12 +55,12 @@ in {
 
     immersedWideResolution = mkOption {
       type = types.str;
-      default = "5120x1440@60.00";
-      description = "Immersed wide virtual display resolution";
+      default = "3840x2160@60.00";
+      description = "Immersed wide virtual display resolution (4K UHD)";
     };
     immersedSecondaryResolution = mkOption {
       type = types.str;  
-      default = "1920x1080@60.00";
+      default = "2560x1440@60.00";
       description = "Immersed secondary virtual display resolution";
     };
     immersedWideScale = mkOption {

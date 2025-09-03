@@ -22,7 +22,10 @@
     };
     batteryManagement.enable = true;
     tpm2.enable = true;
-    amd.enable = true;
+    amd = {
+      enable = true;
+      supergfxMode = "Hybrid";
+    };
     asus.enable = true;
     immersed.enable = true;
     sunshine = {
@@ -62,39 +65,6 @@
     networkmanager.enable = true;
   };
 
-  # Proper firmware support for AMD GPUs
-  hardware = {
-    enableRedistributableFirmware = true;
-
-    firmware = with pkgs; [
-      linux-firmware        # Contains amdgpu firmware
-    ];
-
-    graphics = {
-      enable = true;
-      enable32Bit = true;
-
-      # AMD-specific packages:
-      extraPackages = with pkgs; [
-        # AMDGPU drivers:
-        mesa
-        amdvlk
-
-        # Video acceleration:
-        libvdpau-va-gl
-        vaapiVdpau
-
-        # OpenCL:
-        rocmPackages.clr
-        rocmPackages.clr.icd
-      ];
-
-      extraPackages32 = with pkgs.driversi686Linux; [
-        mesa
-        amdvlk
-      ];
-    };
-  };
 
   system.autoUpgrade.enable = false;
 

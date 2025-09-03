@@ -51,6 +51,23 @@ let
 
     echo "Immersed started with virtual displays."
 
+    # Auto-start work apps if workMode is configured
+    ${optionalString (cfg.workMode == "gds") ''
+      echo "Starting GDS work apps on workspace 6 (immersed-2)..."
+      sleep 5  # Wait for Immersed to fully initialize
+      
+      # Move to workspace 6 on immersed-2 and start Edge PWAs
+      ${pkgs.hyprland}/bin/hyprctl dispatch workspace 6
+      ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor immersed-2
+      
+      # Start Edge PWAs for GDS work
+      ${pkgs.microsoft-edge}/bin/microsoft-edge --app-id=_famdcdojlmjefmhdpbpmekhodagkodei &  # Outlook PWA
+      sleep 2
+      ${pkgs.microsoft-edge}/bin/microsoft-edge --app-id=_ckdeglopgbdgpkmhnmkigpfgebcdbanf &  # Microsoft Teams PWA
+      
+      echo "GDS work apps started on workspace 6."
+    ''}
+
     cleanup() {
       echo "Cleaning up..."
       kill $IMMERSED_PID 2>/dev/null || true
@@ -80,6 +97,12 @@ in {
       type = types.bool;
       default = false;
       description = "Automatically toggle laptop display off during streaming and back on during cleanup";
+    };
+    
+    workMode = mkOption {
+      type = types.nullOr (types.enum [ "gds" ]);
+      default = null;
+      description = "Work mode for auto-starting GDS apps on workspace 6 (immersed-2)";
     };
   };
 
