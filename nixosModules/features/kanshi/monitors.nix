@@ -55,8 +55,8 @@ in {
 
     immersedWideResolution = mkOption {
       type = types.str;
-      default = "3840x2160@60.00";
-      description = "Immersed wide virtual display resolution (4K UHD)";
+      default = "3840x1600@60.00";
+      description = "Immersed wide virtual display resolution (1600p ultrawide)";
     };
     immersedSecondaryResolution = mkOption {
       type = types.str;  

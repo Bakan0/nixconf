@@ -50,6 +50,29 @@ in {
 
         echo "=== TOGGLE COMPLETE ==="
       '')
+      
+      (pkgs.writeShellScriptBin "toggle-dpms" ''
+        #!/usr/bin/env bash
+
+        echo "=== DPMS TOGGLE ==="
+        
+        # Query current DPMS status from hyprctl
+        MONITORS_STATUS=$(${pkgs.hyprland}/bin/hyprctl monitors -j | ${pkgs.jq}/bin/jq -r '.[0].dpmsStatus')
+        
+        if [ "$MONITORS_STATUS" = "true" ]; then
+          # Displays are on, turn them off
+          echo "Turning displays OFF..."
+          ${pkgs.hyprland}/bin/hyprctl dispatch dpms off
+          echo "Displays turned OFF"
+        else
+          # Displays are off, turn them on  
+          echo "Turning displays ON..."
+          ${pkgs.hyprland}/bin/hyprctl dispatch dpms on
+          echo "Displays turned ON"
+        fi
+
+        echo "=== DPMS TOGGLE COMPLETE ==="
+      '')
     ];
   };
 }

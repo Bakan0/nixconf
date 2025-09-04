@@ -35,6 +35,7 @@ let
     cat > ~/.config/sunshine/sunshine.conf << 'EOF'
 output_name = 1
 vaapi_strict_rc_buffer = enabled
+hevc_mode = 1
 EOF
 
     # Create clean apps.json with only Desktop (removes useless Low Res Desktop with xrandr)
@@ -54,6 +55,14 @@ EOF
 EOF
 
     echo "Starting Sunshine with discrete GPU and optimized encoding settings..."
+
+    # Set environment variables for consistent hybrid GPU usage
+    export DRI_PRIME=1
+    export __GLX_VENDOR_LIBRARY_NAME=mesa
+    export AMD_VULKAN_ICD=RADV
+    export RADV_PERFTEST=aco
+    export LIBVA_DRIVER_NAME=radeonsi
+    export VDPAU_DRIVER=radeonsi
 
     ${pkgs.sunshine}/bin/sunshine &
 

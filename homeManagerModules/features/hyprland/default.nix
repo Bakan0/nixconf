@@ -190,6 +190,7 @@ in {
             "$mainMod SHIFT, P, pin, active"
             "$mainMod, F, fullscreen,"
             "$mainMod, P, exec, toggle-laptop-display"
+            "$mainMod CTRL SHIFT, P, exec, toggle-dpms"
             "$mainMod, T, pin,"
             "$mainMod, G, togglegroup,"
             "$mainMod, bracketleft, changegroupactive, b"
