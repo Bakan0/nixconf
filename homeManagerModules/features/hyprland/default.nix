@@ -256,6 +256,11 @@ in {
         # ];
         windowrulev2 = [
           "float,class:^(Vivaldi-stable)$,title:^(Bitwarden - Vivaldi)$"
+          "workspace 1,title:^(Select what to share)$"
+          "workspace 1,class:^(Immersed)$"
+          "workspace 1,title:^(Immersed)"
+          "workspace 6,title:^(.*Outlook.*)$"
+          "workspace 6,title:^(.*Teams.*)$"
         ];
         exec-once = exec-once;
       };

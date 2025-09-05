@@ -91,6 +91,13 @@ in {
         monitorId = 1;
         autostart = [ "" ];
       };
+      "6" = {
+        monitorId = 1;
+        autostart = [ 
+          "microsoft-edge --app-id=_famdcdojlmjefmhdpbpmekhodagkodei"   # Outlook PWA
+          "microsoft-edge --app-id=_ckdeglopgbdgpkmhnmkigpfgebcdbanf"   # Teams PWA
+        ];
+      };
     };
 
     # Create eGPU management scripts
