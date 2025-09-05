@@ -13,6 +13,20 @@ let
   # Use immersed from the custom package set
   # immersedFixed = immersedPkgs.immersed;
 
+  # Create a fixed immersed package that wraps with proper library paths
+  immersedFixed = pkgs.immersed.overrideAttrs (oldAttrs: {
+    postFixup = (oldAttrs.postFixup or "") + ''
+      # Fix pixman/cairo library compatibility by wrapping with correct library paths
+      wrapProgram $out/bin/immersed \
+        --prefix LD_LIBRARY_PATH : ${pkgs.lib.makeLibraryPath [
+          pkgs.pixman
+          pkgs.cairo
+          pkgs.glib
+          pkgs.libselinux
+        ]}
+    '';
+  });
+
   immersedStream = pkgs.writeShellScript "immersed-headless" ''
     echo "Setting up headless displays for Immersed streaming..."
 
@@ -59,7 +73,7 @@ let
 
     echo "Starting Immersed with virtual displays..."
 
-    ${pkgs.immersed}/bin/immersed &
+    ${immersedFixed}/bin/immersed &
 
     IMMERSED_PID=$!
 
@@ -121,9 +135,9 @@ in {
   };
 
   config = mkIf cfg.enable {
-    # Install Immersed with the fixed gjs dependency + desktop wrapper
+    # Install Immersed with library compatibility fixes + desktop wrapper
     environment.systemPackages = [
-      pkgs.immersed
+      immersedFixed
       (pkgs.writeShellScriptBin "immersed-headless" ''exec ${immersedStream}'')
       (pkgs.writeTextFile {
         name = "immersed-headless-desktop";
