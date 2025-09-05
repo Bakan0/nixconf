@@ -73,6 +73,29 @@ in {
 
         echo "=== DPMS TOGGLE COMPLETE ==="
       '')
+      
+      # Reset Hyprland XDG portals to fix screen sharing conflicts
+      (pkgs.writeShellScriptBin "hyprland-portal-reset" ''
+        #!/usr/bin/env bash
+
+        echo "🔄 Resetting Hyprland XDG portals to fix screen sharing conflicts..."
+        
+        # Stop portal services
+        echo "Stopping portal services..."
+        systemctl --user stop xdg-desktop-portal.service 2>/dev/null || true
+        systemctl --user stop xdg-desktop-portal-hyprland.service 2>/dev/null || true
+        
+        # Wait for cleanup
+        sleep 2
+        
+        # Restart portal services
+        echo "Restarting portal services..."
+        systemctl --user start xdg-desktop-portal.service
+        systemctl --user start xdg-desktop-portal-hyprland.service
+        
+        echo "✅ Portal services restarted. Screen sharing should work now!"
+        echo "   Try your screen sharing operation again."
+      '')
     ];
   };
 }
