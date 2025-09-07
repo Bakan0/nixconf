@@ -12,9 +12,7 @@
     bundles.users.enable = true;
     sysadmin.enable = true;
       sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
-    greetd.enable = true;
-    hyprland.enable = true;
-    stylix.enable = true;
+    greetd.enable = true;  # Display manager for Hyprland
     kanshi = {
       enable = true;
       laptopResolution = "1920x1200@165Hz";

@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
   home = {
@@ -30,8 +30,9 @@
     zsh.enable = false;   # Disable zsh - not used
     kitty.enable = true;
     firefox.enable = true;
-    hyprland.enable = true;
-    waybar.enable = true;
+    hyprland.enable = lib.mkDefault true;
+    # Conditional desktop components - only if Hyprland is enabled
+    waybar.enable = lib.mkIf config.myHomeManager.hyprland.enable (lib.mkDefault true);
   };
 
   programs = {

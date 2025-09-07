@@ -10,11 +10,9 @@
     ];
   
   myNixOS = {
-    bundles.general-desktop.enable = true;
+    bundles.general.enable = true;  # Server uses general bundle, not desktop
     bundles.users.enable = true;
-    sddm.enable = true;
-    hyprland.enable = true;
-    stylix.enable = true;
+    # Desktop components disabled for server
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
