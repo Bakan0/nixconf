@@ -7,11 +7,7 @@
     };
 
     packages = with pkgs; [
-      jq
-      bat
-      eza
-      fzf
-      htop
+      # Core packages moved to general bundle
     ];
   };
 

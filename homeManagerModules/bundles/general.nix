@@ -51,11 +51,11 @@
     imv
     openssl
     ipcalc
-    dig
     dnsutils
     lsof
     libva-utils
     bc
+    jq
 
     ffmpeg
     wget
