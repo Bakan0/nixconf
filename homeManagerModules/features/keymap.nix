@@ -22,7 +22,6 @@ in {
         # APP LAUNCHER SUBMAP (your existing Super+D system)
         "$mainMod, D" = {
           "f".package = firefox;
-          "t".package = telegram-desktop;
           "s".package = pavucontrol;
           "b".package = rofi-bluetooth;
           "h".script = ''

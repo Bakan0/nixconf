@@ -140,7 +140,7 @@ in {
   #                   terminal = false;
   #                 };
   #               };
-  #               t = {launch = ["telegram-desktop"];};
+  #               # t = {launch = ["telegram-desktop"];};
   #             };
   #           };
   #           super-u = {set_mode = "alternative";};
