@@ -8,8 +8,8 @@ let
   claude-code-latest = 
     let
       # Current known hashes - update these when versions change
-      registryHash = "sha256-sBbrPPzAMT50TBgi7fIkrmLOyQ6ZMhtVAJhNh64rC/g=";
-      sourceHash = "sha256-NtxWKpWsKZI2MeR3WPxB7KtDV+QK6/PLf1cV6ImQrrw=";
+      registryHash = "sha256-n5UfVSiHi22FT1UmNrB1G+HvoQIvPhVnQFLqaoI6lMA=";
+      sourceHash = "sha256-PHTT5kb6/MuxqqMWXwqdmpI+4ZSubRUNDp/ENEjcFBE=";
       depsHash = "sha256-Wm6h2S/T9nqztyJrZovYKgqJyBj4xNQsRLC0wYFoDlk=";
       
       # Fetch registry info with hash verification
@@ -36,8 +36,8 @@ let
       '';
     });
 
-  # Auto-hash updater script
-  update-claude-hashes = pkgs.writeShellScriptBin "update-claude-hashes" ''
+  # Hash updater script
+  claude-hash-update = pkgs.writeShellScriptBin "claude-hash-update" ''
     set -euo pipefail
     
     MODULE_FILE="$HOME/nixconf/homeManagerModules/features/claude-code-latest.nix"
@@ -47,7 +47,7 @@ let
       exit 1
     fi
     
-    echo "🔄 Auto-updating Claude Code hashes..."
+    echo "Updating Claude Code hashes..."
     
     # Function to get actual hash by attempting fetch with fake hash
     get_actual_hash() {
@@ -59,7 +59,7 @@ let
     with import <nixpkgs> {};
     fetchurl {
       url = "$url";
-      sha256 = "0000000000000000000000000000000000000000000000000000";
+      sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
     }
 EXPR
       
@@ -87,7 +87,7 @@ EXPR
         url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$version.tgz";
         hash = "$source_hash";
       };
-      npmDepsHash = "sha256-0000000000000000000000000000000000000000000=";
+      npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
     })
 EXPR
       
@@ -100,13 +100,13 @@ EXPR
       echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | head -1 || true
     }
     
-    echo "📡 Fetching latest version info..."
+    echo "Fetching latest version..."
     
     # Get latest version from registry
     REGISTRY_URL="https://registry.npmjs.org/@anthropic-ai/claude-code/"
     
     # First, get the correct registry hash
-    echo "🔍 Determining registry hash..."
+    echo "Getting registry hash..."
     NEW_REGISTRY_HASH=$(get_actual_hash "$REGISTRY_URL")
     
     if [[ -z "$NEW_REGISTRY_HASH" ]]; then
@@ -114,13 +114,13 @@ EXPR
       exit 1
     fi
     
-    echo "📡 Registry hash: $NEW_REGISTRY_HASH"
+    echo "Registry hash: $NEW_REGISTRY_HASH"
     
     # Update registry hash and get version info
     ${pkgs.gnused}/bin/sed -i "s|registryHash = \"sha256-[^\"]*\"|registryHash = \"$NEW_REGISTRY_HASH\"|g" "$MODULE_FILE"
     
     # Get latest version by building registry fetch
-    echo "🔍 Getting latest version..."
+    echo "Getting version..."
     TEMP_VERSION_EXPR=$(mktemp)
     cat > "$TEMP_VERSION_EXPR" << EXPR
     with import <nixpkgs> {};
@@ -136,10 +136,10 @@ EXPR
     LATEST_VERSION=$(nix-build "$TEMP_VERSION_EXPR" --no-out-link | xargs cat)
     rm "$TEMP_VERSION_EXPR"
     
-    echo "📦 Latest version: $LATEST_VERSION"
+    echo "Latest version: $LATEST_VERSION"
     
     # Get source hash
-    echo "🔍 Determining source hash..."
+    echo "Getting source hash..."
     SOURCE_URL="https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$LATEST_VERSION.tgz"
     NEW_SOURCE_HASH=$(get_actual_hash "$SOURCE_URL")
     
@@ -148,11 +148,11 @@ EXPR
       exit 1
     fi
     
-    echo "📦 Source hash: $NEW_SOURCE_HASH"
+    echo "Source hash: $NEW_SOURCE_HASH"
     ${pkgs.gnused}/bin/sed -i "s|sourceHash = \"sha256-[^\"]*\"|sourceHash = \"$NEW_SOURCE_HASH\"|g" "$MODULE_FILE"
     
     # Get deps hash
-    echo "🔍 Determining NPM dependencies hash..."
+    echo "Getting deps hash..."
     NEW_DEPS_HASH=$(get_deps_hash "$LATEST_VERSION" "$NEW_SOURCE_HASH")
     
     if [[ -z "$NEW_DEPS_HASH" ]]; then
@@ -160,22 +160,20 @@ EXPR
       exit 1
     fi
     
-    echo "📚 Dependencies hash: $NEW_DEPS_HASH"
+    echo "Deps hash: $NEW_DEPS_HASH"
     ${pkgs.gnused}/bin/sed -i "s|depsHash = \"sha256-[^\"]*\"|depsHash = \"$NEW_DEPS_HASH\"|g" "$MODULE_FILE"
     
-    echo "✅ All hashes updated successfully!"
-    echo "   Registry: $NEW_REGISTRY_HASH"
-    echo "   Source: $NEW_SOURCE_HASH" 
-    echo "   Dependencies: $NEW_DEPS_HASH"
-    echo ""
-    echo "🚀 Run 'nh os switch ~/nixconf/. -- --show-trace' to build with new hashes."
+    echo "Hashes updated."
+    echo "Registry: $NEW_REGISTRY_HASH"
+    echo "Source: $NEW_SOURCE_HASH" 
+    echo "Dependencies: $NEW_DEPS_HASH"
   '';
   
 in {
   config = mkIf cfg.enable {
     home.packages = [ 
       claude-code-latest
-      update-claude-hashes  # Run this when hashes need updating
+      claude-hash-update  # Run this when hashes need updating
     ];
   };
 }
