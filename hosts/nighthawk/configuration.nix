@@ -9,7 +9,6 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
-    batteryManagement.enable = true;  # Laptop
     greetd.enable = true;
     hyprland.enable = true;
     stylix.enable = true;
