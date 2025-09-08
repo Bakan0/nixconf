@@ -25,7 +25,7 @@
   myNixOS.greetd.enable = lib.mkDefault false;
   myNixOS.autologin.enable = lib.mkDefault true;
   myNixOS.pipewire.enable = lib.mkDefault true;
-  myNixOS.batteryManagement.enable = lib.mkDefault true;
+  myNixOS.batteryManagement.enable = lib.mkDefault false;  # Enable only on laptops
   myNixOS.powerManagement.enable = lib.mkDefault true;
   myNixOS.virtualisation.enable = lib.mkDefault true;
   myNixOS.stylix.enable = lib.mkDefault true;

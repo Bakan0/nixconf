@@ -10,6 +10,7 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
+    batteryManagement.enable = true;  # Laptop
     sysadmin.enable = true;
       sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
     greetd.enable = true;  # Display manager for Hyprland

@@ -13,6 +13,9 @@
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
     # Desktop components disabled for server
+    sddm.enable = false;
+    greetd.enable = false;
+    hyprland.enable = false;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
