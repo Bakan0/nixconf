@@ -10,7 +10,7 @@
     ];
   
   myNixOS = {
-    bundles.general.enable = true;  # Server uses general bundle, not desktop
+    bundles.general-desktop.enable = true;
     bundles.users.enable = true;
     # Desktop components disabled for server
     home-users = {
