@@ -9,6 +9,7 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
+    bundles.users.joelle.enable = true;  # Joelle's profile with GNOME, packages, SSH keys
     batteryManagement.enable = true;  # Laptop
     sddm.enable = false;
     hyprland.enable = false;
@@ -16,14 +17,6 @@
     kanshi.enable = true;
     tpm2.enable = true;
     virtualisation.enable = false;
-    home-users = {
-      "joelle" = {
-        userConfig = ./home.nix;
-        userSettings = {
-          extraGroups = [ "networkmanager" "wheel" ];
-        };
-      };
-    };
   };
 
   # Use the systemd-boot EFI boot loader.
@@ -35,51 +28,11 @@
     networkmanager.enable = true;
   };
 
-  users.users.joelle = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" ];
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
-    ];
-    packages = with pkgs; [
-      appimage-run
-      kitty
-      signal-desktop
-      tree
-      yazi
-    ];
-  };
 
   # Set your time zone.
   time.timeZone = "America/Chicago";
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
   services.fwupd.enable = true;
-
-
-  # Enable the GNOME Desktop Environment.
-  services.displayManager.gdm.enable = true;
-  services.desktopManager.gnome.enable = true;
-  
-
-  # Configure keymap in X11
-  # services.xserver.xkb.layout = "us";
-  # services.xserver.xkb.options = "eurosign:e,caps:escape";
-
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
-
-  # Enable sound.
-  services.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    jack.enable = true;
-    pulse.enable = true;
-  };
 
   nixpkgs.config.allowUnfree = true;
 

@@ -12,19 +12,8 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
-    batteryManagement.enable = true;  # Laptop
-    sddm.enable = true;
-    hyprland.enable = true;
-    stylix.enable = true;
-    kanshi.enable = true;
-    home-users = {
-      "emet" = {
-        userConfig = ./home.nix;
-        userSettings = {
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" ];
-        };
-      };
-    };
+    bundles.users.emet.enable = true;
+    batteryManagement.enable = true;
   };
 
   boot = {
@@ -45,11 +34,6 @@
 
   system.autoUpgrade.enable = false;
 
-  users.users.root = {
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
-    ];
-  };
 
   # Enable flakes and allow unfree
   nix.settings = {
@@ -61,39 +45,7 @@
   nixpkgs.config.allowUnfree = true;
   
   environment.systemPackages = with pkgs; [
-    acpi
-    brightnessctl
-    colorls
-    dunst
-    fastfetch
-    flatpak
-    font-awesome
-    freerdp
-    fwupd
-    hyprland
-    kitty
-    libnotify
-    neovide
-    networkmanagerapplet
-    nh
-    nix-output-monitor
-    ntfs3g
-    openconnect
-    pavucontrol
-    rofi-wayland
-    swww
     tailscale
-    teamviewer
-    tmux
-    unzip
-    vim
-    waybar
-    wayland
-    wget
-    wl-clipboard
-    xorg.xorgserver
-    xwayland
-    zip
   ];
 
 

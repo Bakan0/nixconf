@@ -25,8 +25,6 @@
         userSettings = {
           extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
         };
-        # Host-specific home configuration
-        userConfig = ./home.nix;
       };
     };
   };
@@ -43,6 +41,7 @@
 
   networking = {
     hostName = "hearth";
+    hostId = "a701a1c0";  # atomic + terracotta theme
     networkmanager.enable = true;
   };
 
@@ -65,6 +64,14 @@
         doInstallCheck = false;
       }))
       azure-cli-extensions.azure-firewall
+      # azure-cli-extensions.costmanagement
+      azure-cli-extensions.fzf
+      # azure-cli-extensions.ip-group
+      # azure-cli-extensions.mdp
+      # azure-cli-extensions.multicloud-connector
+      # azure-cli-extensions.subscription
+      # azure-cli-extensions.virtual-network-manager
+      # azure-cli-extensions.virtual-wan
       kitty # Terminal emulator, recommended for Hyprland
       microsoft-edge
       powershell
@@ -82,6 +89,11 @@
   };
 
   nixpkgs.config.allowUnfree = true;
+
+  nixpkgs.config.permittedInsecurePackages = [
+    "dotnet-sdk-6.0.428"
+    "dotnet-runtime-6.0.36"
+  ];
 
   environment.systemPackages = with pkgs; [
     acpi
