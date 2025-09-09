@@ -276,6 +276,7 @@ in {
       hypridle
       hyprlock
       procps
+      xfce.thunar
     ];
     services.hypridle = {
       enable = true;
