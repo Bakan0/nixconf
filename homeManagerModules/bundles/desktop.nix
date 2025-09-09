@@ -45,6 +45,8 @@
       "video/png" = ["mpv.desktop"];
       "video/jpg" = ["mpv.desktop"];
       "video/*" = ["mpv.desktop"];
+      "inode/directory" = ["thunar.desktop"];
+      "application/x-directory" = ["thunar.desktop"];
     };
 
   services.mako = {
@@ -67,6 +69,7 @@
       pavucontrol
       adwaita-qt
       pcmanfm
+      xfce.thunar
       libnotify
 
       pywal

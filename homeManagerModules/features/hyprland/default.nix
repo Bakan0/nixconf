@@ -197,6 +197,7 @@ in {
             "$mainMod, bracketright, changegroupactive, f"
             "$mainMod, backslash, moveoutofgroup"
             "$mainMod, S, exec, rofi -show drun -show-icons"
+            "$mainMod, E, exec, thunar"
             "$mainMod, Escape, exec, hyprlock"
             ",XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%+"
             ",XF86AudioLowerVolume, exec, wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%-"
@@ -259,8 +260,9 @@ in {
           "workspace 1,title:^(Select what to share)$"
           "workspace 1,class:^(Immersed)$"
           "workspace 1,title:^(Immersed)"
-          "workspace 6,title:^(.*Outlook.*)$"
-          "workspace 6,title:^(.*Teams.*)$"
+          "workspace 4,class:^(microsoft-edge)$"
+          "workspace 4,title:^(.*Outlook.*)$"
+          "workspace 4,title:^(.*Teams.*)$"
         ];
         exec-once = exec-once;
       };

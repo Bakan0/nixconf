@@ -11,6 +11,13 @@ let
   
   # Import theme definitions
   themes = import ./themes.nix;
+  
+  # Theme-specific wallpapers
+  wallpapers = {
+    "atomic-terracotta" = ./atomic-terracotta-canyon.jpeg;
+    "gruvbox" = ./gruvbox-mountain-village.png;
+    # "butterfly-pastel" = ./butterfly-pastel-wallpaper.png; # TODO: Add when you find a good pastel wallpaper
+  };
 in {
   imports = [
     inputs.stylix.nixosModules.stylix
@@ -28,7 +35,7 @@ in {
     stylix = {
       base16Scheme = themes.${cfg.theme};
 
-    image = ./gruvbox-mountain-village.png;
+    image = wallpapers.${cfg.theme} or ./gruvbox-mountain-village.png;
 
     fonts = {
       monospace = {
