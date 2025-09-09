@@ -61,10 +61,13 @@ BOOT_CONFIG=$(grep -A 5 "boot.loader" "$CONFIG_DIR/configuration.nix" | grep -E 
 # Detect system.stateVersion from installer config or use system's NixOS version
 if grep -q "system.stateVersion" "$CONFIG_DIR/configuration.nix"; then
     STATE_VERSION=$(grep "system.stateVersion" "$CONFIG_DIR/configuration.nix" | head -1)
+    # Extract just the version number for home.nix
+    HOME_STATE_VERSION=$(echo "$STATE_VERSION" | grep -o '"[^"]*"' | tr -d '"')
 else
     # Get current NixOS version as fallback
     NIXOS_VERSION=$(nixos-version | cut -d. -f1-2 || echo "25.05")
     STATE_VERSION="  system.stateVersion = \"$NIXOS_VERSION\";"
+    HOME_STATE_VERSION="$NIXOS_VERSION"
 fi
 
 # Generate the new flake-based configuration.nix
@@ -222,10 +225,17 @@ cat > "hosts/$HOSTNAME/home.nix" << EOF
 { config, lib, pkgs, inputs, ... }:
 
 {
+  home = {
+    username = "$USERNAME";
+    homeDirectory = "/home/$USERNAME";
+    stateVersion = "$HOME_STATE_VERSION";
+  };
+
+  # Use $USERNAME's profile for consistent configuration
+  myHomeManager.profiles.$USERNAME.enable = true;
+
+  # Host-specific overrides (if any)
   myHomeManager = {
-    bundles.general.enable = true;
-    profiles.$USERNAME.enable = true;
-    
     # $HOSTNAME-specific customizations
     # Terracotta/atomic theme preferences will be handled by stylix
   };
