@@ -1,0 +1,152 @@
+{ config, lib, pkgs, inputs, ... }:
+
+{
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+    ./zfs-optimizations.nix  # Added by install-zfs.sh script
+  ];
+
+  myNixOS = {
+    bundles.general-desktop.enable = true;
+    bundles.users.enable = true;
+    sysadmin.enable = true;
+    sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
+    greetd.enable = true;  # Display manager for Hyprland
+    kanshi.enable = true;  # Display management
+    tpm2.enable = true;  # TPM2 support for LUKS auto-unlock
+    stylix = {
+      enable = true;
+      theme = "terracotta-atomic";  # Hearth gets the terracotta/atomic theme
+    };
+    home-users = {
+      "emet" = {
+        # Profile automatically selected as profiles/emet.nix
+        userSettings = {
+          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
+        };
+        # Hearth-specific home configuration
+        userConfig = ./home.nix;
+      };
+    };
+  };
+
+  boot = {
+    loader = {
+      systemd-boot.enable = true;
+      efi = {
+        canTouchEfiVariables = true;
+        efiSysMountPoint = "/boot";
+      };
+    };
+  };
+
+  networking = {
+    hostName = "hearth";
+    hostId = lib.mkDefault "hea12345";  # Will be updated by zfs script with proper hostid
+    networkmanager.enable = true;
+  };
+
+  system.autoUpgrade.enable = false;
+
+  users.users.root = {
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
+    ];
+  };
+
+  users.users.emet = {
+    isNormalUser = true;
+    openssh.authorizedKeys.keys = [
+      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
+    ];
+    packages = with pkgs; [
+      appimage-run
+      (azure-cli.overrideAttrs (oldAttrs: {
+        doInstallCheck = false;
+      }))
+      azure-cli-extensions.azure-firewall
+      kitty # Terminal emulator, recommended for Hyprland
+      microsoft-edge
+      powershell
+      remmina
+      tree
+      yazi
+    ];
+  };
+
+  # Enable flakes and allow unfree
+  nix.settings = {
+    experimental-features = [ "nix-command" "flakes" ];
+    substituters = ["https://hyprland.cachix.org"];
+    trusted-public-keys = ["hyprland.cachix.org-1:a7pgxzMz7+chwVL3/pzj6jIBMioiJM7ypFP8PwtkuGc="];
+  };
+
+  nixpkgs.config.allowUnfree = true;
+
+  nixpkgs.config.permittedInsecurePackages = [
+    "dotnet-sdk-6.0.428"
+    "dotnet-runtime-6.0.36"
+  ];
+
+  environment.systemPackages = with pkgs; [
+    acpi
+    brightnessctl
+    colorls
+    dunst
+    fastfetch
+    flatpak
+    font-awesome
+    freerdp
+    fwupd
+    geany
+    glxinfo
+    hyprland
+    kitty
+    libnotify
+    mesa-demos
+    neovide
+    networkmanagerapplet
+    nh
+    nix-output-monitor
+    ntfs3g
+    openconnect
+    pavucontrol
+    qbittorrent
+    rofi-wayland
+    swww
+    tmux
+    unzip
+    vim
+    vulkan-tools
+    waybar
+    wayland
+    wget
+    wl-clipboard
+    xorg.xorgserver
+    xwayland
+    zip
+  ];
+
+  environment.variables.EDITOR = "nvim";
+
+  nix.optimise.automatic = true;
+  nix.optimise.dates = [ "01:30" ];
+
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+  };
+
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
+
+  services.fwupd.enable = true;
+  services.openssh.enable = true;
+  services.protonmail-bridge.enable = false;
+  services.teamviewer.enable = false;
+
+  system.stateVersion = "25.05";
+}
