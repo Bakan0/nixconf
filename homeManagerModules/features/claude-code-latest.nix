@@ -8,8 +8,8 @@ let
   claude-code-latest = 
     let
       # Current known hashes - update these when versions change
-      registryHash = "sha256-n5UfVSiHi22FT1UmNrB1G+HvoQIvPhVnQFLqaoI6lMA=";
-      sourceHash = "sha256-PHTT5kb6/MuxqqMWXwqdmpI+4ZSubRUNDp/ENEjcFBE=";
+      registryHash = "sha256-eQs7YCCPLnaDVQAYYQgnoAH52n/Wy3wlVlXBAT8pMCo=";
+      sourceHash = "sha256-bmva84iO0iDf8V537DX6Ggh1PyjKEkfebx4CSB3f4/U=";
       depsHash = "sha256-Wm6h2S/T9nqztyJrZovYKgqJyBj4xNQsRLC0wYFoDlk=";
       
       # Fetch registry info with hash verification
@@ -80,7 +80,7 @@ EXPR
       
       # Create temporary expression for claude-code with known source but fake deps hash
       cat > "$temp_expr" << EXPR
-    with import <nixpkgs> {};
+    with import <nixpkgs> { config.allowUnfree = true; };
     claude-code.overrideAttrs (oldAttrs: rec {
       version = "$version";
       src = fetchzip {
@@ -96,7 +96,7 @@ EXPR
       output=$(nix-build "$temp_expr" --no-out-link 2>&1 || true)
       rm "$temp_expr"
       
-      # Extract the "got:" hash from error message
+      # Extract the "got:" hash from error message  
       echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | head -1 || true
     }
     
