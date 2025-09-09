@@ -43,6 +43,11 @@
       set -x EDITOR nvim
 
       set -s PATH $HOME/bin $PATH
+
+      # Start SSH agent if not already running
+      if not set -q SSH_AUTH_SOCK
+        eval (ssh-agent -c) >/dev/null
+      end
     '';
 
     shellAliases = {
