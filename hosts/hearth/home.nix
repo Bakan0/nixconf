@@ -3,7 +3,7 @@
 {
   myHomeManager = {
     bundles.general.enable = true;
-    bundles.databender.enable = true;  # Azure/PowerShell work tools
+    profiles.emet.enable = true;
     
     # hearth-specific customizations
     # Terracotta/atomic theme preferences will be handled by stylix

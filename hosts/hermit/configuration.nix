@@ -39,8 +39,6 @@
         userSettings = {
           extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
         };
-        # Optional per-host overrides:
-        # myHomeManager.bundles.databender.enable = false;
       };
     };
   };

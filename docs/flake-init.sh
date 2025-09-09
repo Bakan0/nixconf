@@ -224,7 +224,7 @@ cat > "hosts/$HOSTNAME/home.nix" << EOF
 {
   myHomeManager = {
     bundles.general.enable = true;
-    bundles.databender.enable = true;  # Azure/PowerShell work tools
+    profiles.$USERNAME.enable = true;
     
     # $HOSTNAME-specific customizations
     # Terracotta/atomic theme preferences will be handled by stylix
