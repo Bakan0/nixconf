@@ -30,8 +30,7 @@ in {
           enable32Bit = true;
           extraPackages = with pkgs; [
             # AMD GPU drivers
-            mesa  # Full mesa package
-            mesa.drivers  # AMD VAAPI driver
+            mesa  # Full mesa package with drivers
             amdvlk  # AMD Vulkan driver
             
             # Universal VAAPI hardware acceleration drivers

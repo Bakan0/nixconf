@@ -16,6 +16,7 @@
     sddm.enable = false;
     greetd.enable = false;
     hyprland.enable = false;
+    wake-on-lan.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;

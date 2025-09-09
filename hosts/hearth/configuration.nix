@@ -27,6 +27,7 @@
         };
       };
     };
+    wake-on-lan.enable = true;
   };
 
   boot = {

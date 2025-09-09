@@ -14,9 +14,9 @@
     sddm.enable = false;
     hyprland.enable = false;
     stylix.enable = false;
-    kanshi.enable = true;
     tpm2.enable = true;
     virtualisation.enable = false;
+    wake-on-lan.enable = true;
   };
 
   # Use the systemd-boot EFI boot loader.

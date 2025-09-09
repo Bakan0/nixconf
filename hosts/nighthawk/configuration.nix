@@ -17,6 +17,7 @@
     virtualisation = {
       username = "emet";
     };
+    wake-on-lan.enable = true;
   };
 
   boot = {

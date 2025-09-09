@@ -33,6 +33,7 @@
     virtualisation = {
       username = "emet";
     };
+    wake-on-lan.enable = true;
     home-users = {
       "emet" = {
         # Profile automatically selected as profiles/emet.nix

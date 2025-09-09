@@ -14,6 +14,7 @@
     bundles.users.enable = true;
     bundles.users.emet.enable = true;
     batteryManagement.enable = true;
+    wake-on-lan.enable = true;
   };
 
   boot = {
