@@ -16,12 +16,12 @@ in {
     ];
 
     # VS Code extensions for compilation database generation
-    programs.vscode.extensions = with pkgs.vscode-extensions; [
+    programs.vscode.profiles.default.extensions = with pkgs.vscode-extensions; [
       ms-vscode.makefile-tools    # Auto-generates compile_commands.json
     ];
 
     # VS Code settings for SonarQube C/C++ support
-    programs.vscode.userSettings = {
+    programs.vscode.profiles.default.userSettings = {
       # Makefile Tools extension configuration
       "makefile.extensionOutputFolder" = "./.vscode";
       "makefile.extensionLog" = "Verbose";

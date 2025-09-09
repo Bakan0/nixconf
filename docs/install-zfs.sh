@@ -370,8 +370,7 @@ NIXEOF
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  # System state version for NixOS unstable
-  system.stateVersion = \"25.05\";
+  # system.stateVersion will be automatically set by nixos-install
 SYSEOF
     fi
 
@@ -404,7 +403,6 @@ SYSEOF
     echo \"   • Automated snapshots and scrubbing\"
     echo \"   • SSD-optimized settings with TRIM\"
     echo \"   • systemd-boot (no GRUB complexity)\"
-    echo \"   • NixOS 25.05 (correct unstable version)\"
     if [[ \"\$TPM2_ENROLLED\" == \"true\" ]]; then
         echo \"   • TPM2 auto-unlock (password fallback available)\"
     else
@@ -413,6 +411,5 @@ SYSEOF
     echo ''
     echo \"💡 Hardware config handles filesystem detection automatically\"
     echo \"💡 ZFS optimizations in separate config - no conflicts!\"
-    echo \"💡 When you upgrade to 64GB, ARC will automatically scale to 16GB (25%)\"
 "
 

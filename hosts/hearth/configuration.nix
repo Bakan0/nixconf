@@ -4,7 +4,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-    ./zfs-optimizations.nix  # Added by install-zfs.sh script
+      ./zfs-optimizations.nix
   ];
 
   myNixOS = {
@@ -17,7 +17,7 @@
     tpm2.enable = true;  # TPM2 support for LUKS auto-unlock
     stylix = {
       enable = true;
-      theme = "terracotta-atomic";  # Hearth gets the terracotta/atomic theme
+      theme = "terracotta-atomic";  # hearth gets the terracotta/atomic theme
     };
     home-users = {
       "emet" = {
@@ -25,7 +25,7 @@
         userSettings = {
           extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
         };
-        # Hearth-specific home configuration
+        # Host-specific home configuration
         userConfig = ./home.nix;
       };
     };
@@ -43,7 +43,6 @@
 
   networking = {
     hostName = "hearth";
-    hostId = lib.mkDefault "hea12345";  # Will be updated by zfs script with proper hostid
     networkmanager.enable = true;
   };
 
@@ -83,11 +82,6 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-
-  nixpkgs.config.permittedInsecurePackages = [
-    "dotnet-sdk-6.0.428"
-    "dotnet-runtime-6.0.36"
-  ];
 
   environment.systemPackages = with pkgs; [
     acpi

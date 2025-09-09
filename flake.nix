@@ -65,6 +65,7 @@
       nixosConfigurations = {
         # ===================== NixOS Configurations ===================== #
 
+        hearth = mkSystem ./hosts/hearth/configuration.nix;
         acc01ade = mkSystem ./hosts/acc01ade/configuration.nix;
         mariposa = mkSystem ./hosts/mariposa/configuration.nix;
         petalouda = mkSystem ./hosts/petalouda/configuration.nix;
@@ -72,13 +73,13 @@
         tyr = mkSystem ./hosts/tyr/configuration.nix;
         dazzle = mkSystem ./hosts/dazzle/configuration.nix;
         hermit = mkSystem ./hosts/hermit/configuration.nix;
-        hearth = mkSystem ./hosts/hearth/configuration.nix;
         # liveiso = mkSystem ./hosts/liveiso/configuration.nix;
       };
 
       homeConfigurations = {
-        # ================ Maintained home configurations ================ #
+        # ================== Home Configurations ================== #
 
+        "emet@hearth" = mkHome "x86_64-linux" ./hosts/hearth/home.nix;
         "emet@acc01ade" = mkHome "x86_64-linux" ./hosts/acc01ade/home.nix;
         "emet@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;
         "joelle@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;
@@ -87,7 +88,6 @@
         "emet@tyr" = mkHome "x86_64-linux" ./hosts/tyr/home.nix;
         "emet@dazzle" = mkHome "x86_64-linux" ./hosts/dazzle/home.nix;
         "emet@hermit" = mkHome "x86_64-linux" ./hosts/hermit/home.nix;
-        "emet@hearth" = mkHome "x86_64-linux" ./hosts/hearth/home.nix;
       };
 
       homeManagerModules.default = ./homeManagerModules;
