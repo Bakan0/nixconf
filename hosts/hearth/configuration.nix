@@ -17,7 +17,7 @@
     tpm2.enable = true;  # TPM2 support for LUKS auto-unlock
     stylix = {
       enable = true;
-      theme = "terracotta-atomic";  # hearth gets the terracotta/atomic theme
+      theme = "atomic-terracotta";  # hearth gets the atomic terracotta theme
     };
     home-users = {
       "emet" = {

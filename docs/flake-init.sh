@@ -88,7 +88,7 @@ $ZFS_IMPORT
     tpm2.enable = true;  # TPM2 support for LUKS auto-unlock
     stylix = {
       enable = true;
-      theme = "terracotta-atomic";  # $HOSTNAME gets the terracotta/atomic theme
+      theme = "atomic-terracotta";  # $HOSTNAME gets the atomic terracotta theme
     };
     home-users = {
       "$USERNAME" = {
@@ -282,5 +282,8 @@ echo "   systemd-inhibit --what=sleep,shutdown,idle --who=nixos-rebuild --why='R
 echo ""
 echo "4. ONLY commit after successful deploy:"
 echo "   cd ~/nixconf && git add hosts/$HOSTNAME/ flake.nix && git commit -m 'feat($HOSTNAME): add new host'"
+echo ""
+echo "5. Complete the deployment on the new system:"
+echo "   ssh emet@$HOSTNAME \"git clone git@github.com:Bakan0/nixconf.git ~/nixconf && cd ~/nixconf && nh os switch . -- --show-trace\""
 echo ""
 echo "Note: SSH access bootstrapped for post-reboot deployment"

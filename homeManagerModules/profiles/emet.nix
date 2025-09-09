@@ -16,6 +16,7 @@
     createDirectories = true;
   };
 
+
   # Enable emet's preferred bundles by default
   myHomeManager = {
     # Bundles
