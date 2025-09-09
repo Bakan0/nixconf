@@ -4,6 +4,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./zfs-optimizations.nix
     ];
 
   myNixOS = {
@@ -20,7 +21,6 @@
 
   boot = {
     kernelParams = [
-      "zfs.zfs_arc_max=25769803776"  # 24GB max ARC size
       "intel_iommu=on"
     ];
     loader = {
@@ -34,7 +34,6 @@
 
   networking = {
     hostName = "nighthawk";
-    hostId = "5caff01d";
     networkmanager.enable = true;
     firewall = {
       allowedTCPPorts = [

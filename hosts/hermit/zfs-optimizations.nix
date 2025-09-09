@@ -79,6 +79,8 @@
 
   # Enable ZFS auto-import
   boot.zfs.devNodes = "/dev/disk/by-id";
+  boot.zfs.forceImportRoot = false;
+  boot.zfs.forceImportAll = false;
 
   # Networking with unique hostId
   networking.hostId = lib.mkDefault "224b4cd5";
