@@ -77,7 +77,7 @@ in {
       };
       "2" = {
         monitorId = 1;
-        autostart = [];
+        autostart = [ "code" ];
       };
       "3" = {
         monitorId = 1;
@@ -85,18 +85,15 @@ in {
       };
       "4" = {
         monitorId = 1;
-        autostart = [ "microsoft-edge" ];
+        autostart = [ 
+          "microsoft-edge --profile-directory=\"Profile 1\""              # ADMIN profile
+          "microsoft-edge --profile-directory=Default"                    # User profile  
+          "obsidian"
+        ];
       };
       "5" = {
         monitorId = 1;
         autostart = [ "" ];
-      };
-      "6" = {
-        monitorId = 1;
-        autostart = [ 
-          "microsoft-edge --app-id=_famdcdojlmjefmhdpbpmekhodagkodei"   # Outlook PWA
-          "microsoft-edge --app-id=_ckdeglopgbdgpkmhnmkigpfgebcdbanf"   # Teams PWA
-        ];
       };
     };
 

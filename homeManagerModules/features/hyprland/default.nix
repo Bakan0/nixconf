@@ -51,6 +51,9 @@
       (lib.getExe monitorScript)
       # I forgot why i need this - Vimjoyer
       "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
+      # Workspace 3 applications
+      "[workspace 3 silent] vivaldi"
+      "[workspace 3 silent] signal-desktop"
     ]
     ++ autostarts;
 in {
@@ -196,6 +199,7 @@ in {
             "$mainMod, bracketleft, changegroupactive, b"
             "$mainMod, bracketright, changegroupactive, f"
             "$mainMod, backslash, moveoutofgroup"
+            "$mainMod, Y, togglesplit,"
             "$mainMod, S, exec, rofi -show drun -show-icons"
             "$mainMod, E, exec, thunar"
             "$mainMod, Escape, exec, hyprlock"
@@ -256,13 +260,30 @@ in {
         # "forceinput,^(league of legends.exe)$"
         # ];
         windowrulev2 = [
+          # Bitwarden floating
           "float,class:^(Vivaldi-stable)$,title:^(Bitwarden - Vivaldi)$"
+          "float,class:^(msedge-_jbkfoedolllekgbhcbcoahefnbanhhlh-.*)"
           "workspace 1,title:^(Select what to share)$"
           "workspace 1,class:^(Immersed)$"
           "workspace 1,title:^(Immersed)"
-          "workspace 4,class:^(microsoft-edge)$"
-          "workspace 4,title:^(.*Outlook.*)$"
-          "workspace 4,title:^(.*Teams.*)$"
+          # Workspace 2 applications
+          "workspace 2,class:^(code)$"
+          # Workspace 3 applications
+          "workspace 3,class:^(Vivaldi-stable)$"
+          "workspace 3,class:^(Signal)$"
+          # Workspace 4 applications with default positioning
+          "workspace 4,title:.*GDS-Admin.*Microsoft.*Edge.*"
+          "workspace 4,title:.*GDS-User.*Microsoft.*Edge.*"
+          "workspace 4,class:^(obsidian)$"
+          # Workspace 4 percentage-based sizing  
+          "size 50% 100%,title:.*GDS-Admin.*Microsoft.*Edge.*"
+          "size 50% 100%,title:.*GDS-User.*Microsoft.*Edge.*"
+          "size 25% 50%,class:^(obsidian)$"
+          # Workspace 4 PWA applications
+          "workspace 4,class:^(msedge-outlook.office365.us__-Default)$"
+          "workspace 4,class:^(msedge-gov.teams.microsoft.us__v2-Default)$"
+          "size 50% 100%,class:^(msedge-outlook.office365.us__-Default)$"
+          "size 50% 100%,class:^(msedge-gov.teams.microsoft.us__v2-Default)$"
         ];
         exec-once = exec-once;
       };

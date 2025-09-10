@@ -107,9 +107,20 @@
       "workbench.startupEditor" = "none";
       "extensions.showRecommendationsOnlyOnDemand" = true;
       
+      # Claude Code extension
+      "workbench.panel.defaultLocation" = "right";
+      "workbench.panel.opensMaximized" = "never";
+      
       # Security settings
       "security.workspace.trust.enabled" = false;
       "git.openRepositoryInParentFolders" = "never";
     };
+    
+    keybindings = [
+      {
+        key = "shift+s shift+c";
+        command = "claude-code.runClaude";
+      }
+    ];
   };
 }
