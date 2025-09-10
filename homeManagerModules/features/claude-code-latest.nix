@@ -41,6 +41,7 @@ let
     set -euo pipefail
     
     MODULE_FILE="$HOME/nixconf/homeManagerModules/features/claude-code-latest.nix"
+    SYSTEM="${pkgs.system}"
     
     if [[ ! -f "$MODULE_FILE" ]]; then
       echo "Error: Claude module not found at $MODULE_FILE"
@@ -55,13 +56,16 @@ let
       local temp_expr=$(mktemp)
       
       # Create temporary expression to fetch with fake hash
-      cat > "$temp_expr" << EXPR
+      cat > "$temp_expr" << 'EXPR'
     with import <nixpkgs> {};
     fetchurl {
-      url = "$url";
+      url = "URL_PLACEHOLDER";
       sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
     }
 EXPR
+      
+      # Replace placeholder
+      ${pkgs.gnused}/bin/sed -i "s|URL_PLACEHOLDER|$url|g" "$temp_expr"
       
       # Attempt build and extract actual hash from error
       local output
@@ -79,17 +83,22 @@ EXPR
       local temp_expr=$(mktemp)
       
       # Create temporary expression for claude-code with known source but fake deps hash
-      cat > "$temp_expr" << EXPR
+      cat > "$temp_expr" << 'EXPR'
     with import <nixpkgs> { config.allowUnfree = true; };
     claude-code.overrideAttrs (oldAttrs: rec {
-      version = "$version";
+      version = "VERSION_PLACEHOLDER";
       src = fetchzip {
-        url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$version.tgz";
-        hash = "$source_hash";
+        url = "URL_PLACEHOLDER";
+        hash = "HASH_PLACEHOLDER";
       };
       npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
     })
 EXPR
+      
+      # Replace placeholders
+      ${pkgs.gnused}/bin/sed -i "s|VERSION_PLACEHOLDER|$version|g" "$temp_expr"
+      ${pkgs.gnused}/bin/sed -i "s|URL_PLACEHOLDER|https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$version.tgz|g" "$temp_expr"
+      ${pkgs.gnused}/bin/sed -i "s|HASH_PLACEHOLDER|$source_hash|g" "$temp_expr"
       
       # Attempt build and extract actual deps hash
       local output
@@ -122,16 +131,20 @@ EXPR
     # Get latest version by building registry fetch
     echo "Getting version..."
     TEMP_VERSION_EXPR=$(mktemp)
-    cat > "$TEMP_VERSION_EXPR" << EXPR
+    cat > "$TEMP_VERSION_EXPR" << 'EXPR'
     with import <nixpkgs> {};
     let
       registryInfo = builtins.fromJSON (builtins.readFile (fetchurl {
-        url = "$REGISTRY_URL";
-        sha256 = "$NEW_REGISTRY_HASH";
+        url = "REGISTRY_URL_PLACEHOLDER";
+        sha256 = "REGISTRY_HASH_PLACEHOLDER";
       }));
     in
     writeText "version" registryInfo.dist-tags.latest
 EXPR
+    
+    # Replace placeholders
+    ${pkgs.gnused}/bin/sed -i "s|REGISTRY_URL_PLACEHOLDER|$REGISTRY_URL|g" "$TEMP_VERSION_EXPR"
+    ${pkgs.gnused}/bin/sed -i "s|REGISTRY_HASH_PLACEHOLDER|$NEW_REGISTRY_HASH|g" "$TEMP_VERSION_EXPR"
     
     LATEST_VERSION=$(nix-build "$TEMP_VERSION_EXPR" --no-out-link | xargs cat)
     rm "$TEMP_VERSION_EXPR"
