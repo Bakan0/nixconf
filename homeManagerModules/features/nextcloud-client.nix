@@ -8,28 +8,36 @@ in {
       default = true;
       description = "Create symlinks from standard user directories to Nextcloud (OneDrive-style)";
     };
-    
-    serverUrl = mkOption {
-      type = types.str;
-      default = "";
-      description = "Pre-configure Nextcloud server URL";
-    };
   };
 
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       nextcloud-client
+      (writeShellScriptBin "nextcloud-setup" ''
+        set -euo pipefail
+        echo "🔗 Nextcloud Client Setup"
+        echo "========================="
+        echo ""
+        echo "1. First run: nextcloud (GUI will open for account setup)"
+        echo "2. Configure sync folder to: $HOME/nc"
+        echo "3. After setup: systemctl --user enable --now nextcloud-client"
+        echo ""
+        echo "Starting Nextcloud client GUI..."
+        exec ${pkgs.nextcloud-client}/bin/nextcloud
+      '')
     ];
 
     # Auto-create the Nextcloud directory
     home.file."nc/.keep".text = "";
     
-    # Create systemd service to auto-start and configure Nextcloud client
+    # Create systemd service for Nextcloud client
     systemd.user.services.nextcloud-client = {
       Unit = {
         Description = "Nextcloud desktop sync client";
         After = [ "graphical-session.target" ];
         Wants = [ "graphical-session.target" ];
+        # Only start if config exists (after initial setup)
+        ConditionPathExists = "%h/.config/Nextcloud/nextcloud.cfg";
       };
       
       Service = {
@@ -47,19 +55,6 @@ in {
         WantedBy = [ "default.target" ];
       };
     };
-
-    # Auto-configure the sync folder location to ~/nc
-    home.file.".config/Nextcloud/nextcloud.cfg".text = ''
-      [General]
-      optionalServerNotifications=true
-      showInExplorerNavigationPane=true
-      
-      [Accounts]
-      0\Folders\1\localPath=${config.home.homeDirectory}/nc
-      0\Folders\1\remotePath=/
-      0\Folders\1\targetPath=${config.home.homeDirectory}/nc
-      version=2
-    '';
 
     # Ensure the ~/nc directory and subdirectories exist
     home.activation.nextcloudSetup = lib.hm.dag.entryAfter ["writeBoundary"] (''

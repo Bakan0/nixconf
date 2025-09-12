@@ -14,6 +14,7 @@
     # shellIntegration.enableZshIntegration = true;
     settings = {
       enable_audio_bell = "no";
+      font_size = 13;
 
       # cursor = "#${base06}";
       cursor_text_color = "background";

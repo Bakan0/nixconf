@@ -451,7 +451,6 @@
     microsoft.enable = lib.mkDefault true;  # Azure Cloud Architect tools
     nextcloud-client = {
       enable = lib.mkDefault true;
-      serverUrl = "nc.databender.io";
       symlinkUserDirs = lib.mkDefault true;  # OneDrive-style integration
     };
     # Conditional desktop components - only if Hyprland is enabled
