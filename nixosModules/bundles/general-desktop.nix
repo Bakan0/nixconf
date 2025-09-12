@@ -96,6 +96,9 @@
       jack.enable = true;
     };
 
+    # GVFS for file manager integration with cloud storage
+    gvfs.enable = true;
+
     # Printing configuration - fixed to not block boot
     printing = {
       enable = true;

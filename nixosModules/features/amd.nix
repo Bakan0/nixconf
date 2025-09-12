@@ -70,6 +70,8 @@ in {
           "amdgpu.noretry=0"                  # Keep essential recovery params
           "amdgpu.lockup_timeout=10000"       # Keep essential recovery params
           "amdgpu.gpu_recovery=1"             # Keep essential recovery params
+          "amdgpu.ppfeaturemask=0xffffffff"   # Enable all PowerPlay features for fan control
+          "amdgpu.deep_color=1"               # Better color support
         ] ++ optionals cfg.conservativePowerManagement [
           "amd_pstate=passive"
           "processor.max_cstate=2"
@@ -102,6 +104,7 @@ in {
       environment.systemPackages = with pkgs; [
         radeontop
         rocmPackages.rocminfo
+        lm_sensors         # Hardware monitoring
       ];
     })
 
@@ -113,6 +116,8 @@ in {
           "amdgpu.noretry=0"                  # Keep essential recovery params
           "amdgpu.lockup_timeout=10000"       # Keep essential recovery params
           "amdgpu.gpu_recovery=1"             # Keep essential recovery params
+          "amdgpu.ppfeaturemask=0xffffffff"   # Enable all PowerPlay features for fan control
+          "amdgpu.deep_color=1"               # Better color support
         ] ++ optionals cfg.conservativePowerManagement [
           "amd_pstate=passive"
           "processor.max_cstate=2"
@@ -139,6 +144,7 @@ in {
       environment.systemPackages = with pkgs; [
         radeontop
         rocmPackages.rocminfo
+        lm_sensors         # Hardware monitoring
       ];
     })
   ]);

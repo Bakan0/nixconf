@@ -118,7 +118,7 @@
     
     keybindings = [
       {
-        key = "shift+s shift+c";
+        key = "ctrl+;";
         command = "claude-code.runClaude";
       }
     ];
