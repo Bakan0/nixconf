@@ -30,9 +30,7 @@
       enable = true;
       # autoToggleLaptop = true;
     };
-    virtualisation = {
-      username = "emet";
-    };
+    virtualisation.enable = true;
     wake-on-lan.enable = true;
     home-users = {
       "emet" = {
@@ -78,22 +76,8 @@
     ];
     packages = with pkgs; [
        appimage-run
-       (azure-cli.overrideAttrs (oldAttrs: {
-         doInstallCheck = false;
-       }))
-       azure-cli-extensions.azure-firewall
-       # azure-cli-extensions.costmanagement
-       azure-cli-extensions.fzf
-       # azure-cli-extensions.ip-group
-       # azure-cli-extensions.mdp
-       # azure-cli-extensions.multicloud-connector
-       # azure-cli-extensions.subscription
-       # azure-cli-extensions.virtual-network-manager
-       # azure-cli-extensions.virtual-wan
        kitty # Terminal emulator, recommended for Hyprland
-       microsoft-edge
        mutter
-       powershell
        quickemu
        remmina
        sidequest

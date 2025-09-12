@@ -8,8 +8,6 @@
 
     packages = with pkgs; [
       # Core packages moved to general bundle
-      # Nextcloud integration
-      nextcloud-client
       
       # App data transfer scripts
       (writeShellScriptBin "xfer-signal" ''
@@ -282,6 +280,12 @@
     kitty.enable = true;
     firefox.enable = true;
     hyprland.enable = lib.mkDefault true;
+    microsoft.enable = lib.mkDefault true;  # Azure Cloud Architect tools
+    nextcloud-client = {
+      enable = lib.mkDefault true;
+      serverUrl = "***REMOVED***";
+      symlinkUserDirs = lib.mkDefault true;  # OneDrive-style integration
+    };
     # Conditional desktop components - only if Hyprland is enabled
     waybar.enable = lib.mkIf config.myHomeManager.hyprland.enable (lib.mkDefault true);
   };

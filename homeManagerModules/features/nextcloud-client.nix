@@ -1,0 +1,120 @@
+{ config, lib, pkgs, ... }:
+with lib;
+let cfg = config.myHomeManager.nextcloud-client;
+in {
+  options.myHomeManager.nextcloud-client = {
+    symlinkUserDirs = mkOption {
+      type = types.bool;
+      default = true;
+      description = "Create symlinks from standard user directories to Nextcloud (OneDrive-style)";
+    };
+    
+    serverUrl = mkOption {
+      type = types.str;
+      default = "";
+      description = "Pre-configure Nextcloud server URL";
+    };
+  };
+
+  config = mkIf cfg.enable {
+    home.packages = with pkgs; [
+      nextcloud-client
+    ];
+
+    # Auto-create the Nextcloud directory
+    home.file."nc/.keep".text = "";
+    
+    # Create systemd service to auto-start and configure Nextcloud client
+    systemd.user.services.nextcloud-client = {
+      Unit = {
+        Description = "Nextcloud desktop sync client";
+        After = [ "graphical-session.target" ];
+        Wants = [ "graphical-session.target" ];
+      };
+      
+      Service = {
+        Type = "simple";
+        ExecStart = "${pkgs.nextcloud-client}/bin/nextcloud --background";
+        Restart = "on-failure";
+        RestartSec = "10s";
+        Environment = [
+          "QT_QPA_PLATFORM=wayland"
+          "QT_WAYLAND_FORCE_DPI=96"
+        ];
+      };
+      
+      Install = {
+        WantedBy = [ "default.target" ];
+      };
+    };
+
+    # Auto-configure the sync folder location to ~/nc
+    home.file.".config/Nextcloud/nextcloud.cfg".text = ''
+      [General]
+      optionalServerNotifications=true
+      showInExplorerNavigationPane=true
+      
+      [Accounts]
+      0\Folders\1\localPath=${config.home.homeDirectory}/nc
+      0\Folders\1\remotePath=/
+      0\Folders\1\targetPath=${config.home.homeDirectory}/nc
+      version=2
+    '';
+
+    # Ensure the ~/nc directory and subdirectories exist
+    home.activation.nextcloudSetup = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      $DRY_RUN_CMD mkdir -p "$HOME/nc"
+      $DRY_RUN_CMD chmod 755 "$HOME/nc"
+      
+      # Create standard Nextcloud folders
+      $DRY_RUN_CMD mkdir -p "$HOME/nc/Documents"
+      $DRY_RUN_CMD mkdir -p "$HOME/nc/Downloads" 
+      $DRY_RUN_CMD mkdir -p "$HOME/nc/Pictures"
+      $DRY_RUN_CMD mkdir -p "$HOME/nc/Music"
+      $DRY_RUN_CMD mkdir -p "$HOME/nc/Videos"
+      $DRY_RUN_CMD mkdir -p "$HOME/nc/Desktop"
+    '' + optionalString cfg.symlinkUserDirs ''
+      
+      # OneDrive-style: Merge and symlink user directories
+      # Handle existing files by moving them to Nextcloud first
+      if [ -d "$HOME/Documents" ] && [ ! -L "$HOME/Documents" ]; then
+        echo "Merging existing ~/Documents with Nextcloud..."
+        $DRY_RUN_CMD cp -r "$HOME/Documents"/* "$HOME/nc/Documents/" 2>/dev/null || true
+        $DRY_RUN_CMD cp -r "$HOME/Documents"/.[^.]* "$HOME/nc/Documents/" 2>/dev/null || true
+        $DRY_RUN_CMD rm -rf "$HOME/Documents"
+      fi
+      $DRY_RUN_CMD ln -sf "$HOME/nc/Documents" "$HOME/Documents"
+      
+      if [ -d "$HOME/Pictures" ] && [ ! -L "$HOME/Pictures" ]; then
+        echo "Merging existing ~/Pictures with Nextcloud..."
+        $DRY_RUN_CMD cp -r "$HOME/Pictures"/* "$HOME/nc/Pictures/" 2>/dev/null || true
+        $DRY_RUN_CMD cp -r "$HOME/Pictures"/.[^.]* "$HOME/nc/Pictures/" 2>/dev/null || true
+        $DRY_RUN_CMD rm -rf "$HOME/Pictures"
+      fi
+      $DRY_RUN_CMD ln -sf "$HOME/nc/Pictures" "$HOME/Pictures"
+      
+      if [ -d "$HOME/Music" ] && [ ! -L "$HOME/Music" ]; then
+        echo "Merging existing ~/Music with Nextcloud..."
+        $DRY_RUN_CMD cp -r "$HOME/Music"/* "$HOME/nc/Music/" 2>/dev/null || true
+        $DRY_RUN_CMD cp -r "$HOME/Music"/.[^.]* "$HOME/nc/Music/" 2>/dev/null || true
+        $DRY_RUN_CMD rm -rf "$HOME/Music"
+      fi
+      $DRY_RUN_CMD ln -sf "$HOME/nc/Music" "$HOME/Music"
+      
+      if [ -d "$HOME/Videos" ] && [ ! -L "$HOME/Videos" ]; then
+        echo "Merging existing ~/Videos with Nextcloud..."
+        $DRY_RUN_CMD cp -r "$HOME/Videos"/* "$HOME/nc/Videos/" 2>/dev/null || true
+        $DRY_RUN_CMD cp -r "$HOME/Videos"/.[^.]* "$HOME/nc/Videos/" 2>/dev/null || true
+        $DRY_RUN_CMD rm -rf "$HOME/Videos"
+      fi
+      $DRY_RUN_CMD ln -sf "$HOME/nc/Videos" "$HOME/Videos"
+      
+      # Note: Downloads stays local (too much temp stuff), Desktop optional
+      echo "Nextcloud OneDrive-style integration complete!"
+      echo "~/Documents -> ~/nc/Documents"
+      echo "~/Pictures -> ~/nc/Pictures" 
+      echo "~/Music -> ~/nc/Music"
+      echo "~/Videos -> ~/nc/Videos"
+    '';
+  };
+}

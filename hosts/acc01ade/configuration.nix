@@ -122,7 +122,6 @@
        appimage-run
        kitty # Terminal emulator, recommended for Hyprland
        mutter
-       powershell
        remmina
        sidequest
        tree
