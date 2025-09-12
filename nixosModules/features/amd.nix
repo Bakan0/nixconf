@@ -70,7 +70,7 @@ in {
           "amdgpu.noretry=0"                  # Keep essential recovery params
           "amdgpu.lockup_timeout=10000"       # Keep essential recovery params
           "amdgpu.gpu_recovery=1"             # Keep essential recovery params
-          "amdgpu.ppfeaturemask=0xffffffff"   # Enable all PowerPlay features for fan control
+          "amdgpu.ppfeaturemask=0xfff7ffff"   # Enable PowerPlay features, disable some problematic ones
           "amdgpu.deep_color=1"               # Better color support
         ] ++ optionals cfg.conservativePowerManagement [
           "amd_pstate=passive"
@@ -116,7 +116,7 @@ in {
           "amdgpu.noretry=0"                  # Keep essential recovery params
           "amdgpu.lockup_timeout=10000"       # Keep essential recovery params
           "amdgpu.gpu_recovery=1"             # Keep essential recovery params
-          "amdgpu.ppfeaturemask=0xffffffff"   # Enable all PowerPlay features for fan control
+          "amdgpu.ppfeaturemask=0xfff7ffff"   # Enable PowerPlay features, disable some problematic ones
           "amdgpu.deep_color=1"               # Better color support
         ] ++ optionals cfg.conservativePowerManagement [
           "amd_pstate=passive"
