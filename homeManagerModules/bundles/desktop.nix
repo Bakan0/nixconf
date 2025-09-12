@@ -38,15 +38,18 @@
 
     services.udiskie.enable = true;
 
-    xdg.mimeApps.defaultApplications = {
-      "text/plain" = ["neovide.desktop"];
-      "application/pdf" = ["zathura.desktop"];
-      "image/*" = ["imv.desktop"];
-      "video/png" = ["mpv.desktop"];
-      "video/jpg" = ["mpv.desktop"];
-      "video/*" = ["mpv.desktop"];
-      "inode/directory" = ["thunar.desktop"];
-      "application/x-directory" = ["thunar.desktop"];
+    xdg.mimeApps = {
+      enable = true;
+      defaultApplications = {
+        "text/plain" = ["neovide.desktop"];
+        "application/pdf" = ["zathura.desktop"];
+        "image/*" = ["imv.desktop"];
+        "video/png" = ["mpv.desktop"];
+        "video/jpg" = ["mpv.desktop"];
+        "video/*" = ["mpv.desktop"];
+        "inode/directory" = ["thunar.desktop"];
+        "application/x-directory" = ["thunar.desktop"];
+      };
     };
 
   services.mako = {

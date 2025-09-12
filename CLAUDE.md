@@ -30,40 +30,25 @@ Each host directory contains:
 
 ### Development Commands
 
-**Primary deployment method:**
+**Primary deployment (rebuilds BOTH system AND home-manager):**
 ```fish
 nh os switch ~/nixconf/. -- --show-trace
 ```
 
-**⚠️ CRITICAL: Always stage new files before rebuilding:**
+**⚠️ CRITICAL: Always stage file changes before rebuilding:**
 ```fish
-# Before any rebuild, if you created/renamed files, run:
-git add -A
-# Then rebuild:
+git add -A  # Required before any rebuild if files created/renamed/deleted
 nh os switch ~/nixconf/. -- --show-trace
 ```
 
-**Initial system build (for new machines):**
+**Remote deployment (build locally, deploy to another host):**
+```fish
+sudo nixos-rebuild switch --flake ~/nixconf#HOSTNAME --target-host root@HOST_IP --show-trace
+```
+
+**Initial system build (new machines only):**
 ```fish
 sudo nixos-rebuild switch --flake ~/nixconf#HOSTNAME --show-trace --option extra-experimental-features "nix-command flakes"
-```
-
-**Alternative rebuild commands:**
-```fish
-# Rebuild current system
-sudo nixos-rebuild switch --flake .
-
-# Rebuild specific host  
-sudo nixos-rebuild switch --flake .#HOSTNAME
-
-# Update flake inputs and rebuild
-nix flake update && sudo nixos-rebuild switch --flake .
-```
-
-**Testing changes:**
-```fish
-# Dry run
-sudo nixos-rebuild dry-run --flake .
 ```
 
 **Development shell:**
@@ -139,26 +124,19 @@ bat /path/to/file | wl-copy
 
 ### Critical Rules
 
-**❌ FORBIDDEN:**
-- Using bash/zsh syntax for interactive commands (Fish preferred for manual operations)
-- Breaking modular structure
-- Ignoring Stylix theming compatibility
-- Home-manager user configs for system-wide features
-- Using `lib.mkForce` (99% of the time it's unnecessary and indicates poor design)
-- Adding "Generated with Claude Code" or "Co-Authored-By: Claude" to commit messages
+**❌ NEVER commit broken builds** - Always test major changes before committing
+**❌ NEVER duplicate configuration attributes** (e.g., multiple `home.packages` in same module)  
+**❌ NEVER add AI-generated commit message footers**
+**❌ NEVER use `lib.mkForce` (indicates poor design in 99% of cases)
+**❌ NEVER use `nh home switch` (breaks Stylix theming)
 
-**✅ REQUIRED:**
-- Ensure Hyprland/Wayland compatibility for all GUI applications
-- Build upon existing solutions in conversation context
-- Ask clarifying questions before suggesting code changes
-- **Follow Conventional Commits specification for all commit messages**
-- Treat collaboration as editing/debugging assistance, not co-authoring
-- Always run `git add -A` before committing, especially when creating new files
-- Remember that `nh os switch` and `sudo` commands cannot be run by Claude
-- **ALWAYS prefer "correct" and best practice approaches over quick fixes or patches**
-- **Avoid shortcuts, workarounds, or temporary solutions - implement proper, maintainable solutions**
-- **Use proper NixOS patterns and configuration methods (e.g., `${config.system.build.environment.systemPath}` instead of hardcoded paths)**
-- **ALWAYS add final newline to ALL configuration files (required by POSIX and linters)**
+**✅ Architecture Patterns:**
+- Use `myLib/default.nix` `extendModules` function - auto-creates enable options for all features
+- Desktop-specific config belongs in bundles, not profiles
+- Remember: `nh os switch` rebuilds BOTH system AND home-manager
+- Always `git add -A` before rebuilds if files were created/renamed/deleted
+- Use proper NixOS patterns, avoid hardcoded paths
+- Follow Conventional Commits specification for all messages
 
 ### Git Commit Standards
 

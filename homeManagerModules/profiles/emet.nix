@@ -257,6 +257,82 @@
         echo "Transfer completed!"
       '')
       
+      (writeShellScriptBin "xfer-fish-history" ''
+        set -euo pipefail
+        
+        FISH_HISTORY_PATH="$HOME/.local/share/fish/fish_history"
+        
+        show_help() {
+            echo "Usage: xfer-fish-history [--send|--receive] <target_ip> [--dry-run]"
+            echo "Transfer Fish shell history between hosts using zstd+rsync"
+            echo ""
+            echo "Examples:"
+            echo "  xfer-fish-history --send 10.17.19.71"
+            echo "  xfer-fish-history --receive 10.17.19.71 --dry-run"
+        }
+        
+        # Parse arguments
+        ACTION=""
+        TARGET_IP=""
+        DRY_RUN=""
+        
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --send) ACTION="send"; TARGET_IP="$2"; shift 2 ;;
+                --receive) ACTION="receive"; TARGET_IP="$2"; shift 2 ;;
+                --dry-run) DRY_RUN="--dry-run"; shift ;;
+                --help) show_help; exit 0 ;;
+                *) echo "Unknown option: $1"; show_help; exit 1 ;;
+            esac
+        done
+        
+        [ -z "$ACTION" ] || [ -z "$TARGET_IP" ] && { show_help; exit 1; }
+        
+        # Validate IP format
+        echo "$TARGET_IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || {
+            echo "Error: Invalid IP address: $TARGET_IP"; exit 1;
+        }
+        
+        case $ACTION in
+            send)
+                [ ! -f "$FISH_HISTORY_PATH" ] && { echo "Error: Fish history not found at $FISH_HISTORY_PATH"; exit 1; }
+                
+                # Calculate file size
+                echo "Calculating Fish history size..."
+                SOURCE_SIZE=$(${coreutils}/bin/du -sb "$FISH_HISTORY_PATH" | ${coreutils}/bin/cut -f1)
+                SOURCE_SIZE_HUMAN=$(${coreutils}/bin/du -sh "$FISH_HISTORY_PATH" | ${coreutils}/bin/cut -f1)
+                echo "Fish history size: $SOURCE_SIZE_HUMAN ($SOURCE_SIZE bytes)"
+                
+                echo "Sending Fish history to $TARGET_IP..."
+                if [ -n "$DRY_RUN" ]; then
+                    echo "DRY RUN: Would transfer Fish history"
+                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress $DRY_RUN "$FISH_HISTORY_PATH" "$TARGET_IP:.local/share/fish/"
+                else
+                    # Ensure target directory exists and transfer
+                    ${openssh}/bin/ssh "$TARGET_IP" "mkdir -p ~/.local/share/fish"
+                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --stats "$FISH_HISTORY_PATH" "$TARGET_IP:.local/share/fish/"
+                fi
+                ;;
+            receive)
+                mkdir -p "$(dirname "$FISH_HISTORY_PATH")"
+                
+                # Calculate remote file size
+                echo "Calculating remote Fish history size..."
+                REMOTE_SIZE=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sb ~/.local/share/fish/fish_history 2>/dev/null | ${coreutils}/bin/cut -f1 || echo 0")
+                if [ "$REMOTE_SIZE" -gt 0 ]; then
+                    REMOTE_SIZE_HUMAN=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sh ~/.local/share/fish/fish_history | ${coreutils}/bin/cut -f1")
+                    echo "Remote Fish history size: $REMOTE_SIZE_HUMAN ($REMOTE_SIZE bytes)"
+                    
+                    echo "Receiving Fish history from $TARGET_IP..."
+                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --stats $DRY_RUN "$TARGET_IP:.local/share/fish/fish_history" "$FISH_HISTORY_PATH"
+                else
+                    echo "No Fish history found on remote host $TARGET_IP"
+                fi
+                ;;
+        esac
+        echo "Fish history transfer completed!"
+      '')
+      
       (writeShellScriptBin "xfer-obsidian" ''
         set -euo pipefail
         
