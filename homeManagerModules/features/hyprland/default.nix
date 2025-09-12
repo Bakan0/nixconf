@@ -18,7 +18,7 @@
     ${pkgs.swww}/bin/swww init &
     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
     # hyprctl setcursor Bibata-Modern-Ice 16 &
-    systemctl --user import-environment PATH &
+    systemctl --user import-environment PATH WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
     systemctl --user restart xdg-desktop-portal.service &
     systemctl --user restart xdg-desktop-portal-hyprland.service &
     # wait a tiny bit for wallpaper
@@ -49,8 +49,6 @@
     [
       (lib.getExe generalStartScript)
       (lib.getExe monitorScript)
-      # I forgot why i need this - Vimjoyer
-      "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
       # Workspace 3 applications
       "[workspace 3 silent] vivaldi"
       "[workspace 3 silent] signal-desktop"

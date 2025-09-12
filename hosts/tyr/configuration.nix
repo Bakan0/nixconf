@@ -13,6 +13,7 @@
     batteryManagement.enable = true;
     virtualisation.enable = true;
     wake-on-lan.enable = true;
+    stylix.theme = "atomic-terracotta";
   };
 
   boot.loader = {

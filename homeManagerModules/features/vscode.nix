@@ -39,6 +39,7 @@
       "terminal.integrated.fontFamily" = lib.mkDefault "'JetBrainsMono Nerd Font Mono'";
       "terminal.external.linuxExec" = lib.mkDefault "kitty";
       "terminal.integrated.defaultProfile.linux" = lib.mkDefault "fish";
+      "terminal.integrated.defaultLocation" = lib.mkDefault "panel";
       
       # Vim extension settings
       "vim.leader" = lib.mkDefault "<space>";
