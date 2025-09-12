@@ -10,7 +10,7 @@
     ];
   
   myNixOS = {
-    bundles.general.enable = true;  # Server only needs general bundle, not general-desktop
+    bundles.general.enable = true;  # Server essentials
     bundles.users.enable = true;
     wake-on-lan.enable = true;
     home-users = {

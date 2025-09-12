@@ -3,56 +3,18 @@
   lib,
   ...
 }: {
-  # System-wide nixpkgs configuration (moved from Home Manager)
-  nixpkgs.config = {
-    allowUnfree = true;
-  };
+  # Enable general bundle - contains all the system essentials
+  myNixOS.bundles.general.enable = lib.mkDefault true;
 
-  # Nix experimental features (correct location)
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-  
-  # Automatic generation cleanup - keep max 17 generations  
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-    options = "--delete-older-than 7d";
-  };
-  
-  # Automatically clean up old boot entries (keep 17 generations)
-  boot.loader.systemd-boot.configurationLimit = 17;
-
+  # Desktop-specific features
   myNixOS.sddm.enable = lib.mkDefault false;
   myNixOS.greetd.enable = lib.mkDefault false;
   myNixOS.autologin.enable = lib.mkDefault false;
   myNixOS.pipewire.enable = lib.mkDefault true;
   myNixOS.batteryManagement.enable = lib.mkDefault false;  # Enable only on laptops
-  myNixOS.powerManagement.enable = lib.mkDefault true;
   myNixOS.virtualisation.enable = lib.mkDefault true;
   myNixOS.stylix.enable = lib.mkDefault true;
   myNixOS.plymouth-splash.enable = lib.mkDefault true;
-
-  # US Central time zone
-  time.timeZone = lib.mkDefault "America/Chicago";
-  i18n.defaultLocale = "en_US.UTF-8";
-  i18n.extraLocaleSettings = { 
-    LC_ADDRESS = "en_US.UTF-8";
-    LC_IDENTIFICATION = "en_US.UTF-8";
-    LC_MEASUREMENT = "en_US.UTF-8";
-    LC_MONETARY = "en_US.UTF-8";
-    LC_NAME = "en_US.UTF-8";
-    LC_NUMERIC = "en_US.UTF-8";
-    LC_PAPER = "en_US.UTF-8";
-    LC_TELEPHONE = "en_US.UTF-8";
-    LC_TIME = "en_US.UTF-8";
-  };  
-
-  console = {
-    earlySetup = true;
-    font = "sun12x22";
-    useXkbConfig = true;
-  };
-
-  security.rtkit.enable = true;
 
   xdg.portal = {
     enable = true;
@@ -74,8 +36,6 @@
       };
     };
   };
-
-  environment.etc.hosts.mode = "0644";
 
   environment.systemPackages = with pkgs; [
     # Web browsers - available to all users
@@ -103,9 +63,6 @@
       jack.enable = true;
     };
 
-    # GVFS for file manager integration with cloud storage
-    gvfs.enable = true;
-
     # Printing configuration - fixed to not block boot
     printing = {
       enable = true;
@@ -116,22 +73,6 @@
       '';
     };
 
-    avahi = {
-      enable = true;
-      nssmdns4 = true;
-      nssmdns6 = true;
-      openFirewall = true;
-      publish = {
-        enable = true;
-        addresses = true;
-        domain = true;
-        hinfo = true;
-        userServices = true;  # This allows user applications to publish services
-        workstation = true;
-      };
-    };
-
-    upower.enable = true;
   };
 
   hardware = {
