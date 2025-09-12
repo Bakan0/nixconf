@@ -112,7 +112,6 @@
     flatpak
     font-awesome
     freerdp
-    fwupd
     geany
     glxinfo
     hyprland
@@ -152,13 +151,7 @@
     binfmt = true;
   };
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
 
-  services.fwupd.enable = true;
-  services.openssh.enable = true;
   services.protonmail-bridge.enable = false;
   services.teamviewer.enable = false;
 

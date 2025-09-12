@@ -360,8 +360,6 @@ NIXEOF
   networking.networkmanager.enable = true;
   time.timeZone = lib.mkDefault \"America/Chicago\";  # Adjust as needed
 
-  # Enable SSH for remote management
-  services.openssh.enable = true;
 
   # User configuration (adjust as needed)
   users.users.root.hashedPassword = \"!\";  # Disable root login

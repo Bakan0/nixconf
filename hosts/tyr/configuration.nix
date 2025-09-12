@@ -53,13 +53,7 @@
     binfmt = true;
   };
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
 
-  services.fwupd.enable = true;
-  services.openssh.enable = true;
   services.protonmail-bridge.enable = true;
   services.teamviewer.enable = true;
 

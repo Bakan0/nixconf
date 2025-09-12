@@ -155,15 +155,8 @@
     binfmt = true;
   };
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
-
-
   # Server services only
   services.nfs.server.enable = true;
-  services.openssh.enable = true;
 
   # Incompatible with Flakes
   # system.copySystemConfiguration = true;

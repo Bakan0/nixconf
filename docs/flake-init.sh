@@ -88,7 +88,7 @@ $ZFS_IMPORT
     sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
     greetd.enable = true;  # Display manager for Hyprland
     kanshi.enable = true;  # Display management
-    tpm2.enable = true;  # TPM2 support for LUKS auto-unlock
+    # TPM2 support provided by general bundle
     stylix = {
       enable = true;
       theme = "atomic-terracotta";  # $HOSTNAME gets the atomic terracotta theme
@@ -157,43 +157,19 @@ $ZFS_IMPORT
 
   nixpkgs.config.allowUnfree = true;
 
+  # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
+    # Additional packages not in bundles
     acpi
-    brightnessctl
+    brightnessctl  
     colorls
-    dunst
     fastfetch
-    flatpak
-    font-awesome
-    freerdp
-    fwupd
-    geany
-    glxinfo
-    hyprland
-    kitty
-    libnotify
     mesa-demos
-    neovide
-    networkmanagerapplet
-    nh
-    nix-output-monitor
     ntfs3g
     openconnect
-    pavucontrol
     qbittorrent
-    rofi-wayland
-    swww
-    tmux
-    unzip
-    vim
     vulkan-tools
-    waybar
-    wayland
-    wget
     wl-clipboard
-    xorg.xorgserver
-    xwayland
-    zip
   ];
 
   environment.variables.EDITOR = "nvim";
@@ -206,13 +182,7 @@ $ZFS_IMPORT
     binfmt = true;
   };
 
-  programs.gnupg.agent = {
-    enable = true;
-    enableSSHSupport = true;
-  };
 
-  services.fwupd.enable = true;
-  services.openssh.enable = true;
   services.protonmail-bridge.enable = false;
   services.teamviewer.enable = false;
 
@@ -248,10 +218,10 @@ cat > "hosts/$HOSTNAME/home.nix" << EOF
 EOF
 
 # CRITICAL: Bootstrap SSH access for post-reboot system
-# Insert SSH config before the closing brace
+# Insert SSH config before the closing brace (removed after flake deployment)
 sed -i '/^}$/i \
 \
-  # SSH Bootstrap - ensures access after reboot before flake deployment\
+  # SSH Bootstrap - temporary until flake deploys (general bundle provides this)\
   services.openssh.enable = true;\
   users.users.root.openssh.authorizedKeys.keys = [\
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY"\

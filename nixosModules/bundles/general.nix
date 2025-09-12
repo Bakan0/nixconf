@@ -50,6 +50,12 @@
   services = {
     # GVFS for file manager integration
     gvfs.enable = true;
+    
+    # Firmware updates
+    fwupd.enable = true;
+    
+    # SSH daemon for remote access
+    openssh.enable = true;
 
     avahi = {
       enable = true;
@@ -79,10 +85,17 @@
 
   programs.dconf.enable = true;
   security.polkit.enable = true;
+  
+  # GPG agent with SSH support
+  programs.gnupg.agent = {
+    enable = true;
+    enableSSHSupport = true;
+  };
 
   # Essential system packages
   environment.systemPackages = with pkgs; [
     curl
+    fwupd  # Firmware update daemon
     git
     nh
     nix-output-monitor  
