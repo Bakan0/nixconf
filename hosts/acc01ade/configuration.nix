@@ -14,6 +14,7 @@
     bundles.users.enable = true;
     wake-on-lan.enable = true;
     stylix.enable = true;  # Required by home-manager profile
+    virtualisation.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
