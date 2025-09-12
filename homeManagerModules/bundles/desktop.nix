@@ -102,8 +102,6 @@
       sxiv
       zathura
 
-      lm_sensors
-      upower
 
       cm_unicode
 

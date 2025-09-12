@@ -40,6 +40,8 @@
 
     fzf
     htop
+    lm_sensors  # Hardware monitoring - useful on servers too
+    upower      # Power management info - useful on servers too
     lf
     eza
     fd
