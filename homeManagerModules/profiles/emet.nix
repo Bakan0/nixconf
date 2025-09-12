@@ -873,14 +873,14 @@
   };
 
 
-  # Enable emet's preferred bundles by default
+  # Enable emet's preferred bundles by default (can be overridden per host)
   myHomeManager = {
     # Bundles
-    bundles.general.enable = true;
-    bundles.desktop.enable = true;
-    bundles.desktop-full.enable = true;
-    bundles.gaming.enable = true;
-    bundles.databender.enable = true;  # Can be overridden per host
+    bundles.general.enable = lib.mkDefault true;
+    bundles.desktop.enable = lib.mkDefault true;
+    bundles.desktop-full.enable = lib.mkDefault true;
+    bundles.gaming.enable = lib.mkDefault true;
+    bundles.databender.enable = lib.mkDefault true;
 
     # Features
     fish.enable = false;  # Explicitly disable fish
