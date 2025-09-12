@@ -22,8 +22,6 @@
     myHomeManager.xremap.enable = lib.mkDefault false;
     myHomeManager.imv.enable = lib.mkDefault false;
 
-    myHomeManager.gtk.enable = lib.mkDefault true;
-
     home.file = {
       ".local/share/rofi/rofi-bluetooth".source = "${pkgs.rofi-bluetooth}";
     };

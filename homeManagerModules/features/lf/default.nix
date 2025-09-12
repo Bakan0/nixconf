@@ -77,7 +77,7 @@
 
       ee = "editor-open";
       "e." = "edit-dir";
-      V = ''''$${pkgs.bat}/bin/bat --paging=always --theme=gruvbox "$f"'';
+      V = ''''$${pkgs.bat}/bin/bat --paging=always "$f"'';
 
       "<C-d>" = "5j";
       "<C-u>" = "5k";

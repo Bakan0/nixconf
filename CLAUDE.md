@@ -126,7 +126,8 @@ bat /path/to/file | wl-copy
 
 **❌ NEVER commit broken builds** - Always test major changes before committing
 **❌ NEVER duplicate configuration attributes** (e.g., multiple `home.packages` in same module)  
-**❌ NEVER add AI-generated commit message footers**
+**❌ NEVER EVER add AI-generated commit message footers like "Generated with Claude Code" or "Co-Authored-By: Claude" 
+**❌ NEVER write long commit messages - keep them concise (1-4 lines max using conventional commits)**
 **❌ NEVER use `lib.mkForce` (indicates poor design in 99% of cases)
 **❌ NEVER use `nh home switch` (breaks Stylix theming)
 

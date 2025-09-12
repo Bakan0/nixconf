@@ -23,7 +23,7 @@
 
   myNixOS.sddm.enable = lib.mkDefault false;
   myNixOS.greetd.enable = lib.mkDefault false;
-  myNixOS.autologin.enable = lib.mkDefault true;
+  myNixOS.autologin.enable = lib.mkDefault false;
   myNixOS.pipewire.enable = lib.mkDefault true;
   myNixOS.batteryManagement.enable = lib.mkDefault false;  # Enable only on laptops
   myNixOS.powerManagement.enable = lib.mkDefault true;
@@ -85,6 +85,13 @@
     # Desktop utilities - available to all users
     meld
     dmidecode
+    
+    # Icon themes - recent updates, perfect for terracotta theme
+    fluent-icon-theme     # Modern fluent design (2025-08-21)
+    candy-icons           # Sweet gradients, great for orange! (2025-08-13) 
+    qogir-icon-theme      # Flat colorful design (2025-02-15)
+    colloid-icon-theme    # Minimal and elegant (2025-02-09)
+    vimix-icon-theme      # Material design (2025-02-10)
   ];
 
   services = {

@@ -24,13 +24,11 @@ in {
       "d /var/log/greetd 0755 greeter greeter -"
     ];
 
-    # Fix Plymouth → Greetd transition gap
+    # Fix Plymouth → Greetd transition gap  
     systemd.services.greetd = {
-      after = [ "plymouth-quit-wait.service" "getty@tty1.service" ];
-      wants = [ "plymouth-quit-wait.service" ];
+      after = [ "getty@tty1.service" ];
       conflicts = [ "getty@tty1.service" ];
       serviceConfig = {
-        # Start greetd faster
         Type = "idle";
         StandardInput = "tty";
         StandardOutput = "tty";
@@ -38,16 +36,6 @@ in {
         TTYPath = "/dev/tty1";
         TTYReset = "yes";
         TTYVHangup = "yes";
-      };
-    };
-
-    # Keep Plymouth running until greetd is actually ready
-    systemd.services.plymouth-quit-wait = {
-      serviceConfig = {
-        ExecStart = [
-          ""  # Clear default
-          "${pkgs.plymouth}/bin/plymouth quit --wait"
-        ];
       };
     };
   };
