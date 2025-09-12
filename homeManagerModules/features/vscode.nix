@@ -7,23 +7,24 @@
 
   programs.vscode = {
     enable = true;
-    extensions = with pkgs.vscode-extensions; [
-      # Vim editing
-      vscodevim.vim
+    profiles.default = {
+      extensions = with pkgs.vscode-extensions; [
+        # Vim editing
+        vscodevim.vim
+        
+        # Nix support  
+        bbenoist.nix
+        
+        # Code quality and linting
+        sonarsource.sonarlint-vscode
+        
+        # YAML support with yamllint
+        redhat.vscode-yaml
+        
+        # Note: Using official Anthropic Claude Code extension (installed manually)
+      ];
       
-      # Nix support  
-      bbenoist.nix
-      
-      # Code quality and linting
-      sonarsource.sonarlint-vscode
-      
-      # YAML support with yamllint
-      redhat.vscode-yaml
-      
-      # Note: Using official Anthropic Claude Code extension (installed manually)
-    ];
-    
-    userSettings = {
+      userSettings = {
       # Editor settings
       "editor.fontFamily" = lib.mkDefault "'JetBrainsMono Nerd Font Mono', 'Fira Code', monospace";
       "editor.fontSize" = lib.mkDefault 14;
@@ -107,20 +108,26 @@
       "workbench.startupEditor" = "none";
       "extensions.showRecommendationsOnlyOnDemand" = true;
       
-      # Claude Code extension
-      "workbench.panel.defaultLocation" = "right";
+      # Claude Code extension - auto-open and hide source control
       "workbench.panel.opensMaximized" = "never";
+      "workbench.panel.defaultLocation" = "bottom";
+      
+      
+      # Hide the annoying Source Control panel with lock icon
+      "scm.repositories.visible" = 0;
+      "workbench.view.scm.visible" = false;
       
       # Security settings
       "security.workspace.trust.enabled" = false;
       "git.openRepositoryInParentFolders" = "never";
+      };
+      
+      keybindings = [
+        {
+          key = "ctrl+;";
+          command = "claude-code.runClaude";
+        }
+      ];
     };
-    
-    keybindings = [
-      {
-        key = "ctrl+;";
-        command = "claude-code.runClaude";
-      }
-    ];
   };
 }

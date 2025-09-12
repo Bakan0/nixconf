@@ -28,17 +28,45 @@
         
         check_signal_running() {
             local host="$1"
+            local host_name="$2"
             if [ "$host" = "local" ]; then
-                if ${procps}/bin/pgrep -x "signal-desktop" >/dev/null 2>&1; then
-                    echo "Error: Signal is running locally. Close Signal before transfer."
-                    return 1
-                fi
+                ${procps}/bin/pgrep -f "signal-desktop\|electron.*Signal" >/dev/null 2>&1
             else
-                if ${openssh}/bin/ssh "$host" "${procps}/bin/pgrep -x signal-desktop >/dev/null 2>&1"; then
-                    echo "Error: Signal is running on $host. Close Signal on target before transfer."
-                    return 1
-                fi
+                ${openssh}/bin/ssh "$host" "${procps}/bin/pgrep -f 'signal-desktop\|electron.*Signal' >/dev/null 2>&1"
             fi
+        }
+        
+        wait_for_signal_closure() {
+            local target_ip="$1"
+            while true; do
+                local local_running=false
+                local remote_running=false
+                
+                if check_signal_running "local" "local"; then
+                    local_running=true
+                fi
+                
+                if check_signal_running "$target_ip" "remote"; then
+                    remote_running=true
+                fi
+                
+                if [ "$local_running" = false ] && [ "$remote_running" = false ]; then
+                    break
+                fi
+                
+                # Show which hosts have Signal running
+                echo "Signal is currently running on:"
+                if [ "$local_running" = true ]; then
+                    echo "  - Local machine ($(hostname))"
+                fi
+                if [ "$remote_running" = true ]; then
+                    echo "  - Remote machine ($target_ip)"
+                fi
+                echo "Please quit Signal on the above machine(s) before continuing."
+                echo "Press Enter to check again, or Ctrl+C to cancel..."
+                read -r
+                sleep 1
+            done
         }
         
         # Parse arguments
@@ -65,23 +93,43 @@
         
         case $ACTION in
             send)
-                check_signal_running "local" && check_signal_running "$TARGET_IP" || exit 1
                 [ ! -d "$APP_PATH" ] && { echo "Error: Signal profile not found at $APP_PATH"; exit 1; }
+                
+                # Wait for Signal to be closed on both machines
+                wait_for_signal_closure "$TARGET_IP"
+                
+                # Calculate initial directory size
+                echo "Calculating Signal profile size..."
+                SOURCE_SIZE=$(${coreutils}/bin/du -sb "$APP_PATH" | ${coreutils}/bin/cut -f1)
+                SOURCE_SIZE_HUMAN=$(${coreutils}/bin/du -sh "$APP_PATH" | ${coreutils}/bin/cut -f1)
+                echo "Signal profile size: $SOURCE_SIZE_HUMAN ($SOURCE_SIZE bytes)"
+                
                 echo "Sending Signal profile to $TARGET_IP..."
                 if [ -n "$DRY_RUN" ]; then
-                    echo "DRY RUN: Would stop Signal on $TARGET_IP, transfer data, and ensure target directory exists"
+                    echo "DRY RUN: Would transfer data and ensure target directory exists"
                     ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$APP_PATH/" "$TARGET_IP:.config/Signal/"
                 else
                     # Ensure target directory exists and transfer
                     ${openssh}/bin/ssh "$TARGET_IP" "mkdir -p ~/.config"
-                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete "$APP_PATH/" "$TARGET_IP:.config/Signal/"
+                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats "$APP_PATH/" "$TARGET_IP:.config/Signal/"
                 fi
                 ;;
             receive)
-                check_signal_running "local" && check_signal_running "$TARGET_IP" || exit 1
                 mkdir -p "$(dirname "$APP_PATH")"
+                
+                # Wait for Signal to be closed on both machines
+                wait_for_signal_closure "$TARGET_IP"
+                
+                # Calculate remote directory size
+                echo "Calculating remote Signal profile size..."
+                REMOTE_SIZE=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sb ~/.config/Signal 2>/dev/null | ${coreutils}/bin/cut -f1 || echo 0")
+                if [ "$REMOTE_SIZE" -gt 0 ]; then
+                    REMOTE_SIZE_HUMAN=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sh ~/.config/Signal | ${coreutils}/bin/cut -f1")
+                    echo "Remote Signal profile size: $REMOTE_SIZE_HUMAN ($REMOTE_SIZE bytes)"
+                fi
+                
                 echo "Receiving Signal profile from $TARGET_IP..."
-                ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$TARGET_IP:.config/Signal/" "$APP_PATH/"
+                ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats $DRY_RUN "$TARGET_IP:.config/Signal/" "$APP_PATH/"
                 ;;
         esac
         echo "Transfer completed!"
@@ -104,17 +152,45 @@
         
         check_edge_running() {
             local host="$1"
+            local host_name="$2"
             if [ "$host" = "local" ]; then
-                if ${procps}/bin/pgrep -x "msedge\|microsoft-edge" >/dev/null 2>&1; then
-                    echo "Error: Edge is running locally. Close Edge before transfer."
-                    return 1
-                fi
+                ${procps}/bin/pgrep -f "msedge\|microsoft-edge\|edge" >/dev/null 2>&1
             else
-                if ${openssh}/bin/ssh "$host" "${procps}/bin/pgrep -x 'msedge\|microsoft-edge' >/dev/null 2>&1"; then
-                    echo "Error: Edge is running on $host. Close Edge on target before transfer."
-                    return 1
-                fi
+                ${openssh}/bin/ssh "$host" "${procps}/bin/pgrep -f 'msedge\|microsoft-edge\|edge' >/dev/null 2>&1"
             fi
+        }
+        
+        wait_for_edge_closure() {
+            local target_ip="$1"
+            while true; do
+                local local_running=false
+                local remote_running=false
+                
+                if check_edge_running "local" "local"; then
+                    local_running=true
+                fi
+                
+                if check_edge_running "$target_ip" "remote"; then
+                    remote_running=true
+                fi
+                
+                if [ "$local_running" = false ] && [ "$remote_running" = false ]; then
+                    break
+                fi
+                
+                # Show which hosts have Edge running
+                echo "Microsoft Edge is currently running on:"
+                if [ "$local_running" = true ]; then
+                    echo "  - Local machine ($(hostname))"
+                fi
+                if [ "$remote_running" = true ]; then
+                    echo "  - Remote machine ($target_ip)"
+                fi
+                echo "Please quit Edge on the above machine(s) before continuing."
+                echo "Press Enter to check again, or Ctrl+C to cancel..."
+                read -r
+                sleep 1
+            done
         }
         
         # Parse arguments
@@ -141,23 +217,43 @@
         
         case $ACTION in
             send)
-                check_edge_running "local" && check_edge_running "$TARGET_IP" || exit 1
                 [ ! -d "$APP_PATH" ] && { echo "Error: Edge profile not found at $APP_PATH"; exit 1; }
+                
+                # Wait for Edge to be closed on both machines
+                wait_for_edge_closure "$TARGET_IP"
+                
+                # Calculate initial directory size
+                echo "Calculating Edge profile size..."
+                SOURCE_SIZE=$(${coreutils}/bin/du -sb "$APP_PATH" | ${coreutils}/bin/cut -f1)
+                SOURCE_SIZE_HUMAN=$(${coreutils}/bin/du -sh "$APP_PATH" | ${coreutils}/bin/cut -f1)
+                echo "Edge profile size: $SOURCE_SIZE_HUMAN ($SOURCE_SIZE bytes)"
+                
                 echo "Sending Edge profile to $TARGET_IP..."
                 if [ -n "$DRY_RUN" ]; then
-                    echo "DRY RUN: Would stop Edge on $TARGET_IP, transfer data, and ensure target directory exists"
+                    echo "DRY RUN: Would transfer data and ensure target directory exists"
                     ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$APP_PATH/" "$TARGET_IP:.config/microsoft-edge/"
                 else
                     # Ensure target directory exists and transfer
                     ${openssh}/bin/ssh "$TARGET_IP" "mkdir -p ~/.config"
-                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete "$APP_PATH/" "$TARGET_IP:.config/microsoft-edge/"
+                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats "$APP_PATH/" "$TARGET_IP:.config/microsoft-edge/"
                 fi
                 ;;
             receive)
-                check_edge_running "local" && check_edge_running "$TARGET_IP" || exit 1
                 mkdir -p "$(dirname "$APP_PATH")"
+                
+                # Wait for Edge to be closed on both machines
+                wait_for_edge_closure "$TARGET_IP"
+                
+                # Calculate remote directory size
+                echo "Calculating remote Edge profile size..."
+                REMOTE_SIZE=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sb ~/.config/microsoft-edge 2>/dev/null | ${coreutils}/bin/cut -f1 || echo 0")
+                if [ "$REMOTE_SIZE" -gt 0 ]; then
+                    REMOTE_SIZE_HUMAN=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sh ~/.config/microsoft-edge | ${coreutils}/bin/cut -f1")
+                    echo "Remote Edge profile size: $REMOTE_SIZE_HUMAN ($REMOTE_SIZE bytes)"
+                fi
+                
                 echo "Receiving Edge profile from $TARGET_IP..."
-                ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$TARGET_IP:.config/microsoft-edge/" "$APP_PATH/"
+                ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats $DRY_RUN "$TARGET_IP:.config/microsoft-edge/" "$APP_PATH/"
                 ;;
         esac
         echo "Transfer completed!"
