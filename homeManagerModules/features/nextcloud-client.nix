@@ -62,7 +62,7 @@ in {
     '';
 
     # Ensure the ~/nc directory and subdirectories exist
-    home.activation.nextcloudSetup = lib.hm.dag.entryAfter ["writeBoundary"] ''
+    home.activation.nextcloudSetup = lib.hm.dag.entryAfter ["writeBoundary"] (''
       $DRY_RUN_CMD mkdir -p "$HOME/nc"
       $DRY_RUN_CMD chmod 755 "$HOME/nc"
       
@@ -115,6 +115,6 @@ in {
       echo "~/Pictures -> ~/nc/Pictures" 
       echo "~/Music -> ~/nc/Music"
       echo "~/Videos -> ~/nc/Videos"
-    '';
+    '');
   };
 }

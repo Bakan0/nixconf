@@ -30,6 +30,7 @@
       enable = true;
       # autoToggleLaptop = true;
     };
+    powerManagement.enable = false;  # TEMP DEBUG
     virtualisation.enable = true;
     wake-on-lan.enable = true;
     home-users = {

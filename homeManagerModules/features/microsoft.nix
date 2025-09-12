@@ -24,8 +24,5 @@ in {
       # PowerShell for Azure automation
       powershell
     ];
-
-    # Enable PowerShell linting support
-    myHomeManager.linters.powershell.enable = mkDefault true;
   };
 }

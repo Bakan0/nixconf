@@ -101,7 +101,6 @@ in {
         kanshi.enable = true;  # Display management  
         tpm2.enable = true;    # TPM2 support for LUKS auto-unlock
         vpn.enable = true;     # VPN support
-        virtualisation.enable = lib.mkDefault false;
 
         home-users.emet = {
           userSettings = {
