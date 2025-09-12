@@ -84,25 +84,13 @@ $ZFS_IMPORT
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
-    sysadmin.enable = true;
-    sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
-    greetd.enable = true;  # Display manager for Hyprland
-    kanshi.enable = true;  # Display management
-    # TPM2 support provided by general bundle
+    bundles.users.$USERNAME.enable = true;  # Enable specific user bundle (provides SSH keys, packages, settings)
     stylix = {
       enable = true;
       theme = "atomic-terracotta";  # $HOSTNAME gets the atomic terracotta theme
     };
-    home-users = {
-      "$USERNAME" = {
-        # Profile automatically selected as profiles/$USERNAME.nix
-        userSettings = {
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
-        };
-        # Host-specific home configuration
-        userConfig = ./home.nix;
-      };
-    };
+    # User bundle provides most configuration - only host-specific overrides needed
+    home-users."$USERNAME".userConfig = ./home.nix;
   };
 
   boot = {
@@ -122,31 +110,7 @@ $ZFS_IMPORT
 
   system.autoUpgrade.enable = false;
 
-  users.users.root = {
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
-    ];
-  };
-
-  users.users.$USERNAME = {
-    isNormalUser = true;
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
-    ];
-    packages = with pkgs; [
-      appimage-run
-      (azure-cli.overrideAttrs (oldAttrs: {
-        doInstallCheck = false;
-      }))
-      azure-cli-extensions.azure-firewall
-      kitty # Terminal emulator, recommended for Hyprland
-      microsoft-edge
-      powershell
-      remmina
-      tree
-      yazi
-    ];
-  };
+  # User configuration provided by user bundle - no manual setup needed
 
   # Enable flakes and allow unfree
   nix.settings = {
