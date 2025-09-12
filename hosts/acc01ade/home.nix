@@ -21,6 +21,9 @@
     # Disable desktop components on server
     hyprland.enable = false;
     waybar.enable = false;
+    
+    # Server doesn't need Microsoft Azure tools
+    microsoft.enable = false;
   };
 }
 

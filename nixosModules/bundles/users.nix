@@ -99,7 +99,6 @@ in {
         };
         greetd.enable = true;  # Display manager for Hyprland
         kanshi.enable = true;  # Display management  
-        tpm2.enable = true;    # TPM2 support for LUKS auto-unlock
         vpn.enable = true;     # VPN support
 
         home-users.emet = {

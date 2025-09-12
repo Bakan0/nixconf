@@ -71,6 +71,7 @@
 
   # Enable basic system features
   myNixOS.powerManagement.enable = lib.mkDefault true;
+  myNixOS.tpm2.enable = lib.mkDefault true;  # TPM2 support for LUKS auto-unlock
 
   # Nix optimizations
   nix.optimise.automatic = true;
