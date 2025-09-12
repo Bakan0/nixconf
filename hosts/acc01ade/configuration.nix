@@ -10,12 +10,8 @@
     ];
   
   myNixOS = {
-    bundles.general-desktop.enable = true;
+    bundles.general.enable = true;  # Server only needs general bundle, not general-desktop
     bundles.users.enable = true;
-    # Desktop components disabled for server
-    sddm.enable = false;
-    greetd.enable = false;
-    hyprland.enable = false;
     wake-on-lan.enable = true;
     home-users = {
       "emet" = {
@@ -119,13 +115,8 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
     ];
     packages = with pkgs; [
-       appimage-run
-       kitty # Terminal emulator, recommended for Hyprland
-       mutter
-       remmina
-       sidequest
-       tree
-       yazi
+       tree  # Keep basic utilities
+       yazi  # Terminal file manager
     ];
   };
 
@@ -139,40 +130,16 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-    acpi
-    brightnessctl
-    colorls
+    # Essential server tools only
     curl
-    dunst
-    fastfetch
-    flatpak
-    font-awesome
-    freerdp
-    fwupd
     git
-    hyprland
-    kitty
-    libnotify
-    neovide
-    networkmanagerapplet
     nh
-    nix-output-monitor
-    ntfs3g
-    openconnect
-    pavucontrol
-    rofi-wayland
-    swww
-    tailscale
-    # teamviewer
+    nix-output-monitor  
+    openconnect  # VPN client
     tmux
     unzip
     vim
-    waybar
-    wayland
-    wget
-    wl-clipboard
-    xorg.xorgserver
-    xwayland
+    wget  
     zip
   ];
 
@@ -192,15 +159,9 @@
   };
 
 
-  # Enable the X11 windowing system.
-  services.xserver.enable = true;
-
-  # services.flatpak.enable = true;
-  services.fwupd.enable = true;
+  # Server services only
   services.nfs.server.enable = true;
   services.openssh.enable = true;
-  services.protonmail-bridge.enable = true;
-  # services.teamviewer.enable = true;
 
   # Incompatible with Flakes
   # system.copySystemConfiguration = true;
