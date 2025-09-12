@@ -47,6 +47,28 @@
         "video/*" = ["mpv.desktop"];
         "inode/directory" = ["thunar.desktop"];
         "application/x-directory" = ["thunar.desktop"];
+        "application/x-iso9660-image" = ["thunar.desktop"];
+        "application/x-cd-image" = ["thunar.desktop"];
+        "text/html" = ["vivaldi-stable.desktop"];
+        "application/xhtml+xml" = ["vivaldi-stable.desktop"];
+        "x-scheme-handler/http" = ["vivaldi-stable.desktop"];
+        "x-scheme-handler/https" = ["vivaldi-stable.desktop"];
+        # Office documents - OnlyOffice
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = ["onlyoffice-desktopeditors.desktop"]; # docx
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = ["onlyoffice-desktopeditors.desktop"]; # xlsx
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation" = ["onlyoffice-desktopeditors.desktop"]; # pptx
+        "application/msword" = ["onlyoffice-desktopeditors.desktop"]; # doc
+        "application/vnd.ms-excel" = ["onlyoffice-desktopeditors.desktop"]; # xls
+        "application/vnd.ms-powerpoint" = ["onlyoffice-desktopeditors.desktop"]; # ppt
+        "application/vnd.oasis.opendocument.text" = ["onlyoffice-desktopeditors.desktop"]; # odt
+        "application/vnd.oasis.opendocument.spreadsheet" = ["onlyoffice-desktopeditors.desktop"]; # ods
+        "application/vnd.oasis.opendocument.presentation" = ["onlyoffice-desktopeditors.desktop"]; # odp
+        # Archive files - file manager (thunar can handle archives)
+        "application/zip" = ["thunar.desktop"];
+        "application/x-rar" = ["thunar.desktop"];
+        "application/x-tar" = ["thunar.desktop"];
+        "application/x-7z-compressed" = ["thunar.desktop"];
+        "application/gzip" = ["thunar.desktop"];
       };
     };
 

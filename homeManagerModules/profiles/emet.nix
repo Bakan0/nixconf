@@ -500,6 +500,255 @@
         esac
         echo "Zettelkasten transfer completed!"
       '')
+      
+      (writeShellScriptBin "xfer-libvirt" ''
+        set -euo pipefail
+        
+        # Libvirt paths - typical locations
+        VM_IMAGES_PATH="/var/lib/libvirt/images"
+        VM_CONFIGS_PATH="/etc/libvirt/qemu"
+        NETWORK_CONFIGS_PATH="/etc/libvirt/qemu/networks"
+        USER_CONFIGS_PATH="$HOME/.config/libvirt"
+        
+        show_help() {
+            echo "Usage: xfer-libvirt [--send|--receive] <target_ip> [--dry-run]"
+            echo "Transfer libvirt VMs and configurations between hosts using zstd+rsync"
+            echo ""
+            echo "Transfers:"
+            echo "  /var/lib/libvirt/images (VM disk images - qcow2, raw, etc.)"
+            echo "  /etc/libvirt/qemu (VM XML configurations)"
+            echo "  /etc/libvirt/qemu/networks (network configurations)"
+            echo "  ~/.config/libvirt (user-specific libvirt config)"
+            echo ""
+            echo "Examples:"
+            echo "  xfer-libvirt --send 10.17.19.89"
+            echo "  xfer-libvirt --receive 10.17.19.89 --dry-run"
+            echo ""
+            echo "Note: Requires sudo for system directories. VMs should be shut down before transfer."
+        }
+        
+        check_libvirt_running() {
+            local host="$1"
+            if [ "$host" = "local" ]; then
+                # Check for running VMs
+                sudo virsh list --state-running 2>/dev/null | grep -q "running" || return 1
+            else
+                ${openssh}/bin/ssh "$host" "sudo virsh list --state-running 2>/dev/null | grep -q 'running'" || return 1
+            fi
+        }
+        
+        wait_for_vm_shutdown() {
+            local target_ip="$1"
+            while true; do
+                local local_running=false
+                local remote_running=false
+                
+                if check_libvirt_running "local"; then
+                    local_running=true
+                fi
+                
+                if check_libvirt_running "$target_ip"; then
+                    remote_running=true
+                fi
+                
+                if [ "$local_running" = false ] && [ "$remote_running" = false ]; then
+                    break
+                fi
+                
+                echo "Running VMs detected on:"
+                if [ "$local_running" = true ]; then
+                    echo "  - Local machine ($(hostname))"
+                    sudo virsh list --state-running 2>/dev/null | grep running | awk '{print "    * " $2}'
+                fi
+                if [ "$remote_running" = true ]; then
+                    echo "  - Remote machine ($target_ip)"
+                    ${openssh}/bin/ssh "$target_ip" "sudo virsh list --state-running 2>/dev/null | grep running | awk '{print \"    * \" \$2}'"
+                fi
+                echo "Please shut down all VMs before continuing."
+                echo "Press Enter to check again, or Ctrl+C to cancel..."
+                read -r
+                sleep 1
+            done
+        }
+        
+        # Parse arguments
+        ACTION=""
+        TARGET_IP=""
+        DRY_RUN=""
+        
+        while [[ $# -gt 0 ]]; do
+            case $1 in
+                --send) ACTION="send"; TARGET_IP="$2"; shift 2 ;;
+                --receive) ACTION="receive"; TARGET_IP="$2"; shift 2 ;;
+                --dry-run) DRY_RUN="--dry-run"; shift ;;
+                --help) show_help; exit 0 ;;
+                *) echo "Unknown option: $1"; show_help; exit 1 ;;
+            esac
+        done
+        
+        [ -z "$ACTION" ] || [ -z "$TARGET_IP" ] && { show_help; exit 1; }
+        
+        # Validate IP format
+        echo "$TARGET_IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || {
+            echo "Error: Invalid IP address: $TARGET_IP"; exit 1;
+        }
+        
+        case $ACTION in
+            send)
+                # Check if libvirt is installed and directories exist
+                if [ ! -d "$VM_IMAGES_PATH" ] && [ ! -d "$VM_CONFIGS_PATH" ] && [ ! -d "$USER_CONFIGS_PATH" ]; then
+                    echo "Error: No libvirt directories found. Is libvirt installed?"
+                    exit 1
+                fi
+                
+                # Wait for VMs to be shut down
+                wait_for_vm_shutdown "$TARGET_IP"
+                
+                # Calculate sizes for existing directories
+                echo "Calculating libvirt data sizes..."
+                if [ -d "$VM_IMAGES_PATH" ] && [ "$(sudo ls -A "$VM_IMAGES_PATH" 2>/dev/null)" ]; then
+                    IMAGES_SIZE=$(sudo ${coreutils}/bin/du -sb "$VM_IMAGES_PATH" | ${coreutils}/bin/cut -f1)
+                    IMAGES_SIZE_HUMAN=$(sudo ${coreutils}/bin/du -sh "$VM_IMAGES_PATH" | ${coreutils}/bin/cut -f1)
+                    echo "VM images size: $IMAGES_SIZE_HUMAN ($IMAGES_SIZE bytes)"
+                fi
+                
+                if [ -d "$VM_CONFIGS_PATH" ] && [ "$(sudo ls -A "$VM_CONFIGS_PATH" 2>/dev/null)" ]; then
+                    CONFIGS_SIZE=$(sudo ${coreutils}/bin/du -sb "$VM_CONFIGS_PATH" | ${coreutils}/bin/cut -f1)
+                    CONFIGS_SIZE_HUMAN=$(sudo ${coreutils}/bin/du -sh "$VM_CONFIGS_PATH" | ${coreutils}/bin/cut -f1)
+                    echo "VM configs size: $CONFIGS_SIZE_HUMAN ($CONFIGS_SIZE bytes)"
+                fi
+                
+                if [ -d "$NETWORK_CONFIGS_PATH" ] && [ "$(sudo ls -A "$NETWORK_CONFIGS_PATH" 2>/dev/null)" ]; then
+                    NETWORK_SIZE=$(sudo ${coreutils}/bin/du -sb "$NETWORK_CONFIGS_PATH" | ${coreutils}/bin/cut -f1)
+                    NETWORK_SIZE_HUMAN=$(sudo ${coreutils}/bin/du -sh "$NETWORK_CONFIGS_PATH" | ${coreutils}/bin/cut -f1)
+                    echo "Network configs size: $NETWORK_SIZE_HUMAN ($NETWORK_SIZE bytes)"
+                fi
+                
+                if [ -d "$USER_CONFIGS_PATH" ] && [ "$(ls -A "$USER_CONFIGS_PATH" 2>/dev/null)" ]; then
+                    USER_SIZE=$(${coreutils}/bin/du -sb "$USER_CONFIGS_PATH" | ${coreutils}/bin/cut -f1)
+                    USER_SIZE_HUMAN=$(${coreutils}/bin/du -sh "$USER_CONFIGS_PATH" | ${coreutils}/bin/cut -f1)
+                    echo "User configs size: $USER_SIZE_HUMAN ($USER_SIZE bytes)"
+                fi
+                
+                # Transfer VM images (largest files first)
+                if [ -d "$VM_IMAGES_PATH" ] && [ "$(sudo ls -A "$VM_IMAGES_PATH" 2>/dev/null)" ]; then
+                    echo "Sending VM images to $TARGET_IP..."
+                    if [ -n "$DRY_RUN" ]; then
+                        echo "DRY RUN: Would transfer VM images"
+                        sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$VM_IMAGES_PATH/" "$TARGET_IP:/var/lib/libvirt/images/"
+                    else
+                        ${openssh}/bin/ssh "$TARGET_IP" "sudo mkdir -p /var/lib/libvirt/images"
+                        sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats "$VM_IMAGES_PATH/" "$TARGET_IP:/var/lib/libvirt/images/"
+                    fi
+                fi
+                
+                # Transfer VM configurations
+                if [ -d "$VM_CONFIGS_PATH" ] && [ "$(sudo ls -A "$VM_CONFIGS_PATH" 2>/dev/null)" ]; then
+                    echo "Sending VM configurations to $TARGET_IP..."
+                    if [ -n "$DRY_RUN" ]; then
+                        echo "DRY RUN: Would transfer VM configurations"
+                        sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$VM_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/"
+                    else
+                        ${openssh}/bin/ssh "$TARGET_IP" "sudo mkdir -p /etc/libvirt/qemu"
+                        sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats "$VM_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/"
+                    fi
+                fi
+                
+                # Transfer network configurations
+                if [ -d "$NETWORK_CONFIGS_PATH" ] && [ "$(sudo ls -A "$NETWORK_CONFIGS_PATH" 2>/dev/null)" ]; then
+                    echo "Sending network configurations to $TARGET_IP..."
+                    if [ -n "$DRY_RUN" ]; then
+                        echo "DRY RUN: Would transfer network configurations"
+                        sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$NETWORK_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/networks/"
+                    else
+                        ${openssh}/bin/ssh "$TARGET_IP" "sudo mkdir -p /etc/libvirt/qemu/networks"
+                        sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats "$NETWORK_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/networks/"
+                    fi
+                fi
+                
+                # Transfer user configurations
+                if [ -d "$USER_CONFIGS_PATH" ] && [ "$(ls -A "$USER_CONFIGS_PATH" 2>/dev/null)" ]; then
+                    echo "Sending user libvirt config to $TARGET_IP..."
+                    if [ -n "$DRY_RUN" ]; then
+                        echo "DRY RUN: Would transfer user configurations"
+                        ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete $DRY_RUN "$USER_CONFIGS_PATH/" "$TARGET_IP:.config/libvirt/"
+                    else
+                        ${openssh}/bin/ssh "$TARGET_IP" "mkdir -p ~/.config/libvirt"
+                        ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats "$USER_CONFIGS_PATH/" "$TARGET_IP:.config/libvirt/"
+                    fi
+                fi
+                
+                echo "Post-transfer instructions:"
+                echo "1. On destination host, restart libvirt: sudo systemctl restart libvirtd"
+                echo "2. Redefine VMs: sudo virsh define /etc/libvirt/qemu/<vm-name>.xml"
+                echo "3. Start networks: sudo virsh net-start <network-name>"
+                echo "4. Verify with: sudo virsh list --all && sudo virsh net-list --all"
+                ;;
+                
+            receive)
+                mkdir -p "$(dirname "$USER_CONFIGS_PATH")"
+                
+                # Wait for VMs to be shut down
+                wait_for_vm_shutdown "$TARGET_IP"
+                
+                echo "Checking remote libvirt data sizes..."
+                
+                # Check and receive VM images
+                REMOTE_IMAGES_SIZE=$(${openssh}/bin/ssh "$TARGET_IP" "sudo ${coreutils}/bin/du -sb /var/lib/libvirt/images 2>/dev/null | ${coreutils}/bin/cut -f1 || echo 0")
+                if [ "$REMOTE_IMAGES_SIZE" -gt 0 ]; then
+                    REMOTE_IMAGES_SIZE_HUMAN=$(${openssh}/bin/ssh "$TARGET_IP" "sudo ${coreutils}/bin/du -sh /var/lib/libvirt/images | ${coreutils}/bin/cut -f1")
+                    echo "Remote VM images size: $REMOTE_IMAGES_SIZE_HUMAN ($REMOTE_IMAGES_SIZE bytes)"
+                    
+                    echo "Receiving VM images from $TARGET_IP..."
+                    sudo mkdir -p "$VM_IMAGES_PATH"
+                    sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats $DRY_RUN "$TARGET_IP:/var/lib/libvirt/images/" "$VM_IMAGES_PATH/"
+                fi
+                
+                # Check and receive VM configurations
+                REMOTE_CONFIGS_SIZE=$(${openssh}/bin/ssh "$TARGET_IP" "sudo ${coreutils}/bin/du -sb /etc/libvirt/qemu 2>/dev/null | ${coreutils}/bin/cut -f1 || echo 0")
+                if [ "$REMOTE_CONFIGS_SIZE" -gt 0 ]; then
+                    REMOTE_CONFIGS_SIZE_HUMAN=$(${openssh}/bin/ssh "$TARGET_IP" "sudo ${coreutils}/bin/du -sh /etc/libvirt/qemu | ${coreutils}/bin/cut -f1")
+                    echo "Remote VM configs size: $REMOTE_CONFIGS_SIZE_HUMAN ($REMOTE_CONFIGS_SIZE bytes)"
+                    
+                    echo "Receiving VM configurations from $TARGET_IP..."
+                    sudo mkdir -p "$VM_CONFIGS_PATH"
+                    sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/" "$VM_CONFIGS_PATH/"
+                fi
+                
+                # Check and receive network configurations
+                REMOTE_NETWORK_SIZE=$(${openssh}/bin/ssh "$TARGET_IP" "sudo ${coreutils}/bin/du -sb /etc/libvirt/qemu/networks 2>/dev/null | ${coreutils}/bin/cut -f1 || echo 0")
+                if [ "$REMOTE_NETWORK_SIZE" -gt 0 ]; then
+                    REMOTE_NETWORK_SIZE_HUMAN=$(${openssh}/bin/ssh "$TARGET_IP" "sudo ${coreutils}/bin/du -sh /etc/libvirt/qemu/networks | ${coreutils}/bin/cut -f1")
+                    echo "Remote network configs size: $REMOTE_NETWORK_SIZE_HUMAN ($REMOTE_NETWORK_SIZE bytes)"
+                    
+                    echo "Receiving network configurations from $TARGET_IP..."
+                    sudo mkdir -p "$NETWORK_CONFIGS_PATH"
+                    sudo ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/networks/" "$NETWORK_CONFIGS_PATH/"
+                fi
+                
+                # Check and receive user configurations
+                REMOTE_USER_SIZE=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sb ~/.config/libvirt 2>/dev/null | ${coreutils}/bin/cut -f1 || echo 0")
+                if [ "$REMOTE_USER_SIZE" -gt 0 ]; then
+                    REMOTE_USER_SIZE_HUMAN=$(${openssh}/bin/ssh "$TARGET_IP" "${coreutils}/bin/du -sh ~/.config/libvirt | ${coreutils}/bin/cut -f1")
+                    echo "Remote user configs size: $REMOTE_USER_SIZE_HUMAN ($REMOTE_USER_SIZE bytes)"
+                    
+                    echo "Receiving user libvirt config from $TARGET_IP..."
+                    ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats $DRY_RUN "$TARGET_IP:.config/libvirt/" "$USER_CONFIGS_PATH/"
+                fi
+                
+                if [ "$REMOTE_IMAGES_SIZE" -eq 0 ] && [ "$REMOTE_CONFIGS_SIZE" -eq 0 ] && [ "$REMOTE_NETWORK_SIZE" -eq 0 ] && [ "$REMOTE_USER_SIZE" -eq 0 ]; then
+                    echo "No libvirt data found on remote host $TARGET_IP"
+                fi
+                
+                echo "Post-transfer instructions:"
+                echo "1. Restart libvirt: sudo systemctl restart libvirtd"
+                echo "2. Redefine VMs: sudo virsh define /etc/libvirt/qemu/<vm-name>.xml"
+                echo "3. Start networks: sudo virsh net-start <network-name>"
+                echo "4. Verify with: sudo virsh list --all && sudo virsh net-list --all"
+                ;;
+        esac
+        echo "Libvirt transfer completed!"
+      '')
     ];
   };
 

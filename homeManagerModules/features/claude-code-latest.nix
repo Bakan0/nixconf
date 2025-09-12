@@ -8,9 +8,9 @@ let
   claude-code-latest = 
     let
       # Current known hashes - update these when versions change
-      registryHash = "sha256-BjivV3r3dJZekToSEtOZEkF+FwRc95G1wVP2n7MeN6c=";
-      sourceHash = "sha256-V4ubz9wCwxayR4mh7Mkkqp/aje23NM1rnfECZhnYSXw=";
-      depsHash = "sha256-V4ubz9wCwxayR4mh7Mkkqp/aje23NM1rnfECZhnYSXw=";
+      registryHash = "sha256-N+s3uilGIlddwQL33SGjB8f50GstTx8Ev/yYC8BEHr4=";
+      sourceHash = "sha256-nXkXh+TjMkLItbqgaJbqrNm9EaRVJjYAP6RryKQm9QY=";
+      depsHash = "sha256-nXkXh+TjMkLItbqgaJbqrNm9EaRVJjYAP6RryKQm9QY=";
       
       # Fetch registry info with hash verification
       registryInfo = builtins.fromJSON (builtins.readFile (pkgs.fetchurl {
@@ -50,73 +50,102 @@ let
     
     echo "Updating Claude Code hashes..."
     
-    # Function to get actual hash by attempting fetch with fake hash
-    get_actual_hash() {
-      local url="$1"
+    # Function to get registry hash using nix build with fake hash
+    get_registry_hash() {
       local temp_expr=$(mktemp)
       
-      # Create temporary expression to fetch with fake hash
       cat > "$temp_expr" << 'EXPR'
     with import <nixpkgs> {};
     fetchurl {
-      url = "URL_PLACEHOLDER";
-      sha256 = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+      url = "https://registry.npmjs.org/@anthropic-ai/claude-code/";
+      sha256 = lib.fakeHash;
     }
 EXPR
       
-      # Replace placeholder
-      ${pkgs.gnused}/bin/sed -i "s|URL_PLACEHOLDER|$url|g" "$temp_expr"
-      
-      # Attempt build and extract actual hash from error
       local output
-      output=$(nix-build "$temp_expr" --no-out-link 2>&1 || true)
+      output=$(nix build --impure -f "$temp_expr" 2>&1 || true)
       rm "$temp_expr"
       
-      # Extract the "got:" hash from error message
+      # Extract hash from error message
       echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | head -1 || true
     }
     
-    # Function to get npm deps hash by building with fake deps hash
+    # Function to get source hash by building claude-code with fake source hash
+    get_source_hash() {
+      local registry_hash="$1"
+      local temp_expr=$(mktemp)
+      
+      cat > "$temp_expr" << 'EXPR'
+with import <nixpkgs> { config.allowUnfree = true; };
+let
+  registryInfo = builtins.fromJSON (builtins.readFile (fetchurl {
+    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/";
+    sha256 = "REGISTRY_HASH_PLACEHOLDER";
+  }));
+  latestVersion = registryInfo.dist-tags.latest;
+in
+claude-code.overrideAttrs (oldAttrs: rec {
+  version = latestVersion;
+  src = fetchzip {
+    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$${latestVersion}.tgz";
+    hash = lib.fakeHash;
+  };
+  npmDepsHash = "sha256-nXkXh+TjMkLItbqgaJbqrNm9EaRVJjYAP6RryKQm9QY=";
+})
+EXPR
+      
+      ${pkgs.gnused}/bin/sed -i "s|REGISTRY_HASH_PLACEHOLDER|$registry_hash|g" "$temp_expr"
+      
+      local output
+      output=$(nix build --impure -f "$temp_expr" 2>&1 || true)
+      rm "$temp_expr"
+      
+      # Extract source hash from error message
+      echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | head -1 || true
+    }
+    
+    # Function to get deps hash by building claude-code with fake deps hash
     get_deps_hash() {
-      local version="$1"
+      local registry_hash="$1"
       local source_hash="$2"
       local temp_expr=$(mktemp)
       
-      # Create temporary expression for claude-code with known source but fake deps hash
       cat > "$temp_expr" << 'EXPR'
-    with import <nixpkgs> { config.allowUnfree = true; };
-    claude-code.overrideAttrs (oldAttrs: rec {
-      version = "VERSION_PLACEHOLDER";
-      src = fetchzip {
-        url = "URL_PLACEHOLDER";
-        hash = "HASH_PLACEHOLDER";
-      };
-      npmDepsHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
-    })
+with import <nixpkgs> { config.allowUnfree = true; };
+let
+  registryInfo = builtins.fromJSON (builtins.readFile (fetchurl {
+    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/";
+    sha256 = "REGISTRY_HASH_PLACEHOLDER";
+  }));
+  latestVersion = registryInfo.dist-tags.latest;
+in
+claude-code.overrideAttrs (oldAttrs: rec {
+  version = latestVersion;
+  src = fetchzip {
+    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$${latestVersion}.tgz";
+    hash = "SOURCE_HASH_PLACEHOLDER";
+  };
+  npmDepsHash = lib.fakeHash;
+})
 EXPR
       
-      # Replace placeholders
-      ${pkgs.gnused}/bin/sed -i "s|VERSION_PLACEHOLDER|$version|g" "$temp_expr"
-      ${pkgs.gnused}/bin/sed -i "s|URL_PLACEHOLDER|https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$version.tgz|g" "$temp_expr"
-      ${pkgs.gnused}/bin/sed -i "s|HASH_PLACEHOLDER|$source_hash|g" "$temp_expr"
+      ${pkgs.gnused}/bin/sed -i "s|REGISTRY_HASH_PLACEHOLDER|$registry_hash|g" "$temp_expr"
+      ${pkgs.gnused}/bin/sed -i "s|SOURCE_HASH_PLACEHOLDER|$source_hash|g" "$temp_expr"
       
-      # Attempt build and extract actual deps hash
       local output
-      output=$(nix-build "$temp_expr" --no-out-link 2>&1 || true)
+      output=$(nix build --impure -f "$temp_expr" 2>&1 || true)
       rm "$temp_expr"
       
-      # Extract the "got:" hash from error message  
-      echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | head -1 || true
+      # If build succeeded, deps hash = source hash, otherwise extract from error
+      if echo "$output" | grep -q "error:"; then
+        echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | tail -1 || echo "$source_hash"
+      else
+        echo "$source_hash"
+      fi
     }
     
-    echo "Fetching latest version..."
-    
-    # Get latest version from registry
-    REGISTRY_URL="https://registry.npmjs.org/@anthropic-ai/claude-code/"
-    
-    # First, get the correct registry hash
     echo "Getting registry hash..."
-    NEW_REGISTRY_HASH=$(get_actual_hash "$REGISTRY_URL")
+    NEW_REGISTRY_HASH=$(get_registry_hash)
     
     if [[ -z "$NEW_REGISTRY_HASH" ]]; then
       echo "❌ Could not determine registry hash"
@@ -125,36 +154,8 @@ EXPR
     
     echo "Registry hash: $NEW_REGISTRY_HASH"
     
-    # Update registry hash and get version info
-    ${pkgs.gnused}/bin/sed -i "s|registryHash = \"sha256-[^\"]*\"|registryHash = \"$NEW_REGISTRY_HASH\"|g" "$MODULE_FILE"
-    
-    # Get latest version by building registry fetch
-    echo "Getting version..."
-    TEMP_VERSION_EXPR=$(mktemp)
-    cat > "$TEMP_VERSION_EXPR" << 'EXPR'
-    with import <nixpkgs> {};
-    let
-      registryInfo = builtins.fromJSON (builtins.readFile (fetchurl {
-        url = "REGISTRY_URL_PLACEHOLDER";
-        sha256 = "REGISTRY_HASH_PLACEHOLDER";
-      }));
-    in
-    writeText "version" registryInfo.dist-tags.latest
-EXPR
-    
-    # Replace placeholders
-    ${pkgs.gnused}/bin/sed -i "s|REGISTRY_URL_PLACEHOLDER|$REGISTRY_URL|g" "$TEMP_VERSION_EXPR"
-    ${pkgs.gnused}/bin/sed -i "s|REGISTRY_HASH_PLACEHOLDER|$NEW_REGISTRY_HASH|g" "$TEMP_VERSION_EXPR"
-    
-    LATEST_VERSION=$(nix-build "$TEMP_VERSION_EXPR" --no-out-link | xargs cat)
-    rm "$TEMP_VERSION_EXPR"
-    
-    echo "Latest version: $LATEST_VERSION"
-    
-    # Get source hash
     echo "Getting source hash..."
-    SOURCE_URL="https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$LATEST_VERSION.tgz"
-    NEW_SOURCE_HASH=$(get_actual_hash "$SOURCE_URL")
+    NEW_SOURCE_HASH=$(get_source_hash "$NEW_REGISTRY_HASH")
     
     if [[ -z "$NEW_SOURCE_HASH" ]]; then
       echo "❌ Could not determine source hash"
@@ -162,11 +163,9 @@ EXPR
     fi
     
     echo "Source hash: $NEW_SOURCE_HASH"
-    ${pkgs.gnused}/bin/sed -i "s|sourceHash = \"sha256-[^\"]*\"|sourceHash = \"$NEW_SOURCE_HASH\"|g" "$MODULE_FILE"
     
-    # Get deps hash
     echo "Getting deps hash..."
-    NEW_DEPS_HASH=$(get_deps_hash "$LATEST_VERSION" "$NEW_SOURCE_HASH")
+    NEW_DEPS_HASH=$(get_deps_hash "$NEW_REGISTRY_HASH" "$NEW_SOURCE_HASH")
     
     if [[ -z "$NEW_DEPS_HASH" ]]; then
       echo "❌ Could not determine dependencies hash"
@@ -174,6 +173,10 @@ EXPR
     fi
     
     echo "Deps hash: $NEW_DEPS_HASH"
+    
+    # Update all hashes in the module file
+    ${pkgs.gnused}/bin/sed -i "s|registryHash = \"sha256-[^\"]*\"|registryHash = \"$NEW_REGISTRY_HASH\"|g" "$MODULE_FILE"
+    ${pkgs.gnused}/bin/sed -i "s|sourceHash = \"sha256-[^\"]*\"|sourceHash = \"$NEW_SOURCE_HASH\"|g" "$MODULE_FILE"
     ${pkgs.gnused}/bin/sed -i "s|depsHash = \"sha256-[^\"]*\"|depsHash = \"$NEW_DEPS_HASH\"|g" "$MODULE_FILE"
     
     echo "Hashes updated."
