@@ -89,6 +89,33 @@ in {
     boot.extraModprobeConfig = mkIf cfg.fixSuspendIssues ''
       options usbcore autosuspend=-1
     '';
+
+    # Prevent sleep/suspend when critical transfer/VPN processes are running
+    systemd.services."transfer-inhibit-watcher" = {
+      description = "Prevent sleep when transfer or VPN processes are running";
+      wantedBy = [ "multi-user.target" ];
+      serviceConfig = {
+        Type = "simple";
+        Restart = "always";
+        RestartSec = "30s";
+      };
+      script = ''
+        while true; do
+          # Check for transfer/VPN processes
+          if ${pkgs.procps}/bin/pgrep -x "eddie\|eddie-ui\|airvpn\|qbittorrent" >/dev/null 2>&1; then
+            # Inhibit sleep if processes are running and not already inhibited
+            if ! ${pkgs.procps}/bin/pgrep -f "systemd-inhibit.*transfer-watcher" >/dev/null 2>&1; then
+              echo "Transfer/VPN processes detected, inhibiting sleep..."
+              ${pkgs.systemd}/bin/systemd-inhibit --what=sleep:idle --who="transfer-watcher" --why="Transfers or VPN active" --mode=block sleep infinity &
+            fi
+          else
+            # Kill inhibitor if no processes are running
+            ${pkgs.procps}/bin/pkill -f "systemd-inhibit.*transfer-watcher" >/dev/null 2>&1 || true
+          fi
+          sleep 60
+        done
+      '';
+    };
   };
 }
 
