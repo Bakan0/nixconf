@@ -13,6 +13,7 @@
     bundles.general.enable = true;  # Server essentials
     bundles.users.enable = true;
     wake-on-lan.enable = true;
+    stylix.enable = true;  # Required by home-manager profile
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
