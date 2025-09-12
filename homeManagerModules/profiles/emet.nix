@@ -888,7 +888,7 @@
     kitty.enable = true;
     firefox.enable = true;
     hyprland.enable = lib.mkDefault true;
-    microsoft.enable = lib.mkDefault true;  # Azure Cloud Architect tools
+    # microsoft.enable = lib.mkDefault true;  # Can be enabled per-host as needed
     nextcloud-client = {
       enable = lib.mkDefault true;
       symlinkUserDirs = lib.mkDefault true;  # OneDrive-style integration
