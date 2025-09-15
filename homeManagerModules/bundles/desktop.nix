@@ -38,7 +38,7 @@
 
     xdg.mimeApps = {
       enable = true;
-      defaultApplications = {
+      defaultApplications = lib.mkDefault {
         "text/plain" = ["neovide.desktop"];
         "application/pdf" = ["zathura.desktop"];
         "image/*" = ["imv.desktop"];
@@ -49,10 +49,7 @@
         "application/x-directory" = ["thunar.desktop"];
         "application/x-iso9660-image" = ["thunar.desktop"];
         "application/x-cd-image" = ["thunar.desktop"];
-        "text/html" = ["vivaldi-stable.desktop"];
-        "application/xhtml+xml" = ["vivaldi-stable.desktop"];
-        "x-scheme-handler/http" = ["vivaldi-stable.desktop"];
-        "x-scheme-handler/https" = ["vivaldi-stable.desktop"];
+        # Browser associations removed - managed manually via xdg-settings
         # Office documents - OnlyOffice
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = ["onlyoffice-desktopeditors.desktop"]; # docx
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = ["onlyoffice-desktopeditors.desktop"]; # xlsx
@@ -86,7 +83,6 @@
       feh
       noisetorch
       polkit
-      polkit_gnome
       lxsession
       pulsemixer
       pavucontrol

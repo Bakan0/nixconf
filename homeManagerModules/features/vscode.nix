@@ -39,7 +39,7 @@
       "terminal.integrated.fontFamily" = lib.mkDefault "'JetBrainsMono Nerd Font Mono'";
       "terminal.external.linuxExec" = lib.mkDefault "kitty";
       "terminal.integrated.defaultProfile.linux" = lib.mkDefault "fish";
-      "terminal.integrated.defaultLocation" = lib.mkDefault "panel";
+      "terminal.integrated.defaultLocation" = "bottom";
       
       # Vim extension settings
       "vim.leader" = lib.mkDefault "<space>";
@@ -108,16 +108,32 @@
       "workbench.tips.enabled" = false;
       "workbench.startupEditor" = "none";
       "extensions.showRecommendationsOnlyOnDemand" = true;
-      
-      # Claude Code extension - auto-open and hide source control
-      "workbench.panel.opensMaximized" = "never";
-      "workbench.panel.defaultLocation" = "bottom";
-      
-      
+
+      # Prevent blank locked windows
+      "window.restoreWindows" = "folders";
+      "workbench.activityBar.visible" = true;
+      "workbench.statusBar.visible" = true;
+
+      # Claude Code extension settings
+
       # Hide the annoying Source Control panel with lock icon
       "scm.repositories.visible" = 0;
       "workbench.view.scm.visible" = false;
-      
+
+      # Prevent locked/blank panels and fix layout
+      "workbench.auxiliaryBar.visible" = false;
+      "workbench.auxiliaryBar.location" = "hidden";
+      "workbench.panel.opensMaximized" = "never";
+      "workbench.panel.defaultLocation" = "bottom";
+
+      # Force layout preferences
+      "workbench.editor.restoreViewState" = false;
+      "workbench.editor.revealIfOpen" = true;
+
+      # Disable problematic views that can cause locked panels
+      "workbench.view.alwaysShowHeaderActions" = false;
+      "workbench.editor.showTabs" = "multiple";
+
       # Security settings
       "security.workspace.trust.enabled" = false;
       "git.openRepositoryInParentFolders" = "never";
@@ -131,4 +147,28 @@
       ];
     };
   };
+
+  # Copy declarative settings to writable location and clear bad layout state
+  home.activation.vscodeSettings = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    settingsDir="$HOME/.config/Code/User"
+    settingsFile="$settingsDir/settings.json"
+
+    # If the file is a symlink (home-manager managed), copy it to make it writable
+    if [ -L "$settingsFile" ]; then
+      echo "Making VSCode settings writable while preserving declarative defaults..."
+      target=$(readlink "$settingsFile")
+      rm "$settingsFile"
+      cp "$target" "$settingsFile"
+      chmod 644 "$settingsFile"
+      echo "VSCode settings are now writable. Changes will persist until next home-manager switch."
+    fi
+
+    # Clear workspace layout state that causes panel/terminal positioning issues
+    workspaceStorage="$settingsDir/workspaceStorage"
+    if [ -d "$workspaceStorage" ]; then
+      echo "Clearing VSCode workspace layout state to fix panel positioning..."
+      find "$workspaceStorage" -name "state.vscdb*" -delete 2>/dev/null || true
+      echo "Workspace layout state cleared."
+    fi
+  '';
 }
