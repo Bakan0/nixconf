@@ -30,26 +30,16 @@ Each host directory contains:
 
 ### Development Commands
 
-**Primary deployment (rebuilds BOTH system AND home-manager):**
+**⚠️ CRITICAL: Always stage file changes before building:**
+```fish
+git add -A  # Required before any build if files created/renamed/deleted
+```
+
+**Build and test configuration (CLAUDE USE ONLY - does NOT activate):**
 ```fish
 nh os switch ~/nixconf/. -- --show-trace
 ```
-
-**⚠️ CRITICAL: Always stage file changes before rebuilding:**
-```fish
-git add -A  # Required before any rebuild if files created/renamed/deleted
-nh os switch ~/nixconf/. -- --show-trace
-```
-
-**Remote deployment (build locally, deploy to another host):**
-```fish
-sudo nixos-rebuild switch --flake ~/nixconf#HOSTNAME --target-host root@HOST_IP --show-trace
-```
-
-**Initial system build (new machines only):**
-```fish
-sudo nixos-rebuild switch --flake ~/nixconf#HOSTNAME --show-trace --option extra-experimental-features "nix-command flakes"
-```
+*This command builds both system AND home-manager configs for testing. It will FAIL at activation - this is expected and normal. Claude should NEVER attempt to activate with sudo.*
 
 **Development shell:**
 ```fish
@@ -57,6 +47,7 @@ nix develop  # Provides nh, nix, home-manager, git, neovim
 ```
 
 **⚠️ CRITICAL:** Never use `nh home switch` - breaks Stylix theming
+**⚠️ Build failures:** If Home Manager builds fail with hash mismatches (e.g., claude-code-latest module), this prevents evaluation of all other modules including Microsoft. Fix hash issues first.
 
 **Available hosts:** acc01ade, mariposa, petalouda, nighthawk, tyr, dazzle, hermit
 

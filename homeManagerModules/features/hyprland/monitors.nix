@@ -86,8 +86,6 @@ in {
       "4" = {
         monitorId = 1;
         autostart = [ 
-          "microsoft-edge --profile-directory=\"Profile 1\""              # ADMIN profile
-          "microsoft-edge --profile-directory=Default"                    # User profile  
           "obsidian"
         ];
       };

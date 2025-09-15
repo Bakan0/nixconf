@@ -8,9 +8,9 @@ let
   claude-code-latest = 
     let
       # Current known hashes - update these when versions change
-      registryHash = "sha256-N+s3uilGIlddwQL33SGjB8f50GstTx8Ev/yYC8BEHr4=";
-      sourceHash = "sha256-nXkXh+TjMkLItbqgaJbqrNm9EaRVJjYAP6RryKQm9QY=";
-      depsHash = "sha256-nXkXh+TjMkLItbqgaJbqrNm9EaRVJjYAP6RryKQm9QY=";
+      registryHash = "sha256-crj1JJIlBBxoOXEYeVt6Ve5zcpnnfdxAShF5r5Ippxo=";
+      sourceHash = "sha256-N3lKbu3OtF1X65Dr9JghMdgsqQD2RYS/YJUNtPJVyyw=";
+      depsHash = "sha256-N3lKbu3OtF1X65Dr9JghMdgsqQD2RYS/YJUNtPJVyyw=";
       
       # Fetch registry info with hash verification
       registryInfo = builtins.fromJSON (builtins.readFile (pkgs.fetchurl {
@@ -36,160 +36,63 @@ let
       '';
     });
 
-  # Hash updater script
-  claude-hash-update = pkgs.writeShellScriptBin "claude-hash-update" ''
+  # Simple hash fetcher script - outputs hashes for Claude to apply manually
+  claude-hash-fetch = pkgs.writeShellScriptBin "claude-hash-fetch" ''
     set -euo pipefail
     
-    MODULE_FILE="$HOME/nixconf/homeManagerModules/features/claude-code-latest.nix"
-    SYSTEM="${pkgs.system}"
+    echo "=== Claude Code Hash Fetcher ==="
+    echo "This script fetches current hashes for Claude Code npm package."
+    echo "Copy the output hashes and paste them into the module file."
+    echo ""
     
-    if [[ ! -f "$MODULE_FILE" ]]; then
-      echo "Error: Claude module not found at $MODULE_FILE"
+    # Get latest version from npm registry
+    echo "Fetching latest version info..."
+    LATEST_VERSION=$(${pkgs.curl}/bin/curl -s https://registry.npmjs.org/@anthropic-ai/claude-code/ | ${pkgs.jq}/bin/jq -r '.["dist-tags"].latest')
+    
+    if [[ -z "$LATEST_VERSION" || "$LATEST_VERSION" == "null" ]]; then
+      echo "❌ Failed to fetch latest version"
       exit 1
     fi
     
-    echo "Updating Claude Code hashes..."
+    echo "Latest version: $LATEST_VERSION"
+    echo ""
     
-    # Function to get registry hash using nix build with fake hash
-    get_registry_hash() {
-      local temp_expr=$(mktemp)
-      
-      cat > "$temp_expr" << 'EXPR'
-    with import <nixpkgs> {};
-    fetchurl {
-      url = "https://registry.npmjs.org/@anthropic-ai/claude-code/";
-      sha256 = lib.fakeHash;
-    }
-EXPR
-      
-      local output
-      output=$(nix build --impure -f "$temp_expr" 2>&1 || true)
-      rm "$temp_expr"
-      
-      # Extract hash from error message
-      echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | head -1 || true
-    }
-    
-    # Function to get source hash by building claude-code with fake source hash
-    get_source_hash() {
-      local registry_hash="$1"
-      local temp_expr=$(mktemp)
-      
-      cat > "$temp_expr" << 'EXPR'
-with import <nixpkgs> { config.allowUnfree = true; };
-let
-  registryInfo = builtins.fromJSON (builtins.readFile (fetchurl {
-    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/";
-    sha256 = "REGISTRY_HASH_PLACEHOLDER";
-  }));
-  latestVersion = registryInfo.dist-tags.latest;
-in
-claude-code.overrideAttrs (oldAttrs: rec {
-  version = latestVersion;
-  src = fetchzip {
-    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$${latestVersion}.tgz";
-    hash = lib.fakeHash;
-  };
-  npmDepsHash = "sha256-nXkXh+TjMkLItbqgaJbqrNm9EaRVJjYAP6RryKQm9QY=";
-})
-EXPR
-      
-      ${pkgs.gnused}/bin/sed -i "s|REGISTRY_HASH_PLACEHOLDER|$registry_hash|g" "$temp_expr"
-      
-      local output
-      output=$(nix build --impure -f "$temp_expr" 2>&1 || true)
-      rm "$temp_expr"
-      
-      # Extract source hash from error message
-      echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | head -1 || true
-    }
-    
-    # Function to get deps hash by building claude-code with fake deps hash
-    get_deps_hash() {
-      local registry_hash="$1"
-      local source_hash="$2"
-      local temp_expr=$(mktemp)
-      
-      cat > "$temp_expr" << 'EXPR'
-with import <nixpkgs> { config.allowUnfree = true; };
-let
-  registryInfo = builtins.fromJSON (builtins.readFile (fetchurl {
-    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/";
-    sha256 = "REGISTRY_HASH_PLACEHOLDER";
-  }));
-  latestVersion = registryInfo.dist-tags.latest;
-in
-claude-code.overrideAttrs (oldAttrs: rec {
-  version = latestVersion;
-  src = fetchzip {
-    url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$${latestVersion}.tgz";
-    hash = "SOURCE_HASH_PLACEHOLDER";
-  };
-  npmDepsHash = lib.fakeHash;
-})
-EXPR
-      
-      ${pkgs.gnused}/bin/sed -i "s|REGISTRY_HASH_PLACEHOLDER|$registry_hash|g" "$temp_expr"
-      ${pkgs.gnused}/bin/sed -i "s|SOURCE_HASH_PLACEHOLDER|$source_hash|g" "$temp_expr"
-      
-      local output
-      output=$(nix build --impure -f "$temp_expr" 2>&1 || true)
-      rm "$temp_expr"
-      
-      # If build succeeded, deps hash = source hash, otherwise extract from error
-      if echo "$output" | grep -q "error:"; then
-        echo "$output" | grep -A1 "got:" | grep -o "sha256-[A-Za-z0-9+/=]\{44\}" | tail -1 || echo "$source_hash"
-      else
-        echo "$source_hash"
-      fi
-    }
-    
+    # Get registry hash using nix-prefetch-url
     echo "Getting registry hash..."
-    NEW_REGISTRY_HASH=$(get_registry_hash)
+    REGISTRY_HASH=$(${pkgs.nix}/bin/nix-prefetch-url https://registry.npmjs.org/@anthropic-ai/claude-code/ 2>/dev/null | ${pkgs.coreutils}/bin/tail -1)
     
-    if [[ -z "$NEW_REGISTRY_HASH" ]]; then
-      echo "❌ Could not determine registry hash"
+    if [[ -z "$REGISTRY_HASH" ]]; then
+      echo "❌ Failed to get registry hash"
       exit 1
     fi
     
-    echo "Registry hash: $NEW_REGISTRY_HASH"
-    
+    # Get source hash using nix-prefetch-url  
     echo "Getting source hash..."
-    NEW_SOURCE_HASH=$(get_source_hash "$NEW_REGISTRY_HASH")
+    SOURCE_HASH=$(${pkgs.nix}/bin/nix-prefetch-url --unpack "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$LATEST_VERSION.tgz" 2>/dev/null | ${pkgs.coreutils}/bin/tail -1)
     
-    if [[ -z "$NEW_SOURCE_HASH" ]]; then
-      echo "❌ Could not determine source hash"
+    if [[ -z "$SOURCE_HASH" ]]; then
+      echo "❌ Failed to get source hash"
       exit 1
     fi
     
-    echo "Source hash: $NEW_SOURCE_HASH"
-    
-    echo "Getting deps hash..."
-    NEW_DEPS_HASH=$(get_deps_hash "$NEW_REGISTRY_HASH" "$NEW_SOURCE_HASH")
-    
-    if [[ -z "$NEW_DEPS_HASH" ]]; then
-      echo "❌ Could not determine dependencies hash"
-      exit 1
-    fi
-    
-    echo "Deps hash: $NEW_DEPS_HASH"
-    
-    # Update all hashes in the module file
-    ${pkgs.gnused}/bin/sed -i "s|registryHash = \"sha256-[^\"]*\"|registryHash = \"$NEW_REGISTRY_HASH\"|g" "$MODULE_FILE"
-    ${pkgs.gnused}/bin/sed -i "s|sourceHash = \"sha256-[^\"]*\"|sourceHash = \"$NEW_SOURCE_HASH\"|g" "$MODULE_FILE"
-    ${pkgs.gnused}/bin/sed -i "s|depsHash = \"sha256-[^\"]*\"|depsHash = \"$NEW_DEPS_HASH\"|g" "$MODULE_FILE"
-    
-    echo "Hashes updated."
-    echo "Registry: $NEW_REGISTRY_HASH"
-    echo "Source: $NEW_SOURCE_HASH" 
-    echo "Dependencies: $NEW_DEPS_HASH"
+    echo ""
+    echo "=== RESULTS ==="
+    echo "Version: $LATEST_VERSION"
+    echo ""
+    echo "Update the following lines in homeManagerModules/features/claude-code-latest.nix:"
+    echo ""
+    echo "registryHash = \"sha256:$REGISTRY_HASH\";"
+    echo "sourceHash = \"sha256:$SOURCE_HASH\";"
+    echo "depsHash = \"sha256:$SOURCE_HASH\";  # Usually same as source"
+    echo ""
+    echo "=== END RESULTS ==="
   '';
   
 in {
   config = mkIf cfg.enable {
     home.packages = [ 
       claude-code-latest
-      claude-hash-update  # Run this when hashes need updating
+      claude-hash-fetch  # Run this to get hashes for Claude to apply
     ];
   };
 }

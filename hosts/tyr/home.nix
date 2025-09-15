@@ -15,8 +15,7 @@
     # This host doesn't need gaming bundle
     bundles.gaming.enable = false;
     
-    # Enable Microsoft Azure tools for work
-    microsoft.enable = true;
+    # Microsoft Azure tools enabled by default in emet profile
   };
 }
 
