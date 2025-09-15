@@ -8,7 +8,7 @@ let
   claude-code-latest = 
     let
       # Current known hashes - update these when versions change
-      registryHash = "sha256-crj1JJIlBBxoOXEYeVt6Ve5zcpnnfdxAShF5r5Ippxo=";
+      registryHash = "sha256-jM6I2TvCcIH2aX7JA1PR3coB6HfKzX811rix3b6iqqo=";
       sourceHash = "sha256-N3lKbu3OtF1X65Dr9JghMdgsqQD2RYS/YJUNtPJVyyw=";
       depsHash = "sha256-N3lKbu3OtF1X65Dr9JghMdgsqQD2RYS/YJUNtPJVyyw=";
       
