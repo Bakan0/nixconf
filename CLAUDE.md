@@ -57,6 +57,9 @@ nix develop  # Provides nh, nix, home-manager, git, neovim
 
 **Available hosts:** acc01ade, mariposa, petalouda, nighthawk, tyr, dazzle, hermit
 
+**Claude Code hash updates:**
+When asked to update claude hashes, run `claude-hash-fetch` and use output to update hash in `homeManagerModules/features/claude-code-latest.nix`
+
 ### Module Development
 
 **Standard module pattern:**

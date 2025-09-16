@@ -59,8 +59,8 @@ fi
 BOOT_CONFIG=$(grep -A 5 "boot.loader" "$CONFIG_DIR/configuration.nix" | grep -E "(systemd-boot|efi)" | head -3 || echo "")
 
 # Detect system.stateVersion from installer config or use system's NixOS version
-if grep -q "system.stateVersion" "$CONFIG_DIR/configuration.nix"; then
-    STATE_VERSION=$(grep "system.stateVersion" "$CONFIG_DIR/configuration.nix" | head -1)
+if grep -q "system.stateVersion.*=" "$CONFIG_DIR/configuration.nix"; then
+    STATE_VERSION=$(grep "system.stateVersion.*=" "$CONFIG_DIR/configuration.nix" | head -1)
     # Extract just the version number for home.nix
     HOME_STATE_VERSION=$(echo "$STATE_VERSION" | grep -o '"[^"]*"' | tr -d '"')
 else
