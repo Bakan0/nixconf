@@ -15,10 +15,10 @@
     ${lib.concatLines moveToMonitor}
   '';
   generalStartScript = pkgs.writeShellScriptBin "start" ''
-    ${pkgs.swww}/bin/swww init &
+    ${pkgs.swww}/bin/swww-daemon &
     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
     # hyprctl setcursor Bibata-Modern-Ice 16 &
-    systemctl --user import-environment PATH WAYLAND_DISPLAY XDG_CURRENT_DESKTOP &
+    # Environment import now handled by early service
     systemctl --user restart xdg-desktop-portal.service &
     systemctl --user restart xdg-desktop-portal-hyprland.service &
     # wait a tiny bit for wallpaper
@@ -337,6 +337,22 @@ in {
         ExecStart = "${pkgs.hyprlock}/bin/hyprlock";
         TimeoutSec = 5;
       };
+    };
+
+    # Early environment import - runs before other services
+    systemd.user.services.hyprland-session-vars = {
+      Unit = {
+        Description = "Import Hyprland session environment";
+        DefaultDependencies = false;
+        Before = [ "waybar.service" "hypridle.service" "xdg-desktop-portal.service" ];
+        WantedBy = [ "graphical-session.target" ];
+      };
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${pkgs.systemd}/bin/systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP PATH";
+        RemainAfterExit = true;
+      };
+      Install.WantedBy = [ "graphical-session.target" ];
     };
 
     systemd.user.services.hyprpolkitagent = {
