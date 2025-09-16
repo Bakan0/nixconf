@@ -53,6 +53,7 @@ nix develop  # Provides nh, nix, home-manager, git, neovim
 
 **⚠️ CRITICAL:** Never use `nh home switch` - breaks Stylix theming
 **⚠️ Build failures:** If Home Manager builds fail with hash mismatches (e.g., claude-code-latest module), this prevents evaluation of all other modules including Microsoft. Fix hash issues first.
+**⚠️ User services:** Use `systemctl --user start/stop/restart <service>` for user services like waybar. Manual execution (e.g., `waybar &`) creates duplicate processes and conflicts.
 
 **Available hosts:** acc01ade, mariposa, petalouda, nighthawk, tyr, dazzle, hermit
 

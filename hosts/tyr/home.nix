@@ -14,8 +14,9 @@
   myHomeManager = {
     # This host doesn't need gaming bundle
     bundles.gaming.enable = false;
-    
-    # Microsoft Azure tools enabled by default in emet profile
+
+    # Disable Microsoft tools on this host
+    microsoft.enable = false;
   };
 }
 

@@ -149,7 +149,19 @@
   };
 
   # Copy declarative settings to writable location and clear bad layout state
-  home.activation.vscodeSettings = lib.hm.dag.entryAfter ["linkGeneration"] ''
+  home.activation.vscodeSettings = lib.hm.dag.entryBefore ["linkGeneration"] ''
+    settingsDir="$HOME/.config/Code/User"
+    settingsFile="$settingsDir/settings.json"
+
+    # Remove any existing file/symlink to allow home-manager to create new symlink
+    if [ -e "$settingsFile" ]; then
+      echo "Removing existing VSCode settings file to allow home-manager management..."
+      rm "$settingsFile"
+    fi
+  '';
+
+  # Convert symlink to writable file after home-manager creates it
+  home.activation.vscodeSettingsWritable = lib.hm.dag.entryAfter ["linkGeneration"] ''
     settingsDir="$HOME/.config/Code/User"
     settingsFile="$settingsDir/settings.json"
 

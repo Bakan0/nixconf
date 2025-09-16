@@ -10,13 +10,10 @@
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users.enable = true;
-    sysadmin.enable = true;
-      sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
     greetd.enable = true;  # Display manager for Hyprland
     kanshi = {
-      enable = true;
-      laptopResolution = "1920x1200@165Hz";
       laptopModel = "ASUS_A16_FA617NT";
+      laptopResolution = "1920x1200@165Hz";
     };
     batteryManagement.enable = true;
     tpm2.enable = true;

@@ -3,8 +3,11 @@ with lib;
 let
   cfg = config.myNixOS.kanshi;
 
+  # Kanshi output format: "Manufacturer Model Serial"
+  # If any field is missing, use "Unknown" - see https://man.archlinux.org/man/kanshi.5#PROFILE_DIRECTIVES
   laptopModels = {
     ASUS_A16_FA617NT = "China Star Optoelectronics Technology Co., Ltd MNG007QA1-1 Unknown";
+    XPS_13_9300 = "Sharp Corporation 0x14CB Unknown";
     # system76_darter8_pro = "make model serial";
   };
   laptopMatch = laptopModels.${cfg.laptopModel};
@@ -83,7 +86,7 @@ in {
 
       profile ultrawide-with-laptop {
         output "${laptopMatch}" mode ${cfg.laptopResolution} position 0,0
-        output "Philips Consumer Electronics Company PHL 499P9 AU02135004295" mode 5120x1440@29.98Hz position ${toString (calcCenterX cfg.laptopResolution 1.0 "5120x1440@29.98Hz" 1.0)},${toString (- (parseLogical "5120x1440@29.98Hz" 1.0).height)}
+        output "Philips Consumer Electronics Company PHL 499P9 AU02135004295" mode 5120x1440@29.98Hz position ${toString (- (parseLogical "5120x1440@29.98Hz" 1.0).width)},${toString (calcCenterX cfg.laptopResolution 1.0 "5120x1440@29.98Hz" 1.0)}
       }
 
       profile ultrawide-only {
