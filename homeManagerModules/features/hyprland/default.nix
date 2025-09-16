@@ -18,11 +18,25 @@
     ${pkgs.swww}/bin/swww-daemon &
     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
     # hyprctl setcursor Bibata-Modern-Ice 16 &
-    # Environment import now handled by early service
+
+    # Wait for Hyprland environment to be fully set
+    sleep 1
+
+    # Import environment for systemd services
+    systemctl --user start hyprland-session-vars.service
+
+    # Wait for environment import to complete
+    sleep 1
+
+    # Start services that depend on environment
+    systemctl --user start waybar.service &
+    systemctl --user start hypridle.service &
+
     systemctl --user restart xdg-desktop-portal.service &
     systemctl --user restart xdg-desktop-portal-hyprland.service &
+
     # wait a tiny bit for wallpaper
-    sleep 2
+    sleep 1
     ${pkgs.swww}/bin/swww img ${config.stylix.image} &
     # wait for monitors to connect
     sleep 3
@@ -339,20 +353,18 @@ in {
       };
     };
 
-    # Early environment import - runs before other services
+    # Import environment after Hyprland starts - runs from exec-once
     systemd.user.services.hyprland-session-vars = {
       Unit = {
         Description = "Import Hyprland session environment";
         DefaultDependencies = false;
-        Before = [ "waybar.service" "hypridle.service" "xdg-desktop-portal.service" ];
-        WantedBy = [ "graphical-session.target" ];
+        Before = [ "waybar.service" "hypridle.service" ];
       };
       Service = {
         Type = "oneshot";
         ExecStart = "${pkgs.systemd}/bin/systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP PATH";
         RemainAfterExit = true;
       };
-      Install.WantedBy = [ "graphical-session.target" ];
     };
 
     systemd.user.services.hyprpolkitagent = {

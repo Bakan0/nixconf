@@ -18,6 +18,7 @@
     virtualisation.enable = true;
     wake-on-lan.enable = true;
     stylix.theme = "atomic-terracotta";
+    usb-reset.enable = true;  # USB bus reset utilities
   };
 
   boot.loader = {
@@ -60,6 +61,17 @@
 
   services.protonmail-bridge.enable = true;
   services.teamviewer.enable = true;
+
+  # TeamViewer wrapper script for Wayland compatibility
+  environment.systemPackages = with pkgs; [
+    (writeShellScriptBin "teamviewer-wayland" ''
+      export QT_QPA_PLATFORM="wayland;xcb"
+      export XDG_SESSION_TYPE="wayland"
+      export XDG_CURRENT_DESKTOP="Hyprland"
+      export WAYLAND_DISPLAY="''${WAYLAND_DISPLAY:-wayland-1}"
+      exec ${teamviewer}/bin/teamviewer "$@"
+    '')
+  ];
 
   system.stateVersion = "24.11";
 }

@@ -77,6 +77,14 @@
       # Git settings
       "git.enableSmartCommit" = lib.mkDefault true;
       "git.confirmSync" = lib.mkDefault false;
+
+      # Atomic terracotta theme diff colors - colorblind friendly (blue/orange)
+      "diffEditor.insertedTextBackground" = "#66b3ff40";  # Blue with transparency
+      "diffEditor.removedTextBackground" = "#ff993340";   # Terracotta orange with transparency
+      "diffEditor.insertedLineBackground" = "#66b3ff20";  # Lighter blue background
+      "diffEditor.removedLineBackground" = "#ff993320";   # Lighter orange background
+      "diffEditor.insertedTextBorder" = "#66b3ff";        # Blue border
+      "diffEditor.removedTextBorder" = "#ff9933";         # Terracotta orange border
       
       # Nix language support
       "nix.enableLanguageServer" = lib.mkDefault true;

@@ -110,6 +110,23 @@ wl-copy < path/to/file
 
 # View and copy file
 bat /path/to/file | wl-copy
+
+# Screenshots location
+ls ~/Pictures/screenshot*.png
+```
+
+**NixOS Script Syntax:**
+```bash
+# WRONG: #!/bin/bash (doesn't exist on NixOS)
+# CORRECT: Use env for portability
+#!/usr/bin/env bash
+
+# For fish scripts:
+#!/usr/bin/env fish
+
+# For nix-shell scripts:
+#!/usr/bin/env nix-shell
+#! nix-shell -i bash -p package1 package2
 ```
 
 ### Common Operations
