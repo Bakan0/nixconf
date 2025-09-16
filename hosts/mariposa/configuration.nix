@@ -14,7 +14,6 @@
     };
     sddm.enable = false;
     hyprland.enable = false;
-    stylix.enable = false;
     tpm2.enable = true;
     virtualisation.enable = false;
     wake-on-lan.enable = true;

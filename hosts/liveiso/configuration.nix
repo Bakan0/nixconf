@@ -15,7 +15,6 @@
       enable = true;
       user = "emet";
     };
-    stylix.enable = lib.mkDefault true;
 
     home-users = {
       "emet" = {

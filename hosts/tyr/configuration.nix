@@ -19,7 +19,6 @@
     };
     virtualisation.enable = true;
     wake-on-lan.enable = true;
-    stylix.theme = "atomic-terracotta";
     usb-reset.enable = true;  # USB bus reset utilities
     home-users = {
       "emet" = {

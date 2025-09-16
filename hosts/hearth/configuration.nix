@@ -18,10 +18,6 @@
     greetd.enable = true;  # Display manager for Hyprland
     kanshi.enable = true;  # Display management
     tpm2.enable = true;  # TPM2 support for LUKS auto-unlock
-    stylix = {
-      enable = true;
-      theme = "atomic-terracotta";  # hearth gets the atomic terracotta theme
-    };
     home-users = {
       "emet" = {
         userConfig = ./home.nix;  # Use host-specific home config
