@@ -166,12 +166,12 @@ cat > "hosts/$HOSTNAME/home.nix" << EOF
   };
 
   # Use $USERNAME's profile for consistent configuration
-  myHomeManager.profiles.$USERNAME.enable = true;
-
-  # Host-specific overrides (if any)
   myHomeManager = {
-    # $HOSTNAME-specific customizations
-    # Terracotta/atomic theme preferences will be handled by stylix
+    profiles.$USERNAME.enable = true;
+    
+    # Add any host-specific customizations here
+    # Example: bundles.desktop.enable = true;
+    # Example: stylix.enable = true;
   };
   
   # Host-specific packages and configurations can go here
@@ -212,11 +212,22 @@ fi
 echo "Host initialization complete!"
 echo ""
 
-# Check if SSH agent forwarding is available and try auto-commit
+# Check if SSH agent forwarding is available and offer auto-commit
 if [[ -n "$SSH_AUTH_SOCK" ]] && ssh-add -l >/dev/null 2>&1; then
-    echo "🔑 SSH agent forwarding detected! Attempting auto-commit..."
+    echo "🔑 SSH agent forwarding detected!"
+    echo ""
+    echo "Ready to commit and push the new $HOSTNAME configuration?"
+    echo "This will:"
+    echo "  - Add hosts/$HOSTNAME/ and flake.nix to git"
+    echo "  - Commit with message: 'feat($HOSTNAME): add new host configuration'"
+    echo "  - Push to remote repository"
+    echo ""
+    read -p "Proceed with auto-commit? (y/N): " confirm
     
-    if git add hosts/$HOSTNAME/ flake.nix && git commit -m "feat($HOSTNAME): add new host configuration
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        echo "🚀 Committing changes..."
+        
+        if git add hosts/$HOSTNAME/ flake.nix && git commit -m "feat($HOSTNAME): add new host configuration
 
 - Add $HOSTNAME host with hardware-specific configuration
 - Generated from nixos-install hardware detection
@@ -232,7 +243,7 @@ if [[ -n "$SSH_AUTH_SOCK" ]] && ssh-add -l >/dev/null 2>&1; then
             echo "Next steps:"
             echo "1. Reboot this system: reboot"
             echo "2. Deploy remotely from your development machine:"
-            echo "   nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7}' | head -1) --show-trace"
+            echo "   nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1) --show-trace"
             exit 0
         else
             echo "⚠️  Local commit succeeded but push failed. You may need to pull first."
@@ -240,11 +251,14 @@ if [[ -n "$SSH_AUTH_SOCK" ]] && ssh-add -l >/dev/null 2>&1; then
     else
         echo "⚠️  Auto-commit failed. Falling back to manual instructions."
     fi
-    echo ""
+else
+    echo "⚠️  Auto-commit declined. Falling back to manual instructions."
+fi
+echo ""
 fi
 
 # Get this system's IP dynamically
-SYSTEM_IP=$(ip route get 1.1.1.1 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
+SYSTEM_IP=$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
 
 echo "Manual steps (if auto-commit didn't work):"
 echo "1. **BACKUP FLAKE.NX** (from your deployment machine):"
