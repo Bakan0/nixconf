@@ -212,68 +212,17 @@ fi
 echo "Host initialization complete!"
 echo ""
 
-# Check if SSH agent forwarding is available and offer auto-commit
-if [[ -n "$SSH_AUTH_SOCK" ]] && ssh-add -l >/dev/null 2>&1; then
-    echo "🔑 SSH agent forwarding detected!"
-    echo ""
-    echo "Ready to commit and push the new $HOSTNAME configuration?"
-    echo "This will:"
-    echo "  - Add hosts/$HOSTNAME/ and flake.nix to git"
-    echo "  - Commit with message: 'feat($HOSTNAME): add new host configuration'"
-    echo "  - Push to remote repository"
-    echo ""
-    read -p "Proceed with auto-commit? (y/N): " confirm
-    
-    if [[ "$confirm" =~ ^[Yy]$ ]]; then
-        echo "🚀 Committing changes..."
-        
-        if git add hosts/$HOSTNAME/ flake.nix && git commit -m "feat($HOSTNAME): add new host configuration
-
-- Add $HOSTNAME host with hardware-specific configuration
-- Generated from nixos-install hardware detection
-- Ready for deployment"; then
-        
-        echo "✅ Successfully committed changes locally"
-        
-        if git push; then
-            echo "🚀 Successfully pushed to remote repository!"
-            echo ""
-            echo "🎉 Host $HOSTNAME is now ready for deployment!"
-            echo ""
-            echo "Next steps:"
-            echo "1. Reboot this system: reboot"
-            echo "2. Deploy remotely from your development machine:"
-            echo "   nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1) --show-trace"
-            exit 0
-        else
-            echo "⚠️  Local commit succeeded but push failed. You may need to pull first."
-        fi
-    else
-        echo "⚠️  Auto-commit failed. Falling back to manual instructions."
-    fi
-else
-    echo "⚠️  Auto-commit declined. Falling back to manual instructions."
-fi
-echo ""
-fi
-
 # Get this system's IP dynamically
 SYSTEM_IP=$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
 
-echo "Manual steps (if auto-commit didn't work):"
-echo "1. **BACKUP FLAKE.NX** (from your deployment machine):"
-echo "   cp ~/nixconf/flake.nix ~/nixconf/flake.nix.bak"
+echo "🎉 Host $HOSTNAME configuration created successfully!"
 echo ""
-echo "2. Capture files (from your deployment machine):"
-echo "   scp -r root@$SYSTEM_IP:/tmp/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/ && scp root@$SYSTEM_IP:/tmp/nixconf/flake.nix ~/nixconf/flake.nix && cd ~/nixconf && git add -A"
+echo "📋 Next step - run this command from your development machine:"
 echo ""
-echo "3. Reboot this system, then deploy remotely:"
-echo "   systemd-inhibit --what=sleep,shutdown,idle --who=nixos-rebuild --why='Remote deployment' nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --show-trace"
+echo "scp -r root@$SYSTEM_IP:/root/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/ && scp root@$SYSTEM_IP:/root/nixconf/flake.nix ~/nixconf/"
 echo ""
-echo "4. ONLY commit after successful deploy:"
-echo "   cd ~/nixconf && git add hosts/$HOSTNAME/ flake.nix && git commit -m 'feat($HOSTNAME): add new host'"
-echo ""
-echo "5. Complete the deployment on the new system:"
-echo "   ssh emet@$HOSTNAME \"git clone git@github.com:Bakan0/nixconf.git ~/nixconf && cd ~/nixconf && nh os switch . -- --show-trace\""
+
+echo "Then reboot this system and deploy remotely:"
+echo "   nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --show-trace"
 echo ""
 echo "Note: SSH access bootstrapped for post-reboot deployment"
