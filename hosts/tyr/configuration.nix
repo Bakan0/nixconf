@@ -8,8 +8,10 @@
 
   myNixOS = {
     bundles.general-desktop.enable = true;
-    bundles.users.enable = true;
-    bundles.users.emet.enable = true;
+    bundles.users = {
+      enable = true;
+      user = "emet";
+    };
     batteryManagement.enable = true;
     kanshi = {
       laptopModel = "XPS_13_9300";

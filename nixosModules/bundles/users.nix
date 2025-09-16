@@ -29,16 +29,15 @@ in {
     };
 
     bundles.users = {
-      emet = {
-        enable = lib.mkEnableOption "emet user profile with SSH keys and admin settings";
-      };
-      joelle = {
-        enable = lib.mkEnableOption "joelle user profile";
+      user = lib.mkOption {
+        type = lib.types.enum [ "emet" "joelle" ];
+        description = "Which user profile to enable";
+        example = "emet";
       };
     };
   };
 
-  config = mkMerge [
+  config = mkIf cfg.bundles.users.enable (mkMerge [
     {
       programs.zsh.enable = true;
       programs.fish.enable = true;
@@ -77,6 +76,22 @@ in {
         (config.myNixOS.home-users);
     };
 
+    # Clean up problematic files before Home Manager activation to prevent conflicts
+    systemd.services = builtins.mapAttrs (name: user: {
+      description = "Clean problematic files before Home Manager activation for ${name}";
+      before = [ "home-manager-${name}.service" ];
+      wantedBy = [ "home-manager-${name}.service" ];
+      serviceConfig = {
+        Type = "oneshot";
+        User = name;
+        ExecStart = pkgs.writeShellScript "hm-pre-cleanup-${name}" ''
+          # Remove files that commonly conflict with Home Manager
+          rm -f /home/${name}/.config/mimeapps.list
+          rm -f /home/${name}/.local/share/applications/mimeapps.list
+        '';
+      };
+    }) (config.myNixOS.home-users);
+
     users.users = builtins.mapAttrs (
       name: user:
         {
@@ -91,7 +106,7 @@ in {
     }
 
     # Emet user profile
-    (mkIf cfg.bundles.users.emet.enable {
+    (mkIf (cfg.bundles.users.user == "emet") {
       myNixOS = {
         sysadmin = {
           enable = true;
@@ -119,7 +134,7 @@ in {
     })
 
     # Joelle user profile  
-    (mkIf cfg.bundles.users.joelle.enable {
+    (mkIf (cfg.bundles.users.user == "joelle") {
       myNixOS.home-users.joelle = {
         userSettings = {
           extraGroups = [ "networkmanager" "wheel" "audio" "video" ];
@@ -146,5 +161,5 @@ in {
       # Printing support
       services.printing.enable = true;
     })
-  ];
+  ]);
 }

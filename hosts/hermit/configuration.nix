@@ -9,7 +9,10 @@
 
   myNixOS = {
     bundles.general-desktop.enable = true;
-    bundles.users.enable = true;
+    bundles.users = {
+      enable = true;
+      user = "emet";
+    };
     greetd.enable = true;  # Display manager for Hyprland
     kanshi = {
       laptopModel = "ASUS_A16_FA617NT";

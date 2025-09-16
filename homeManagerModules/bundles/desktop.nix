@@ -49,7 +49,9 @@
         "application/x-directory" = ["thunar.desktop"];
         "application/x-iso9660-image" = ["thunar.desktop"];
         "application/x-cd-image" = ["thunar.desktop"];
-        # Browser associations removed - managed manually via xdg-settings
+        "text/html" = ["vivaldi-stable.desktop"];
+        "x-scheme-handler/http" = ["vivaldi-stable.desktop"];
+        "x-scheme-handler/https" = ["vivaldi-stable.desktop"];
         # Office documents - OnlyOffice
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document" = ["onlyoffice-desktopeditors.desktop"]; # docx
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" = ["onlyoffice-desktopeditors.desktop"]; # xlsx
@@ -116,5 +118,29 @@
     myHomeManager.impermanence.cache.directories = [
       ".local/state/wireplumber"
     ];
+
+    # Make mimeapps.list writable for runtime browser changes (like VSCode settings)
+    home.activation.mimeAppsWritable = lib.hm.dag.entryAfter ["linkGeneration"] ''
+      configMimeApps="$HOME/.config/mimeapps.list"
+      localMimeApps="$HOME/.local/share/applications/mimeapps.list"
+
+      # Make config mimeapps.list writable if it's a symlink
+      if [ -L "$configMimeApps" ]; then
+        echo "Making mimeapps.list writable for runtime browser changes..."
+        target=$(readlink "$configMimeApps")
+        rm "$configMimeApps"
+        cp "$target" "$configMimeApps"
+        chmod 644 "$configMimeApps"
+        echo "mimeapps.list is now writable. Changes will persist until next home-manager switch."
+      fi
+
+      # Make local mimeapps.list writable if it's a symlink
+      if [ -L "$localMimeApps" ]; then
+        target=$(readlink "$localMimeApps")
+        rm "$localMimeApps"
+        cp "$target" "$localMimeApps"
+        chmod 644 "$localMimeApps"
+      fi
+    '';
   };
 }

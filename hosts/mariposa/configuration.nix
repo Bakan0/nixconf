@@ -8,8 +8,10 @@
 
   myNixOS = {
     bundles.general-desktop.enable = true;
-    bundles.users.enable = true;
-    bundles.users.joelle.enable = true;  # Joelle's profile with GNOME, packages, SSH keys
+    bundles.users = {
+      enable = true;
+      user = "joelle";  # Joelle's profile with GNOME, packages, SSH keys
+    };
     sddm.enable = false;
     hyprland.enable = false;
     stylix.enable = false;

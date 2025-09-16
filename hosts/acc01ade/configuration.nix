@@ -11,7 +11,10 @@
   
   myNixOS = {
     bundles.general.enable = true;  # Server essentials
-    bundles.users.enable = true;
+    bundles.users = {
+      enable = true;
+      user = "emet";
+    };
     wake-on-lan.enable = true;
     stylix.enable = true;  # Required by home-manager profile
     virtualisation.enable = true;

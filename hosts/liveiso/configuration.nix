@@ -11,7 +11,10 @@
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
 
   myNixOS = {
-    bundles.users.enable = true;
+    bundles.users = {
+      enable = true;
+      user = "emet";
+    };
     stylix.enable = lib.mkDefault true;
 
     home-users = {

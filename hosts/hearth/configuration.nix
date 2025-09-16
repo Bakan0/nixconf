@@ -9,7 +9,10 @@
 
   myNixOS = {
     bundles.general-desktop.enable = true;
-    bundles.users.enable = true;
+    bundles.users = {
+      enable = true;
+      user = "emet";
+    };
     sysadmin.enable = true;
     sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
     greetd.enable = true;  # Display manager for Hyprland

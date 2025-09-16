@@ -9,8 +9,10 @@
 
   myNixOS = {
     bundles.general-desktop.enable = true;
-    bundles.users.enable = true;
-    bundles.users.emet.enable = true;
+    bundles.users = {
+      enable = true;
+      user = "emet";
+    };
     kanshi.laptopResolution = "1920x1080@60Hz";
     batteryManagement.enable = true;
     immersed.enable = true;
