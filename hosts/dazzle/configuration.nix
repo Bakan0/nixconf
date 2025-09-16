@@ -17,6 +17,12 @@
     };
     batteryManagement.enable = true;
     wake-on-lan.enable = true;
+    home-users = {
+      "emet" = {
+        userConfig = ./home.nix;  # Use host-specific home config
+        userSettings = {};  # Use default groups from users bundle
+      };
+    };
   };
 
   boot = {

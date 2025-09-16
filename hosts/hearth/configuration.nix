@@ -24,10 +24,8 @@
     };
     home-users = {
       "emet" = {
-        # Profile automatically selected as profiles/emet.nix
-        userSettings = {
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
-        };
+        userConfig = ./home.nix;  # Use host-specific home config
+        userSettings = {};  # Use default groups from users bundle
       };
     };
     virtualisation.enable = true;

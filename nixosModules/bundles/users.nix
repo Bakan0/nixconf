@@ -62,16 +62,10 @@ in {
       users =
         builtins.mapAttrs (name: user: {...}: {
           imports = [
+            inputs.stylix.homeManagerModules.stylix
+            (import user.userConfig)
             outputs.homeManagerModules.default
           ];
-          
-          # Auto-enable matching profile if it exists
-          myHomeManager.profiles.${name}.enable = lib.mkDefault true;
-          
-          # Set username, homeDirectory and inherit stateVersion from system
-          home.username = name;
-          home.homeDirectory = "/home/${name}";
-          home.stateVersion = config.system.stateVersion;
         })
         (config.myNixOS.home-users);
     };
@@ -96,10 +90,10 @@ in {
       name: user:
         {
           isNormalUser = true;
-          initialPassword = "12345";
+          initialPassword = "Ch4ngeM3!";
           description = "";
           shell = pkgs.fish;
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "video" ];
+          extraGroups = [ "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
         }
         // user.userSettings
     ) (config.myNixOS.home-users);

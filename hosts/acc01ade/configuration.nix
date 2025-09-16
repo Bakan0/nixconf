@@ -16,13 +16,12 @@
       user = "emet";
     };
     wake-on-lan.enable = true;
-    stylix.enable = true;  # Required by home-manager profile
     virtualisation.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;
         userSettings = {
-          extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" ];
+          extraGroups = [ "incus-admin" ];  # Add incus admin access for container management
         };
       };
     };

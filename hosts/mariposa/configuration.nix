@@ -18,6 +18,14 @@
     tpm2.enable = true;
     virtualisation.enable = false;
     wake-on-lan.enable = true;
+    home-users = {
+      "joelle" = {
+        userConfig = ./home.nix;  # Use host-specific home config
+        userSettings = {
+          extraGroups = [ "networkmanager" "wheel" "audio" "video" ];
+        };
+      };
+    };
   };
 
   # Use the systemd-boot EFI boot loader.

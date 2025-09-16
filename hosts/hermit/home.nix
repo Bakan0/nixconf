@@ -10,10 +10,9 @@
   # Use emet's profile for consistent configuration
   myHomeManager.profiles.emet.enable = true;
 
-  # Host-specific overrides
+  # Host-specific overrides for hermit
   myHomeManager = {
-    # Enable Microsoft Azure tools for work
-    microsoft.enable = true;
+    # Add host-specific overrides here if needed
   };
 }
 

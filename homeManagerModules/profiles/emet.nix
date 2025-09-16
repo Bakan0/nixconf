@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, myLib, ... }:
 
 {
   home = {
@@ -895,6 +895,9 @@
     };
     # Conditional desktop components - only if Hyprland is enabled
     waybar.enable = lib.mkIf config.myHomeManager.hyprland.enable (lib.mkDefault true);
+    
+    # Stylix theme preference for emet
+    stylix.enable = lib.mkDefault true;
   };
 
   programs = {

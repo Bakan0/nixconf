@@ -51,7 +51,7 @@ nh os switch ~/nixconf/. -- --show-trace
 nix develop  # Provides nh, nix, home-manager, git, neovim
 ```
 
-**⚠️ CRITICAL:** Never use `nh home switch` - breaks Stylix theming
+**⚠️ Both commands work identically:** `nh os switch` rebuilds both system AND home-manager. `nh home switch` works correctly for home-manager only changes.
 **⚠️ Build failures:** If Home Manager builds fail with hash mismatches (e.g., claude-code-latest module), this prevents evaluation of all other modules including Microsoft. Fix hash issues first.
 **⚠️ User services:** Use `systemctl --user start/stop/restart <service>` for user services like waybar. Manual execution (e.g., `waybar &`) creates duplicate processes and conflicts.
 
@@ -74,7 +74,7 @@ in {
 
 **Adding new features:**
 1. Create module in `nixosModules/features/` or `homeManagerModules/features/`
-2. Module automatically gets enable option via `extendModules` function
+2. Module automatically gets enable option via `extendModules` function from `myLib/default.nix`
 3. Use in host config: `myNixOS.{moduleName}.enable = true;`
 
 **Adding bundles:**
@@ -92,15 +92,14 @@ in {
 - **Shell**: Fish for interactive use (scripts/configs use appropriate system defaults)
 
 **Key Features:**
-- **Impermanence**: System designed for ephemeral root filesystem
 - **ZFS**: Advanced filesystem features and optimizations  
 - **Multi-user support**: Different users can have separate home configurations on same host
 
 ### Configuration Guidelines
 
 **Hierarchy Preference:**
-- Prefer system-wide over user-specific configurations
-- Use `myNixOS` namespace for system modules
+- Use `myNixOS` namespace for system modules - /hosts/{host}/configuration.nix
+- Use `myHomeManager` namespace for user modules - /hosts/{host}/home.nix
 - Respect existing modular patterns
 
 **Shell Operations:**
@@ -111,8 +110,10 @@ wl-copy < path/to/file
 # View and copy file
 bat /path/to/file | wl-copy
 
-# Screenshots location
-ls ~/Pictures/screenshot*.png
+# Screenshot management
+# Only view screenshots when explicitly requested by user
+# Clean up screenshots from current session after viewing (except when specifically asked to keep)
+find ~/Pictures -name "screenshot-*.png" -mmin -10 -delete  # Clean up screenshots from last 10 minutes
 ```
 
 **NixOS Script Syntax:**
@@ -143,7 +144,6 @@ ls ~/Pictures/screenshot*.png
 **❌ NEVER EVER add AI-generated commit message footers like "Generated with Claude Code" or "Co-Authored-By: Claude" 
 **❌ NEVER write long commit messages - keep them concise (1-4 lines max using conventional commits)**
 **❌ ABSOLUTELY NEVER use `lib.mkForce` or `lib.mkOverride` (indicates poor design and breaks modularity)**
-**❌ NEVER use `nh home switch` (breaks Stylix theming)
 
 **✅ Architecture Patterns:**
 - Use `myLib/default.nix` `extendModules` function - auto-creates enable options for all features

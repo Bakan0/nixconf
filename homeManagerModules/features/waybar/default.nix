@@ -179,46 +179,47 @@
     };
   };
 
+  # Better CSS with actual stylix colors instead of @base00 variables
   css = ''
     * {
         border: none;
         border-radius: 0px;
-        font-family: "JetBrainsMono Nerd Font Mono";
+        font-family: "${config.stylix.fonts.monospace.name}";
         font-weight: bold;
         font-size: 14px;
         min-height: 0px;
     }
 
     window#waybar {
-        background: @base00;
-        color: @base05;
+        background: #${config.stylix.base16Scheme.base00};
+        color: #${config.stylix.base16Scheme.base05};
     }
 
     tooltip {
-        background: @base01;
-        color: @base05;
+        background: #${config.stylix.base16Scheme.base01};
+        color: #${config.stylix.base16Scheme.base05};
         border-radius: 10px;
         border-width: 1px;
         border-style: solid;
-        border-color: @base03;
+        border-color: #${config.stylix.base16Scheme.base03};
     }
 
     #workspaces button {
         margin: 0 4px;
         padding: 0 4px;
         min-width: 24px;
-        color: @base05;
-        background: @base01;
+        color: #${config.stylix.base16Scheme.base05};
+        background: #${config.stylix.base16Scheme.base01};
     }
 
     #workspaces button.active {
-        background: @base0D;
-        color: @base00;
+        background: #${config.stylix.base16Scheme.base0D};
+        color: #${config.stylix.base16Scheme.base00};
         border-radius: 7px;
     }
 
     #workspaces button:hover {
-        background: @base02;
+        background: #${config.stylix.base16Scheme.base02};
     }
 
     #cpu,
@@ -235,55 +236,55 @@
     #custom-wallchange,
     #custom-mode,
     #tray {
-        color: @base05;
-        background: @base01;
+        color: #${config.stylix.base16Scheme.base05};
+        background: #${config.stylix.base16Scheme.base01};
         opacity: 1;
         padding: 0px;
         margin: 3px 3px 3px 3px;
     }
 
     #custom-battery {
-        color: @base0B;
+        color: #${config.stylix.base16Scheme.base0B};
     }
 
     #clock {
-        color: @base0A;
+        color: #${config.stylix.base16Scheme.base0A};
         padding-left: 12px;
         padding-right: 12px;
     }
 
     #network {
-        color: @base0E;
+        color: #${config.stylix.base16Scheme.base0E};
         padding-left: 4px;
         padding-right: 4px;
     }
 
     #language {
-        color: @base09;
+        color: #${config.stylix.base16Scheme.base09};
         padding-left: 9px;
         padding-right: 9px;
     }
 
     #bluetooth {
-        color: @base0D;
+        color: #${config.stylix.base16Scheme.base0D};
         padding-left: 4px;
         padding-right: 0px;
     }
 
     #backlight {
-      color: @base0A;
+      color: #${config.stylix.base16Scheme.base0A};
       padding-left: 4px;
       padding-right: 4px;
     }
 
     #custom-volume {
-        color: @base0E;
+        color: #${config.stylix.base16Scheme.base0E};
         padding-left: 4px;
         padding-right: 4px;
     }
 
     #custom-microphone {
-        color: @base08;
+        color: #${config.stylix.base16Scheme.base08};
         padding-left: 2px;
         padding-right: 4px;
         font-weight: bold;
@@ -292,7 +293,7 @@
     #custom-logo {
         margin-left: 6px;
         padding-right: 4px;
-        color: @base0D;
+        color: #${config.stylix.base16Scheme.base0D};
         font-size: 16px;
     }
 
@@ -301,6 +302,7 @@
         padding-right: 4px;
     }
   '';
+
 in {
   home.packages = [
     scripts.waybar-battery 

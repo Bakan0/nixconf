@@ -23,7 +23,7 @@
     waybar.enable = false;
     
     # Server doesn't need Microsoft Azure tools
-    microsoft.enable = lib.mkForce false;
+    microsoft.enable = false;
   };
 }
 

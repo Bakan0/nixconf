@@ -13,7 +13,6 @@
   myNixOS.pipewire.enable = lib.mkDefault true;
   myNixOS.batteryManagement.enable = lib.mkDefault false;  # Enable only on laptops
   myNixOS.virtualisation.enable = lib.mkDefault true;
-  myNixOS.stylix.enable = lib.mkDefault true;
   myNixOS.plymouth-splash.enable = lib.mkDefault true;
 
   xdg.portal = {

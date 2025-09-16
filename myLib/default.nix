@@ -10,6 +10,7 @@ in rec {
 
   pkgsFor = sys: inputs.nixpkgs.legacyPackages.${sys};
 
+
   # ========================== Buildables ========================== #
 
   mkSystem = config:
@@ -30,11 +31,8 @@ in rec {
         inherit inputs myLib outputs;
       };
       modules = [
-        
-        # TODO: move this
         inputs.stylix.homeManagerModules.stylix
         {
-          stylix.image = ./../nixosModules/features/stylix/gruvbox-mountain-village.png;
           nixpkgs.config.allowUnfree = true;
         }
 

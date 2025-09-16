@@ -21,6 +21,12 @@
     wake-on-lan.enable = true;
     stylix.theme = "atomic-terracotta";
     usb-reset.enable = true;  # USB bus reset utilities
+    home-users = {
+      "emet" = {
+        userConfig = ./home.nix;  # Use host-specific home config
+        userSettings = {};  # Use default groups from users bundle
+      };
+    };
   };
 
   boot.loader = {
