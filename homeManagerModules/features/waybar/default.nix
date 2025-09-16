@@ -323,9 +323,23 @@ in {
     }).overrideAttrs (oldAttrs: {
       mesonFlags = oldAttrs.mesonFlags ++ ["-Dexperimental=true"];
     });
-    systemd.enable = true;
+    systemd = {
+      enable = true;
+      target = "graphical-session.target";
+    };
     style = css;
     settings = {mainBar = mainWaybarConfig;};
+  };
+
+  # Override the waybar service to remove the problematic condition
+  systemd.user.services.waybar = {
+    Unit = {
+      ConditionEnvironment = lib.mkForce "";  # Remove WAYLAND_DISPLAY condition
+    };
+    Service = {
+      Restart = lib.mkDefault "on-failure";
+      RestartSec = lib.mkDefault 3;
+    };
   };
 }
 
