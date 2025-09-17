@@ -42,9 +42,16 @@ nh os switch ~/nixconf/. -- --show-trace
 *This command builds both system AND home-manager configs for testing. It will FAIL at activation - this is expected and normal. Claude should NEVER attempt to activate with sudo.*
 
 **Testing changes on remote hosts:**
-1. **Remote build and test:** `nixos-rebuild switch --flake ~/nixconf#<hostname> --target-host <hostname> --build-host <hostname> --show-trace`
+1. **Remote build and test:** `nixos-rebuild switch --flake ~/nixconf#<hostname> --target-host <hostname> --build-host <hostname> --sudo --ask-sudo-password --show-trace`
 2. **Alternative SSH workflow:** Commit/push, SSH edit on target, then `ssh <hostname> "nh os switch ~/nixconf/ -- --show-trace"`
-*Remote build approach uses target host resources and shows full build output. Will fail at activation (expected).*
+*Remote build approach uses target host resources, shows full build output, and activates changes. Requires sudo password for activation.*
+
+**⚠️ CRITICAL: Always test on non-production hosts first:**
+```fish
+# Example: Test changes on a remote host before applying to critical systems
+nixos-rebuild switch --flake ~/nixconf#tyr --target-host 10.17.19.89 --build-host 10.17.19.89 --sudo --ask-sudo-password --show-trace
+```
+*This command builds using local dirty tree, executes on remote host resources, and activates changes. Use 10.17.19.89 for testing examples.*
 
 **Development shell:**
 ```fish
