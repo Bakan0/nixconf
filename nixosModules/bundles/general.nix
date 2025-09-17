@@ -97,12 +97,16 @@
     curl
     fwupd  # Firmware update daemon
     git
+    jq          # JSON processor for scripts
     nh
     nix-output-monitor  
+    ripgrep     # Fast grep replacement
     tmux
+    unrar       # Extract RAR archives
     unzip
     vim
     wget  
     zip
+    zstd        # Compression for xfer-* scripts
   ];
 }
