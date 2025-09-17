@@ -83,13 +83,11 @@ $ZFS_IMPORT
 
   myNixOS = {
     bundles.general-desktop.enable = true;
-    bundles.users.enable = true;
-    bundles.users.$USERNAME.enable = true;  # Enable specific user bundle (provides SSH keys, packages, settings)
-    stylix = {
+    bundles.users = {
       enable = true;
-      theme = "atomic-terracotta";  # $HOSTNAME gets the atomic terracotta theme
+      user = "$USERNAME";
     };
-    # User bundle provides most configuration - only host-specific overrides needed
+    # User configuration handled via home-manager userConfig
     home-users."$USERNAME".userConfig = ./home.nix;
   };
 
