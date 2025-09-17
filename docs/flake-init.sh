@@ -24,7 +24,7 @@ echo "Initializing host: $HOSTNAME (user: $USERNAME)"
 
 # Check if we're in the nixconf repository
 if [[ ! -f "flake.nix" ]]; then
-    echo "❌ Must be run from nixconf repository root"
+    echo "Error: Must be run from nixconf repository root"
     exit 1
 fi
 
@@ -213,14 +213,20 @@ echo ""
 # Get this system's IP dynamically
 SYSTEM_IP=$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
 
-echo "🎉 Host $HOSTNAME configuration created successfully!"
+echo "Host $HOSTNAME configuration created successfully!"
 echo ""
-echo "📋 Next step - run this command from your development machine:"
+echo "Next steps - run these commands from your development machine:"
 echo ""
-echo "scp -r root@$SYSTEM_IP:/root/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/ && scp root@$SYSTEM_IP:/root/nixconf/flake.nix ~/nixconf/"
+echo "# 1. Copy files and stage for commit:"
+echo "scp -r root@$SYSTEM_IP:/root/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/ && scp root@$SYSTEM_IP:/root/nixconf/flake.nix ~/nixconf/ && cd ~/nixconf && git add -A"
 echo ""
-
-echo "Then reboot this system and deploy remotely:"
-echo "   nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --show-trace"
+echo "# 2. Export ZFS pool and reboot target system:"
+echo "ssh root@$SYSTEM_IP 'zpool export rpool && reboot'"
+echo ""
+echo "# 3. After reboot, deploy configuration:"
+echo "nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --show-trace --option extra-experimental-features 'nix-command flakes'"
+echo ""
+echo "# 4. After successful deployment, celebrate with:"
+echo "git commit -m \"feat($HOSTNAME): PROFIT! new host deployed and ready\""
 echo ""
 echo "Note: SSH access bootstrapped for post-reboot deployment"
