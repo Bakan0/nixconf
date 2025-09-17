@@ -1,9 +1,7 @@
 { config, pkgs, lib, myLib, ... }:
 
 {
-  imports = [
-    ./xfer-scripts.nix
-  ];
+  # No additional imports needed - using individual script feature modules
   home = {
     sessionVariables = {
       EDITOR = "nvim";
@@ -28,6 +26,7 @@
     bundles.desktop-full.enable = lib.mkDefault true;
     bundles.gaming.enable = lib.mkDefault true;
     bundles.databender.enable = lib.mkDefault true;
+    bundles.xfer-scripts.enable = lib.mkDefault true;
 
     # Features
     fish.enable = false;  # Explicitly disable fish
@@ -45,6 +44,8 @@
     
     # Stylix theme preference for emet
     stylix.enable = lib.mkDefault true;
+
+    # Transfer scripts now enabled via bundles.xfer-scripts
   };
 
   programs = {
