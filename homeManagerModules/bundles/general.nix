@@ -24,49 +24,27 @@
   programs.bat.enable = true;
 
   home.packages = with pkgs; [
+    # Tools moved to system for server/root access: nh, jq, dnsutils, eza, fd, htop, lm_sensors, tree, ripgrep, openssl, lsof, unzip, fwupd, bc, neofetch, file, zip
     nil
-
     pistol
-    file
     p7zip
-    unzip
-    zip
     libqalculate
     imagemagick
     killall
     pamixer
     alsa-utils
     rofi-bluetooth
-
     fzf
-    htop
-    lm_sensors  # Hardware monitoring - useful on servers too
-    upower      # Power management info - useful on servers too
+    upower
     lf
-    eza
-    fd
     zoxide
     du-dust
-    tree
-    ripgrep
-    neofetch
     imv
-    openssl
     ipcalc
-    dnsutils
-    lsof
     libva-utils
-    bc
-    jq
-
     ffmpeg
-    wget
-
     yt-dlp
     tree-sitter
-
-    nh
-
     sshfs
   ];
 

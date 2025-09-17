@@ -94,19 +94,30 @@
 
   # Essential system packages
   environment.systemPackages = with pkgs; [
+    bc          # CLI calculator
     curl
-    fwupd  # Firmware update daemon
+    dnsutils    # dig, nslookup - essential for servers
+    eza         # Better ls replacement
+    fd          # Fast file finder
+    file        # File type detection
+    fwupd       # Firmware update daemon
     git
+    htop        # Process monitor - essential for servers
     jq          # JSON processor for scripts
-    nh
+    lm_sensors  # Hardware monitoring for servers
+    lsof        # List open files - debugging essential
+    neofetch    # System info display
+    nh          # Nix helper
     nix-output-monitor  
+    openssl     # Crypto tools often needed system-wide
     ripgrep     # Fast grep replacement
     tmux
+    tree        # Directory listing
     unrar       # Extract RAR archives
     unzip
     vim
     wget  
-    zip
+    zip         # Archive creation
     zstd        # Compression for xfer-* scripts
   ];
 }
