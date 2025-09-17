@@ -65,6 +65,7 @@
       nixosConfigurations = {
         # ===================== NixOS Configurations ===================== #
 
+        ironclad = mkSystem ./hosts/ironclad/configuration.nix;
         hearth = mkSystem ./hosts/hearth/configuration.nix;
         acc01ade = mkSystem ./hosts/acc01ade/configuration.nix;
         mariposa = mkSystem ./hosts/mariposa/configuration.nix;
@@ -79,6 +80,7 @@
       homeConfigurations = {
         # ================== Home Configurations ================== #
 
+        "emet@ironclad" = mkHome "x86_64-linux" ./hosts/ironclad/home.nix;
         "emet@hearth" = mkHome "x86_64-linux" ./hosts/hearth/home.nix;
         "emet@acc01ade" = mkHome "x86_64-linux" ./hosts/acc01ade/home.nix;
         "emet@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;

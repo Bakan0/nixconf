@@ -189,6 +189,10 @@ sed -i '/^}$/i \
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY"\
   ];' "$CONFIG_DIR/configuration.nix"
 
+# Apply SSH bootstrap configuration immediately
+echo "Applying SSH bootstrap configuration..."
+nixos-install --root /mnt --no-root-passwd --no-channel-copy
+
 # Backup flake.nix before modifications
 cp flake.nix flake.nix.bak
 
@@ -220,13 +224,16 @@ echo ""
 echo "# 1. Copy files and stage for commit:"
 echo "scp -r root@$SYSTEM_IP:/root/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/ && scp root@$SYSTEM_IP:/root/nixconf/flake.nix ~/nixconf/ && cd ~/nixconf && git add -A"
 echo ""
-echo "# 2. Export ZFS pool and reboot target system:"
-echo "ssh root@$SYSTEM_IP 'zpool export rpool && reboot'"
+echo "# 2. Unmount, export ZFS pool and reboot target system:"
+echo "ssh root@$SYSTEM_IP 'umount -R /mnt && zpool export rpool && reboot'"
 echo ""
 echo "# 3. After reboot, deploy configuration:"
 echo "nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --show-trace --option extra-experimental-features 'nix-command flakes'"
 echo ""
 echo "# 4. After successful deployment, celebrate with:"
 echo "git commit -m \"feat($HOSTNAME): PROFIT! new host deployed and ready\""
+echo ""
+echo "# 5. Reboot into the new system:"
+echo "ssh root@$SYSTEM_IP reboot"
 echo ""
 echo "Note: SSH access bootstrapped for post-reboot deployment"
