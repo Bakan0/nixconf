@@ -1,6 +1,10 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 
 {
+  imports = [
+    # Import nixos-hardware T2 support
+    inputs.nixos-hardware.nixosModules.apple-t2
+  ];
   # Apple T2 MacBook support (keyboards, trackpads, early boot)
   # Based on t2linux.org guides and your working notes
   # Complements nixos-hardware.apple-t2 with additional early boot support
@@ -57,6 +61,16 @@
   hardware.firmware = with pkgs; [
     wireless-regdb  # Wireless regulatory database for proper WiFi/BT firmware
   ];
+
+  # TouchBar support for MacBook Pro with Touch Bar
+  hardware.apple.touchBar = {
+    enable = true;
+    settings = {
+      MediaLayerDefault = true;      # Show media controls by default
+      ShowButtonOutlines = false;    # Cleaner look without button outlines
+      EnablePixelShift = true;       # Prevent OLED burn-in
+    };
+  };
 
   # Useful utilities for Apple hardware monitoring
   environment.systemPackages = with pkgs; [
