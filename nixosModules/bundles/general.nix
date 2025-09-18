@@ -48,12 +48,18 @@
 
   # Essential system services
   services = {
+    # Modern D-Bus implementation - superior performance and security
+    dbus = {
+      enable = true;
+      implementation = "broker";
+    };
+
     # GVFS for file manager integration
     gvfs.enable = true;
-    
+
     # Firmware updates
     fwupd.enable = true;
-    
+
     # SSH daemon for remote access
     openssh.enable = true;
 

@@ -73,25 +73,28 @@ When asked to update claude hashes, run `claude-hash-fetch` and use output to up
 ```nix
 # nixosModules/features/example/default.nix
 { config, lib, pkgs, ... }:
-with lib;
-let cfg = config.myNixOS.example;
-in {
-  config = mkIf cfg.enable {
-    # system-wide configuration
-  };
+{
+  # Just write the configuration directly - NO config = mkIf wrapper needed!
+  # The extendModules function in myLib automatically handles the config = mkIf cfg.enable wrapper
+
+  services.example.enable = true;
+  # other system-wide configuration
 }
 ```
 
 **Adding new features:**
 1. Create module in `nixosModules/features/` or `homeManagerModules/features/`
 2. Module automatically gets enable option via `extendModules` function from `myLib/default.nix`
-3. Use in host config: `myNixOS.{moduleName}.enable = true;`
+3. The `extendModules` function wraps your entire module content in `config = mkIf cfg.enable` automatically
+4. Use in host config: `myNixOS.{moduleName}.enable = true;`
 
 **Adding bundles:**
 1. Create in respective `bundles/` directory
 2. Gets enable option: `myNixOS.bundles.{name}.enable = true;`
 
-**⚠️ IMPORTANT:** Never suggest duplicate enable options - `extendModules` handles this automatically
+**⚠️ IMPORTANT:**
+- Never suggest duplicate enable options - `extendModules` handles this automatically
+- Never write `config = mkIf cfg.enable` in feature modules - just write the configuration directly
 
 ### System Environment
 

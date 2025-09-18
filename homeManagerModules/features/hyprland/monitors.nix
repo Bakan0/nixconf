@@ -77,7 +77,7 @@ in {
       };
       "2" = {
         monitorId = 1;
-        autostart = [ "code" ];
+        autostart = [ ];
       };
       "3" = {
         monitorId = 1;
@@ -85,9 +85,7 @@ in {
       };
       "4" = {
         monitorId = 1;
-        autostart = [ 
-          "obsidian"
-        ];
+        autostart = [ ];
       };
       "5" = {
         monitorId = 1;
