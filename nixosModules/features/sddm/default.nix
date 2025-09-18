@@ -1,5 +1,5 @@
-{ pkgs, lib, config, ... }: 
-let 
+{ pkgs, lib, config, ... }:
+let
   cfg = config.myNixOS.sddm;
   sddmTheme = import ./sddm-theme.nix { inherit pkgs; };
 in {
@@ -21,7 +21,7 @@ in {
     services.displayManager = {
       sddm = {
         enable = lib.mkDefault true;
-        theme = "${sddmTheme}";
+        theme = "${sddmTheme}";  # Atomic-terracotta themed SDDM
         settings = lib.mkIf cfg.preferExternalMonitor {
           X11 = {
             DisplayCommand = "${pkgs.writeShellScript "sddm-display-setup" ''
@@ -37,6 +37,8 @@ in {
         };
       };
     };
+
+    # Stylix will automatically theme SDDM when both are enabled
 
     environment.systemPackages = with pkgs; [
       libsForQt5.qt5.qtquickcontrols2

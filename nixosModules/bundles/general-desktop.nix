@@ -7,9 +7,8 @@
   myNixOS.bundles.general.enable = lib.mkDefault true;
 
   # Desktop-specific features
-  myNixOS.sddm.enable = lib.mkDefault false;
+  myNixOS.sddm.enable = lib.mkDefault true;
   myNixOS.greetd.enable = lib.mkDefault false;
-  myNixOS.lemurs.enable = lib.mkDefault true;
   myNixOS.autologin.enable = lib.mkDefault false;
   myNixOS.pipewire.enable = lib.mkDefault true;
   myNixOS.batteryManagement.enable = lib.mkDefault false;  # Enable only on laptops

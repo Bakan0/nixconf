@@ -107,7 +107,6 @@ in {
           allowedActions = "anarchy";  # No prompts for curated admin commands
         };
         hyprland.enable = lib.mkDefault true;  # Enable Hyprland window manager
-        lemurs.enable = lib.mkDefault true;  # Display manager for Hyprland
         kanshi.enable = true;  # Display management
         vpn.enable = true;     # VPN support
 
