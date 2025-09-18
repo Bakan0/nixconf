@@ -14,7 +14,7 @@
     };
     batteryManagement.enable = true;
     kanshi = {
-      laptopModel = "XPS_13_9300";
+      laptopModel = "DELL_XPS13_9300";
       laptopResolution = "1920x1200@59.95Hz";
     };
     virtualisation.enable = true;

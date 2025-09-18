@@ -13,8 +13,20 @@
       enable = true;
       user = "emet";
     };
+    kanshi = {
+      laptopModel = "DELL_PRECISION_5530";
+    };
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
+
+    # Power button and lid configuration
+    "hardware-power" = {
+      enable = true;
+      powerButton.action = "poweroff";  # Graceful shutdown on power button press
+      lidSwitch.action = "suspend";      # Suspend on lid close (battery)
+      lidSwitch.actionOnAC = "ignore";   # Keep running when plugged in
+      ensureCleanShutdown = true;        # Ensure ZFS exports cleanly
+    };
   };
 
   boot = {
