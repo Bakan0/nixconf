@@ -1,11 +1,19 @@
 { config, lib, pkgs, ... }:
 
 {
-  # Apple device support (MacBook keyboards, trackpads, etc.)
-  # Provides Apple-specific drivers and configuration
+  # Apple T2 MacBook support (keyboards, trackpads, WiFi, etc.)
+  # Based on t2linux.org guides and requirements
   # Note: Bluetooth, audio, and firmware are handled by general-desktop bundle
 
-  # Enable Apple HID drivers for keyboard and trackpad
+  # Early boot modules for LUKS decryption (Apple keyboard support)
+  boot.initrd.availableKernelModules = [
+    "usbhid"            # USB HID support for keyboards
+    "hid-apple"         # Apple HID devices (keyboard, trackpad)
+    "snd"               # Sound support
+    "snd_pcm"           # PCM sound support
+  ];
+
+  # Runtime Apple HID drivers for keyboard and trackpad
   boot.kernelModules = [
     "hid-apple"         # Apple HID devices (keyboard, trackpad)
     "applesmc"          # Apple System Management Controller
@@ -68,4 +76,20 @@
     brightnessctl
     macchanger     # Useful for managing MAC addresses on Apple hardware
   ];
+
+  # Persistent firmware storage (survives rebuilds)
+  # Copy extracted firmware to /etc/nixos/firmware/brcm/ and link it
+  environment.etc."firmware/brcm".source =
+    if builtins.pathExists /etc/nixos/firmware/brcm
+    then /etc/nixos/firmware/brcm
+    else pkgs.runCommand "empty-firmware" {} "mkdir -p $out";
+
+  # Link firmware to the location kernel expects
+  system.activationScripts.apple-firmware = ''
+    mkdir -p /lib/firmware/brcm
+    if [ -d /etc/nixos/firmware/brcm ] && [ "$(ls -A /etc/nixos/firmware/brcm 2>/dev/null)" ]; then
+      cp -r /etc/nixos/firmware/brcm/* /lib/firmware/brcm/ || true
+      echo "Apple firmware copied from /etc/nixos/firmware/brcm/"
+    fi
+  '';
 }
