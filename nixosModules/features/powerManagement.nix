@@ -37,9 +37,6 @@ in {
       power-profiles-daemon.enable = mkDefault hasTraditionalDE;
     };
 
-    # Add ASUS-specific kernel modules for battery management compatibility
-    boot.kernelModules = [ "asus-wmi" "asus-nb-wmi" ];
-
     # PROPERLY MODULAR: Let user choose or include both (kernel ignores wrong ones)
     boot.kernelParams = [
       # Include both by default - kernel ignores the wrong one

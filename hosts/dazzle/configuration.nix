@@ -4,7 +4,10 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-      ./zfs-optimizations.nix
+    ./zfs-optimizations.nix
+
+    # Apple T2 hardware support
+    inputs.nixos-hardware.nixosModules.apple-t2
   ];
 
   myNixOS = {
@@ -16,7 +19,7 @@
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
 
-    # Enable Apple hardware support for MacBook keyboard/trackpad
+    # Apple T2 MacBook support for early boot keyboard/trackpad
     apple.enable = true;
   };
 

@@ -1,29 +1,20 @@
 { config, lib, pkgs, ... }:
 
 {
-  # Apple T2 MacBook support (keyboards, trackpads, WiFi, etc.)
-  # Based on t2linux.org guides and requirements
-  # Note: Bluetooth, audio, and firmware are handled by general-desktop bundle
+  # Apple T2 MacBook support (keyboards, trackpads, early boot)
+  # Based on t2linux.org guides and your working notes
+  # Complements nixos-hardware.apple-t2 with additional early boot support
 
-  # Early boot modules for LUKS decryption (Apple keyboard support)
-  boot.initrd.availableKernelModules = [
-    "usbhid"            # USB HID support for keyboards
-    "hid-apple"         # Apple HID devices (keyboard, trackpad)
+  # Early boot modules for LUKS decryption (Apple keyboard/trackpad support)
+  boot.initrd.kernelModules = [
+    "apple-bce"         # Apple BCE driver for T2 devices
     "snd"               # Sound support
     "snd_pcm"           # PCM sound support
   ];
 
-  # Runtime Apple HID drivers for keyboard and trackpad
-  boot.kernelModules = [
-    "hid-apple"         # Apple HID devices (keyboard, trackpad)
-    "applesmc"          # Apple System Management Controller
-  ];
-
-  # Apple keyboard function key behavior
+  # Apple keyboard function key behavior (if not set by nixos-hardware T2)
   boot.kernelParams = [
     "hid_apple.fnmode=2"  # Use F-keys as function keys by default
-    "acpi_osi=Linux"
-    "acpi_backlight=vendor"
   ];
 
   # Kernel module configuration for Apple devices
@@ -31,9 +22,6 @@
     # Apple keyboard configuration
     options hid_apple fnmode=2
     options hid_apple iso_layout=0
-
-    # Apple SMC sensor configuration
-    options applesmc debug=1
   '';
 
   # Touchpad/trackpad support
@@ -76,20 +64,4 @@
     brightnessctl
     macchanger     # Useful for managing MAC addresses on Apple hardware
   ];
-
-  # Persistent firmware storage (survives rebuilds)
-  # Copy extracted firmware to /etc/nixos/firmware/brcm/ and link it
-  environment.etc."firmware/brcm".source =
-    if builtins.pathExists /etc/nixos/firmware/brcm
-    then /etc/nixos/firmware/brcm
-    else pkgs.runCommand "empty-firmware" {} "mkdir -p $out";
-
-  # Link firmware to the location kernel expects
-  system.activationScripts.apple-firmware = ''
-    mkdir -p /lib/firmware/brcm
-    if [ -d /etc/nixos/firmware/brcm ] && [ "$(ls -A /etc/nixos/firmware/brcm 2>/dev/null)" ]; then
-      cp -r /etc/nixos/firmware/brcm/* /lib/firmware/brcm/ || true
-      echo "Apple firmware copied from /etc/nixos/firmware/brcm/"
-    fi
-  '';
 }

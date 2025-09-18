@@ -24,6 +24,8 @@
 
     nix-colors.url = "github:misterio77/nix-colors";
 
+    nixos-hardware.url = "github:nixos/nixos-hardware";
+
     hyprland.url = "github:hyprwm/Hyprland"; 
 
     disko = {
@@ -38,8 +40,6 @@
     stylix.url = "github:danth/stylix/ed91a20c84a80a525780dcb5ea3387dddf6cd2de";
 
     persist-retro.url = "github:Geometer1729/persist-retro";
-
-    nixos-hardware.url = "github:NixOS/nixos-hardware";
 
     claude-code = {
       url = "github:anthropics/claude-code";

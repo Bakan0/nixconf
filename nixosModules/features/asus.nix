@@ -11,7 +11,7 @@ in {
   };
 
   config = mkIf cfg.enable {
-    boot.kernelModules = [ "asus-wmi-sensors" "asus-nb-wmi" ];
+    boot.kernelModules = [ "asus-wmi-sensors" "asus-nb-wmi" "asus-wmi" ];
 
     # SuperGFXD service:
     systemd.services.supergfxd = mkIf cfg.enableGpuSwitching {
