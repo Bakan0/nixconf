@@ -8,34 +8,36 @@
     [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
-  boot.initrd.availableKernelModules = [ "xhci_pci" "nvme" "usbhid" "usb_storage" "sd_mod" "apple-bce" "snd" "snd-pcm" ];
+  boot.initrd.availableKernelModules = [ "xhci_pci" "nvme" "usbhid" "usb_storage" "sd_mod" "sr_mod" ];
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/mapper/crypted";
-      fsType = "ext4";
+    { device = "rpool/root";
+      fsType = "zfs";
     };
 
-  fileSystems."/macos_share" =
-    { device = "/dev/disk/by-label/macos_share";
-      fsType = "exfat";
-      options = [ "uid=1000" "gid=100" "dmask=007" "fmask=117" ];
+  fileSystems."/home" =
+    { device = "rpool/home";
+      fsType = "zfs";
     };
 
-  boot.initrd.luks.devices."crypted".device = "/dev/disk/by-uuid/7056d767-dbbf-4173-8864-a4451b4c428f";
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-uuid/12CE-A600";
+      fsType = "vfat";
+      options = [ "fmask=0022" "dmask=0022" ];
+    };
 
-  swapDevices =[ { device = "/dev/disk/by-label/swap"; } ];
+  swapDevices = [ ];
 
   # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
   # (the default) this is the recommended approach. When using systemd-networkd it's
   # still possible to use this option, but it's recommended to use it in conjunction
   # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
   networking.useDHCP = lib.mkDefault true;
-  # networking.interfaces.enp127s0u1.useDHCP = lib.mkDefault true;
-  # networking.interfaces.enp4s0f1u1.useDHCP = lib.mkDefault true;
-  # networking.interfaces.wlp5s0.useDHCP = lib.mkDefault true;
+  # networking.interfaces.enp127s0u2.useDHCP = lib.mkDefault true;
+  # networking.interfaces.enp9s0u2u4.useDHCP = lib.mkDefault true;
 
   nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;

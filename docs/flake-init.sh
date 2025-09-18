@@ -180,7 +180,16 @@ cat > "hosts/$HOSTNAME/home.nix" << EOF
 EOF
 
 # CRITICAL: Bootstrap SSH access for post-reboot system
-# Insert SSH config before the closing brace (removed after flake deployment)
+# First, clean up any existing SSH bootstrap configs from previous runs
+echo "Cleaning up any existing SSH bootstrap configuration..."
+# Remove the SSH bootstrap block and any duplicate openssh configurations
+sed -i '/# SSH Bootstrap - temporary until flake deploys/,/];/d' "$CONFIG_DIR/configuration.nix" 2>/dev/null || true
+# Also remove any orphaned services.openssh.enable lines that might be duplicates
+# Keep only the first occurrence if it exists
+awk '/services.openssh.enable = true;/ && !seen {seen=1; print; next} /services.openssh.enable = true;/ {next} {print}' "$CONFIG_DIR/configuration.nix" > "$CONFIG_DIR/configuration.nix.tmp" && mv "$CONFIG_DIR/configuration.nix.tmp" "$CONFIG_DIR/configuration.nix"
+
+# Now add the SSH config cleanly before the closing brace
+echo "Adding SSH bootstrap configuration..."
 sed -i '/^}$/i \
 \
   # SSH Bootstrap - temporary until flake deploys (general bundle provides this)\

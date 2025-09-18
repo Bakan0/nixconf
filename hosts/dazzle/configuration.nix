@@ -1,13 +1,11 @@
 { config, lib, pkgs, inputs, ... }:
 
 {
-  imports =
-    [ # Include the results of the hardware scan.
-      ./hardware-configuration.nix
-      inputs.nixos-hardware.nixosModules.apple-t2
-    ];
-
-  hardware.apple.touchBar.enable = true;
+  imports = [
+    # Include the results of the hardware scan.
+    ./hardware-configuration.nix
+      ./zfs-optimizations.nix
+  ];
 
   myNixOS = {
     bundles.general-desktop.enable = true;
@@ -15,14 +13,8 @@
       enable = true;
       user = "emet";
     };
-    batteryManagement.enable = true;
-    wake-on-lan.enable = true;
-    home-users = {
-      "emet" = {
-        userConfig = ./home.nix;  # Use host-specific home config
-        userSettings = {};  # Use default groups from users bundle
-      };
-    };
+    # User configuration handled via home-manager userConfig
+    home-users."emet".userConfig = ./home.nix;
   };
 
   boot = {
@@ -37,12 +29,12 @@
 
   networking = {
     hostName = "dazzle";
-    hostId = "da221e01";
     networkmanager.enable = true;
   };
 
   system.autoUpgrade.enable = false;
 
+  # User configuration provided by user bundle - no manual setup needed
 
   # Enable flakes and allow unfree
   nix.settings = {
@@ -52,11 +44,21 @@
   };
 
   nixpkgs.config.allowUnfree = true;
-  
-  environment.systemPackages = with pkgs; [
-    tailscale
-  ];
 
+  # Most packages provided by general-desktop bundle
+  environment.systemPackages = with pkgs; [
+    # Additional packages not in bundles
+    acpi
+    brightnessctl  
+    colorls
+    fastfetch
+    mesa-demos
+    ntfs3g
+    openconnect
+    qbittorrent
+    vulkan-tools
+    wl-clipboard
+  ];
 
   environment.variables.EDITOR = "nvim";
 
@@ -69,9 +71,8 @@
   };
 
 
-  services.protonmail-bridge.enable = true;
-  services.teamviewer.enable = true;
+  services.protonmail-bridge.enable = false;
+  services.teamviewer.enable = false;
 
-  system.stateVersion = "24.11";
+  system.stateVersion = "25.11"; # Did you read the comment?
 }
-

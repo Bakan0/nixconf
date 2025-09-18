@@ -108,14 +108,27 @@
     };
   };
 
-  # Make ensure-printers service non-blocking and optional
+  # Make ensure-printers service completely non-blocking
   systemd.services.ensure-printers = {
-    wantedBy = lib.mkForce [ ];
-    after = [ "cups.service" "network-online.target" ];
-    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];  # Start automatically but don't block
+    after = [ "cups.service" ];
+    requisite = lib.mkForce [ ];  # Remove any hard dependencies
     serviceConfig = {
-      TimeoutStartSec = "10s";
-      Restart = "no";
+      Type = "oneshot";
+      RemainAfterExit = true;
+      TimeoutStartSec = "10s";  # Quick timeout - won't block boot
+      Restart = "no";  # Don't retry - timer handles that
+    };
+  };
+
+  # Add a timer to retry printer setup periodically in background
+  systemd.timers.ensure-printers-retry = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "2min";  # First attempt 2 minutes after boot
+      OnUnitActiveSec = "5min";  # Retry every 5 minutes if failed
+      Unit = "ensure-printers.service";
+      Persistent = false;  # Don't catch up if system was down
     };
   };
 
