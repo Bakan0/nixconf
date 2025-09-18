@@ -15,6 +15,9 @@
     };
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
+
+    # Enable Apple hardware support for MacBook keyboard/trackpad
+    apple.enable = true;
   };
 
   boot = {
