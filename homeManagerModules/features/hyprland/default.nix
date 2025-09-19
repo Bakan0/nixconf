@@ -224,6 +224,8 @@ in {
             "$mainMod, Escape, exec, hyprlock"
             ",XF86AudioRaiseVolume, exec, wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%+"
             ",XF86AudioLowerVolume, exec, wpctl set-volume -l 1.4 @DEFAULT_AUDIO_SINK@ 5%-"
+            ",XF86KbdBrightnessUp, exec, brightnessctl --device=':white:kbd_backlight' set +10%"
+            ",XF86KbdBrightnessDown, exec, brightnessctl --device=':white:kbd_backlight' set 10%-"
             "$mainMod, left, movefocus, l"
             "$mainMod, right, movefocus, r"
             "$mainMod, up, movefocus, u"

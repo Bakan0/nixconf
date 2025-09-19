@@ -33,6 +33,12 @@
       laptopModel = "APPLE_MBP_16_1";
       laptopResolution = "3072x1920@60Hz";
     };
+
+    # AMD Radeon RX 5500M support
+    amd.enable = true;
+
+    # TPM support for Apple T2 chip
+    tpm2.enable = true;
   };
 
   boot = {
