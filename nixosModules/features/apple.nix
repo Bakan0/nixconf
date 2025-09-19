@@ -16,6 +16,7 @@
   # Apple keyboard function key behavior (if not set by nixos-hardware T2)
   boot.kernelParams = [
     "hid_apple.fnmode=2"  # Use F-keys as function keys by default
+    "hid_apple.swap_fn_leftctrl=1"  # Swap fn and left ctrl keys
   ];
 
   # Kernel module configuration for Apple devices
@@ -23,6 +24,7 @@
     # Apple keyboard configuration
     options hid_apple fnmode=2
     options hid_apple iso_layout=0
+    options hid_apple swap_fn_leftctrl=1
   '';
 
   # Touchpad/trackpad support
@@ -74,5 +76,6 @@
     lm_sensors
     brightnessctl
     macchanger     # Useful for managing MAC addresses on Apple hardware
+    tiny-dfr       # TouchBar daemon for MacBook Pro
   ];
 }

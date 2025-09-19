@@ -133,6 +133,11 @@ in {
           follow_mouse = 1;
           touchpad = {
             natural_scroll = true;
+            disable_while_typing = true;
+            clickfinger_behavior = true;
+            scroll_factor = 0.3; # Reduce scroll sensitivity
+            tap-to-click = true;
+            drag_lock = false;
           };
           natural_scroll = true;
           repeat_rate = 40;
@@ -186,10 +191,12 @@ in {
           # new_is_master = true;
           # orientation = "center";
         };
-        gestures = {
-          # See https://wiki.hyprland.org/Configuring/Variables/ for more
-          workspace_swipe = false;
-        };
+        # Gestures - New syntax in Hyprland 0.51+
+        # See https://wiki.hypr.land/Configuring/Gestures/ for more
+        gesture = [
+          # Disable workspace switching gestures for now
+          # "3, horizontal, workspace"  # 3-finger horizontal swipe for workspace switching
+        ];
         "$mainMod" = "SUPER";
         # "$mainMod" =
         # if (osConfig.altIsSuper or false)
