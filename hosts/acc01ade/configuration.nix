@@ -119,7 +119,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
     ];
     packages = with pkgs; [
-       tree  # Keep basic utilities
+       # tree now available in general bundle
        yazi  # Terminal file manager
     ];
   };
@@ -134,17 +134,8 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-    # Essential server tools only
-    curl
-    git
-    nh
-    nix-output-monitor  
+    # Essential server tools only (most tools now in general bundle)
     openconnect  # VPN client
-    tmux
-    unzip
-    vim
-    wget  
-    zip
   ];
 
   environment.variables.EDITOR = "nvim";

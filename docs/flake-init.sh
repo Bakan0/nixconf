@@ -122,16 +122,7 @@ $ZFS_IMPORT
   # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
-    acpi
-    brightnessctl  
-    colorls
-    fastfetch
-    mesa-demos
-    ntfs3g
-    openconnect
     qbittorrent
-    vulkan-tools
-    wl-clipboard
   ];
 
   environment.variables.EDITOR = "nvim";

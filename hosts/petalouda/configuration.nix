@@ -12,12 +12,14 @@
       enable = true;
       user = "joelle";  # Joelle's profile with GNOME, packages, SSH keys
     };
-    batteryManagement.enable = true;  # Laptop
     sddm.enable = false;
     hyprland.enable = false;
     tpm2.enable = true;
     virtualisation.enable = false;
     wake-on-lan.enable = true;
+
+    # Laptop-specific packages
+    bundles.laptop.enable = true;
     home-users = {
       "joelle" = {
         userConfig = ./home.nix;  # Use host-specific home config
@@ -46,24 +48,9 @@
 
 
    environment.systemPackages = with pkgs; [
-    acpi
-    brightnessctl
-    colorls
-    curl
-    fastfetch
+    # Using laptop bundle and general bundle for common packages
     freerdp
-    git
-    kitty
     neovide
-    nh
-    nix-output-monitor
-    ntfs3g
-    openconnect
-    tmux
-    unzip
-    vim
-    wget
-    zip
    ];
 
   # Some programs need SUID wrappers, can be configured further or are

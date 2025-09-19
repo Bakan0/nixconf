@@ -105,13 +105,9 @@
     '';
   };
 
-  # Performance monitoring and ZFS tools
+  # ZFS and performance monitoring tools
   environment.systemPackages = with pkgs; [
-    zfs
-    smartmontools
-    iotop
-    htop
-    btop
+    zfs          # Keep zfs package here for safety
     nvme-cli
     lm_sensors
     pciutils

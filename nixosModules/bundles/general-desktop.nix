@@ -44,6 +44,7 @@
     # Desktop utilities - available to all users
     meld
     dmidecode
+    openconnect        # VPN client used across multiple hosts
     
     # Icon themes - recent updates, perfect for terracotta theme
     fluent-icon-theme     # Modern fluent design (2025-08-21)

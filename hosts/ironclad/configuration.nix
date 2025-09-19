@@ -27,6 +27,12 @@
       lidSwitch.actionOnAC = "ignore";   # Keep running when plugged in
       ensureCleanShutdown = true;        # Ensure ZFS exports cleanly
     };
+
+    # ZFS support and monitoring tools
+    zfs.enable = true;
+
+    # Laptop-specific packages
+    bundles.laptop.enable = true;
   };
 
   boot = {
@@ -60,16 +66,7 @@
   # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
-    acpi
-    brightnessctl  
-    colorls
-    fastfetch
-    mesa-demos
-    ntfs3g
-    openconnect
     qbittorrent
-    vulkan-tools
-    wl-clipboard
   ];
 
   environment.variables.EDITOR = "nvim";

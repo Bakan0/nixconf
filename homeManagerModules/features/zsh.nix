@@ -27,7 +27,7 @@ in {
     shellAliases = {
       ls = "${pkgs.eza}/bin/eza --icons -a --group-directories-first";
       tree = "${pkgs.eza}/bin/eza --color=auto --tree";
-      cal = "cal -m";
+      cal = "cal -s";
       grep = "grep --color=auto";
       q = "exit";
       ":q" = "exit";

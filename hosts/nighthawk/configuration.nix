@@ -14,18 +14,23 @@
       user = "emet";
     };
     kanshi.laptopResolution = "1920x1080@60Hz";
-    batteryManagement.enable = true;
     immersed.enable = true;
     virtualisation = {
       username = "emet";
     };
     wake-on-lan.enable = true;
+
+    # Laptop-specific packages
+    bundles.laptop.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;  # Use host-specific home config
         userSettings = {};  # Use default groups from users bundle
       };
     };
+
+    # ZFS support and monitoring tools
+    zfs.enable = true;
   };
 
   boot = {

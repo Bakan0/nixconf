@@ -18,7 +18,6 @@
       laptopModel = "ASUS_A16_FA617NT";
       laptopResolution = "1920x1200@165Hz";
     };
-    batteryManagement.enable = true;
     tpm2.enable = true;
     amd = {
       enable = true;
@@ -33,6 +32,12 @@
     powerManagement.enable = false;  # TEMP DEBUG
     virtualisation.enable = true;
     wake-on-lan.enable = true;
+
+    # ZFS support and monitoring tools
+    zfs.enable = true;
+
+    # Laptop-specific packages
+    bundles.laptop.enable = true;
     home-users = {
       "emet" = {
         userConfig = ./home.nix;  # Use host-specific home config
@@ -75,13 +80,11 @@
     ];
     packages = with pkgs; [
        appimage-run
-       kitty # Terminal emulator, recommended for Hyprland
        mutter
        quickemu
        remmina
        sidequest
        teamviewer
-       tree
        yazi
     ];
   };
@@ -101,27 +104,12 @@
     ];
 
   environment.systemPackages = with pkgs; [
-    acpi
-    brightnessctl
-    colorls
     eddie
-    fastfetch
     freerdp
     geany
     glxinfo
-    mesa-demos
     neovide
-    nh
-    nix-output-monitor
-    ntfs3g
-    openconnect
     qbittorrent
-    tmux
-    unzip
-    vim
-    vulkan-tools
-    wget
-    zip
   ];
 
   environment.variables.EDITOR = "nvim";

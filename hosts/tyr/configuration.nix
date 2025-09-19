@@ -12,13 +12,15 @@
       enable = true;
       user = "emet";
     };
-    batteryManagement.enable = true;
     kanshi = {
       laptopModel = "DELL_XPS13_9300";
       laptopResolution = "1920x1200@59.95Hz";
     };
     virtualisation.enable = true;
     wake-on-lan.enable = true;
+
+    # Laptop-specific packages
+    bundles.laptop.enable = true;
     usb-reset.enable = true;  # USB bus reset utilities
     home-users = {
       "emet" = {

@@ -134,9 +134,7 @@ in {
           extraGroups = [ "networkmanager" "wheel" "audio" "video" ];
           packages = with pkgs; [
             appimage-run
-            kitty
             signal-desktop
-            tree
             yazi
           ];
         };

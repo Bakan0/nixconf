@@ -101,9 +101,11 @@
   # Essential system packages
   environment.systemPackages = with pkgs; [
     bc          # CLI calculator
+    colorls     # Colorized ls
     curl
     dnsutils    # dig, nslookup - essential for servers
     eza         # Better ls replacement
+    fastfetch   # System information tool
     fd          # Fast file finder
     file        # File type detection
     fwupd       # Firmware update daemon
@@ -114,7 +116,8 @@
     lsof        # List open files - debugging essential
     neofetch    # System info display
     nh          # Nix helper
-    nix-output-monitor  
+    nix-output-monitor
+    ntfs3g      # NTFS filesystem support
     openssl     # Crypto tools often needed system-wide
     ripgrep     # Fast grep replacement
     tmux
@@ -122,7 +125,7 @@
     unrar       # Extract RAR archives
     unzip
     vim
-    wget  
+    wget
     zip         # Archive creation
     zstd        # Compression for xfer-* scripts
   ];

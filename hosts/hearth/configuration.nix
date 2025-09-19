@@ -24,6 +24,12 @@
         userSettings = {};  # Use default groups from users bundle
       };
     };
+
+    # ZFS support and monitoring tools
+    zfs.enable = true;
+
+    # Laptop-specific packages
+    bundles.laptop.enable = true;
     virtualisation.enable = true;
     wake-on-lan.enable = true;
   };
@@ -59,9 +65,7 @@
     ];
     packages = with pkgs; [
       appimage-run
-      kitty # Terminal emulator, recommended for Hyprland
       remmina
-      tree
       yazi
     ];
   };
@@ -81,26 +85,11 @@
   ];
 
   environment.systemPackages = with pkgs; [
-    acpi
-    brightnessctl
-    colorls
-    fastfetch
     freerdp
     geany
     glxinfo
-    mesa-demos
     neovide
-    nh
-    nix-output-monitor
-    ntfs3g
-    openconnect
     qbittorrent
-    tmux
-    unzip
-    vim
-    vulkan-tools
-    wget
-    zip
   ];
 
   environment.variables.EDITOR = "nvim";

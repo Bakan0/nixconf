@@ -309,13 +309,8 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
     '';
   };
 
-  # Performance monitoring and ZFS tools
+  # Performance monitoring tools (ZFS tools moved to nixosModules/features/zfs.nix)
   environment.systemPackages = with pkgs; [
-    zfs
-    smartmontools
-    iotop
-    htop
-    btop
     nvme-cli
     lm_sensors
     pciutils
