@@ -1,6 +1,7 @@
 {
   inputs,
   pkgs,
+  config,
   ...
 }: {
   programs.fish = {
@@ -9,7 +10,7 @@
     functions = {
       fish_prompt = {
         body = ''
-          string join "" -- (set_color red) "[" (set_color yellow) $USER (set_color green) "@" (set_color blue) $hostname (set_color magenta) " " $(prompt_pwd) (set_color red) ']' (set_color normal) "\$ "
+          string join "" -- (set_color "${config.stylix.base16Scheme.base09}") $USER (set_color "${config.stylix.base16Scheme.base0B}") "@" $hostname (set_color normal) " " $(prompt_pwd) " \$ "
         '';
       };
 
@@ -40,9 +41,13 @@
       # Project navigation from zsh config
       proj = {
         body = ''
-          set dir (cat ~/.local/share/direnv/allow/* | uniq | xargs dirname | ${pkgs.fzf}/bin/fzf --height 9)
-          if test -n "$dir"
-            cd "$dir"
+          if test -d ~/.local/share/direnv/allow
+            set dir (cat ~/.local/share/direnv/allow/* 2>/dev/null | uniq | xargs dirname 2>/dev/null | ${pkgs.fzf}/bin/fzf --height 9)
+            if test -n "$dir"
+              cd "$dir"
+            end
+          else
+            echo "No direnv projects found. Use 'direnv allow' in project directories first."
           end
         '';
       };
@@ -141,7 +146,7 @@
       # direnv
       set -x DIRENV_LOG_FORMAT ""
 
-      set -s PATH $HOME/bin $PATH
+      fish_add_path $HOME/bin
 
       # Start SSH agent if not already running
       if not set -q SSH_AUTH_SOCK
@@ -165,9 +170,10 @@
       ":q" = "exit";
     };
 
-    # setup vi mode
+    # setup vi mode but disable mode display
     interactiveShellInit = ''
       fish_vi_key_bindings
+      function fish_mode_prompt; end
     '';
   };
 

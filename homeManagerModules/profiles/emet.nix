@@ -12,6 +12,7 @@
     ];
   };
 
+
   xdg.userDirs = {
     enable = true;
     createDirectories = true;
@@ -29,8 +30,8 @@
     bundles.xfer-scripts.enable = lib.mkDefault true;
 
     # Features
-    fish.enable = false;  # Explicitly disable fish
-    zsh.enable = false;   # Disable zsh - not used
+    fish.enable = true;   # Fish is the preferred shell for emet
+    zsh.enable = false;   # Legacy vimjoyer code - not used
     kitty.enable = true;
     firefox.enable = true;
     hyprland.enable = lib.mkDefault true;
