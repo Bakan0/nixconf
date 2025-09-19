@@ -1,13 +1,10 @@
 { config, lib, pkgs, inputs, ... }:
 
 {
-  imports = [
-    # Import nixos-hardware T2 support
-    inputs.nixos-hardware.nixosModules.apple-t2
-  ];
   # Apple T2 MacBook support (keyboards, trackpads, early boot)
   # Based on t2linux.org guides and your working notes
-  # Complements nixos-hardware.apple-t2 with additional early boot support
+  # NOTE: When enabling this module, also add the T2 import to your host's configuration.nix:
+  # imports = [ inputs.nixos-hardware.nixosModules.apple-t2 ];
 
   # Early boot modules for LUKS decryption (Apple keyboard/trackpad support)
   boot.initrd.kernelModules = [
