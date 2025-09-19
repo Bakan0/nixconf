@@ -51,7 +51,7 @@ in {
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
-      backupFileExtension = null;
+      backupFileExtension = "backup";
 
       extraSpecialArgs = {
         inherit inputs;
@@ -79,6 +79,14 @@ in {
         Type = "oneshot";
         User = name;
         ExecStart = pkgs.writeShellScript "hm-pre-cleanup-${name}" ''
+          # Remove existing backup files to prevent conflicts
+          if [ -f "/home/${name}/.config/fish/config.fish.backup" ]; then
+            rm -f "/home/${name}/.config/fish/config.fish.backup"
+          fi
+          if [ -f "/home/${name}/.config/fish/functions/fish_prompt.fish.backup" ]; then
+            rm -f "/home/${name}/.config/fish/functions/fish_prompt.fish.backup"
+          fi
+
           # Remove files that commonly conflict with Home Manager
           rm -f /home/${name}/.config/mimeapps.list
           rm -f /home/${name}/.local/share/applications/mimeapps.list
