@@ -17,7 +17,7 @@
   generalStartScript = pkgs.writeShellScriptBin "start" ''
     ${pkgs.swww}/bin/swww-daemon &
     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
-    # hyprctl setcursor Bibata-Modern-Ice 16 &
+    ${pkgs.hyprland}/bin/hyprctl setcursor Bibata-Modern-Amber 24 &
 
     # Start gnome-keyring daemon for credential storage
     ${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --components=pkcs11,secrets,ssh -r -d &
@@ -123,10 +123,11 @@ in {
         # (lib.filter (m: m.enabled && m.workspace != null) config.myHomeManager.monitors);
         env = [
           "XCURSOR_SIZE,24"
+          "XCURSOR_THEME,Bibata-Modern-Amber"
+          "GTK_THEME,Adwaita:dark"
           "NIXOS_OZONE_WL,1"
           "XDG_CURRENT_DESKTOP,Hyprland"
           "XDG_SESSION_TYPE,wayland"
-          "WLR_NO_HARDWARE_CURSORS,1"
           "GDK_BACKEND,wayland,x11"
           "QT_QPA_PLATFORM,wayland;xcb"
         ];
@@ -316,6 +317,7 @@ in {
       };
     };
     home.packages = with pkgs; [
+      bibata-cursors
       grim
       slurp
       wl-clipboard

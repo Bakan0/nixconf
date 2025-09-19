@@ -3,6 +3,25 @@
   config,
   ...
 }: {
+  # Create desktop entries for power management
+  xdg.desktopEntries = {
+    poweroff = {
+      name = "Power Off";
+      comment = "Shut down the computer";
+      exec = "systemctl poweroff";
+      icon = "system-shutdown";
+      terminal = false;
+      categories = ["System"];
+    };
+    reboot = {
+      name = "Restart";
+      comment = "Restart the computer";
+      exec = "systemctl reboot";
+      icon = "system-reboot";
+      terminal = false;
+      categories = ["System"];
+    };
+  };
   # xdg.configFile."rofi/config.rasi".source = ./config.rasi;
 
   xdg.configFile."rofi/config.rasi".text = with config.stylix.base16Scheme; ''

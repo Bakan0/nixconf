@@ -25,6 +25,8 @@
       listen_on = "unix:/tmp/kitty";
       shell_integration = "enabled";
       paste_actions = "no-op";
+      adjust_line_height = 0;
+      adjust_column_width = 0;
     };
     extraConfig = ''
       # GENERATED

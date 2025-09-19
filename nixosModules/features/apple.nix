@@ -1,6 +1,17 @@
 { config, lib, pkgs, inputs, ... }:
+with lib;
+let
+  cfg = config.myNixOS.apple;
+in {
+  options.myNixOS.apple = {
+    modelOverrides = mkOption {
+      type = types.str;
+      default = "";
+      description = "Apply model-specific overrides (e.g. T2 for MacBooks with T2 chip)";
+    };
+  };
 
-{
+  config = mkIf cfg.enable {
   # Apple T2 MacBook support (keyboards, trackpads, early boot)
   # Based on t2linux.org guides and your working notes
   # NOTE: When enabling this module, also add the T2 import to your host's configuration.nix:
@@ -17,6 +28,9 @@
   boot.kernelParams = [
     "hid_apple.fnmode=2"  # Use F-keys as function keys by default
     "hid_apple.swap_fn_leftctrl=1"  # Swap fn and left ctrl keys
+  ] ++ lib.optionals (cfg.modelOverrides == "T2") [
+    "intel_iommu=off"   # Disable Intel IOMMU for T2 TPM compatibility
+    "iommu=off"         # Disable IOMMU completely for T2 TPM compatibility
   ];
 
   # Kernel module configuration for Apple devices
@@ -78,4 +92,5 @@
     macchanger     # Useful for managing MAC addresses on Apple hardware
     tiny-dfr       # TouchBar daemon for MacBook Pro
   ];
+  };
 }

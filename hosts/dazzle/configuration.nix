@@ -18,7 +18,10 @@
     home-users."emet".userConfig = ./home.nix;
 
     # Apple T2 MacBook support for early boot keyboard/trackpad
-    apple.enable = true;
+    apple = {
+      enable = true;
+      modelOverrides = "T2";
+    };
 
     # ZFS support and monitoring tools
     zfs.enable = true;
@@ -34,7 +37,11 @@
     };
 
     # AMD Radeon RX 5500M support
-    amd.enable = true;
+    amd = {
+      enable = true;
+      supergfxMode = "Hybrid";  # Intel UHD 630 + AMD RX 5500M
+      conservativePowerManagement = false;  # Causes ZFS boot failures
+    };
 
     # TPM support for Apple T2 chip
     tpm2.enable = true;
