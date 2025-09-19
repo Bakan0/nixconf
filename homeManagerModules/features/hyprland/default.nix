@@ -331,6 +331,7 @@ in {
       xfce.thunar
       gnome-keyring
       libsecret
+      weston  # Nested Wayland compositor for testing X11 apps
     ];
     services.hypridle = {
       enable = true;

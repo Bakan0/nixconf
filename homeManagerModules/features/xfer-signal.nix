@@ -9,16 +9,20 @@ with pkgs;
 
       show_help() {
           echo "Usage: xfer-signal [--send|--receive] <target_ip> [--dry-run] [--force-relink]"
+          echo "       xfer-signal --break-connection"
           echo "Transfer Signal Desktop profile between hosts using zstd+rsync"
           echo ""
           echo "Options:"
-          echo "  --force-relink    Force re-authentication by clearing session data"
-          echo "                    (preserves messages/contacts but requires device re-linking)"
+          echo "  --force-relink      Force re-authentication by clearing session data"
+          echo "                      (preserves messages/contacts but requires device re-linking)"
+          echo "  --break-connection  Break Signal connection locally (no transfer)"
+          echo "                      (preserves messages/contacts but requires device re-linking)"
           echo ""
           echo "Examples:"
           echo "  xfer-signal --send 10.17.19.89"
           echo "  xfer-signal --receive 10.17.19.89 --dry-run"
           echo "  xfer-signal --receive 10.17.19.89 --force-relink"
+          echo "  xfer-signal --break-connection"
       }
 
       check_signal_running() {
@@ -90,6 +94,7 @@ with pkgs;
           case $1 in
               --send) ACTION="send"; TARGET_IP="$2"; shift 2 ;;
               --receive) ACTION="receive"; TARGET_IP="$2"; shift 2 ;;
+              --break-connection) ACTION="break-connection"; shift ;;
               --dry-run) DRY_RUN="--dry-run"; shift ;;
               --force-relink) FORCE_RELINK="--force-relink"; shift ;;
               --help) show_help; exit 0 ;;
@@ -97,12 +102,19 @@ with pkgs;
           esac
       done
 
-      [ -z "$ACTION" ] || [ -z "$TARGET_IP" ] && { show_help; exit 1; }
+      # Validate arguments based on action
+      if [ "$ACTION" = "break-connection" ]; then
+          [ -z "$ACTION" ] && { show_help; exit 1; }
+      else
+          [ -z "$ACTION" ] || [ -z "$TARGET_IP" ] && { show_help; exit 1; }
+      fi
 
-      # Validate IP format
-      echo "$TARGET_IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || {
-          echo "Error: Invalid IP address: $TARGET_IP"; exit 1;
-      }
+      # Validate IP format (only for send/receive actions)
+      if [ "$ACTION" != "break-connection" ]; then
+          echo "$TARGET_IP" | grep -qE '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$' || {
+              echo "Error: Invalid IP address: $TARGET_IP"; exit 1;
+          }
+      fi
 
       case $ACTION in
           send)
@@ -150,6 +162,17 @@ with pkgs;
               elif [ -n "$FORCE_RELINK" ] && [ -n "$DRY_RUN" ]; then
                   echo "DRY RUN: Would perform force relink cleanup (remove session data, preserve messages)"
               fi
+              ;;
+          break-connection)
+              [ ! -d "$APP_PATH" ] && { echo "Error: Signal profile not found at $APP_PATH"; exit 1; }
+
+              # Check if Signal is running locally
+              if check_signal_running "local" "local"; then
+                  echo "Error: Signal is currently running. Please quit Signal before continuing."
+                  exit 1
+              fi
+
+              force_relink_cleanup
               ;;
       esac
       echo "Transfer completed!"

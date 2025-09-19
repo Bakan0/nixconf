@@ -101,9 +101,11 @@
   # Essential system packages
   environment.systemPackages = with pkgs; [
     bc          # CLI calculator
+    caligula    # User-friendly du/df alternative
     colorls     # Colorized ls
     curl
     dnsutils    # dig, nslookup - essential for servers
+    dysk        # Get information on mounted disks
     eza         # Better ls replacement
     fastfetch   # System information tool
     fd          # Fast file finder

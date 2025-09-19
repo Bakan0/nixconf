@@ -8,6 +8,12 @@
     inputs.nixos-hardware.nixosModules.apple-t2
   ];
 
+  # Override nixos-hardware T2 IOMMU settings with higher priority
+  boot.kernelParams = lib.mkAfter [
+    "intel_iommu=off"   # Force disable for T2 compatibility
+    "iommu=off"         # Force disable for T2 compatibility
+  ];
+
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users = {
@@ -34,6 +40,7 @@
       enable = true;
       laptopModel = "APPLE_MBP_16_1";
       laptopResolution = "3072x1920@60Hz";
+      laptopScale = 1.333333;
     };
 
     # AMD Radeon RX 5500M support

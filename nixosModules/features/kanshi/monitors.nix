@@ -46,6 +46,11 @@ in {
       default = "ASUS_A16_FA617NT";
       description = "Laptop model key for make/model serial lookup";
     };
+    laptopScale = mkOption {
+      type = types.float;
+      default = 1.0;
+      description = "Laptop display scale factor";
+    };
 
     sunshineResolution = mkOption {
       type = types.str;
@@ -82,33 +87,51 @@ in {
 
   config = mkIf cfg.enable {
     environment.etc."kanshi/config".text = ''
-      profile laptop-only {
-        output "${laptopMatch}" mode ${cfg.laptopResolution} position 0,0
+      profile laptop {
+        output "${laptopMatch}" mode ${cfg.laptopResolution} position 0,0 scale ${toString cfg.laptopScale}
       }
 
-      profile ultrawide-with-laptop {
-        output "${laptopMatch}" mode ${cfg.laptopResolution} position 0,0
-        output "Philips Consumer Electronics Company PHL 499P9 AU02135004295" mode 5120x1440@29.98Hz position ${toString (- (parseLogical "5120x1440@29.98Hz" 1.0).width)},${toString (calcCenterX cfg.laptopResolution 1.0 "5120x1440@29.98Hz" 1.0)}
+      profile laptop-immersed {
+        output "${laptopMatch}" enable mode ${cfg.laptopResolution} position 0,0 scale ${toString cfg.laptopScale}
+        output immersed-1 mode --custom ${cfg.immersedWideResolution} position ${toString (calcCenterX cfg.laptopResolution 1.0 cfg.immersedWideResolution cfg.immersedWideScale)},${toString (- (parseLogical cfg.immersedWideResolution cfg.immersedWideScale).height)} scale ${toString cfg.immersedWideScale}
+        output immersed-2 mode --custom ${cfg.immersedSecondaryResolution} position ${toString ((calcCenterX cfg.laptopResolution 1.0 cfg.immersedWideResolution cfg.immersedWideScale) + (calcCenterX cfg.immersedWideResolution cfg.immersedWideScale cfg.immersedSecondaryResolution cfg.immersedSecondaryScale))},${toString (- (parseLogical cfg.immersedWideResolution cfg.immersedWideScale).height - (parseLogical cfg.immersedSecondaryResolution cfg.immersedSecondaryScale).height)} scale ${toString cfg.immersedSecondaryScale}
       }
 
-      profile ultrawide-only {
-        output "Philips Consumer Electronics Company PHL 499P9 AU02135004295" mode 5120x1440@29.98Hz position 0,0
-      }
-
-      profile sunshine-streaming-with-laptop {
-        output "${laptopMatch}" enable mode ${cfg.laptopResolution} position 0,0
+      profile laptop-sunshine {
+        output "${laptopMatch}" enable mode ${cfg.laptopResolution} position 0,0 scale ${toString cfg.laptopScale}
         output sunshine-ultrawide mode --custom ${cfg.sunshineResolution} position ${toString (calcCenterX cfg.laptopResolution 1.0 cfg.sunshineResolution cfg.sunshineScale)},${toString (- (parseLogical cfg.sunshineResolution cfg.sunshineScale).height)} scale ${toString cfg.sunshineScale}
       }
 
-      profile sunshine-streaming-only {
+      profile laptop-ultrawide-30436 {
+        output "${laptopMatch}" disable
+        output "Goldstar Company Ltd LG ULTRAWIDE Unknown" mode 3440x1440@60Hz position 0,0
+      }
+
+      profile laptop-ultrawide-41127 {
+        output "${laptopMatch}" disable
+        output "Dell Inc. DELL U3415W PXF7965O1HTL" mode 3440x1440@60Hz position 0,0
+      }
+
+      profile laptop-ultrawide-499P9 {
+        output "${laptopMatch}" disable
+        output "Philips Consumer Electronics Company PHL 499P9 AU02135004295" mode 5120x1440@29.98Hz position ${toString (- (parseLogical "5120x1440@29.98Hz" 1.0).width)},${toString (calcCenterX cfg.laptopResolution 1.0 "5120x1440@29.98Hz" 1.0)}
+      }
+
+      profile sunshine {
         output sunshine-ultrawide mode --custom ${cfg.sunshineResolution} position 0,0 scale ${toString cfg.sunshineScale}
         output "${laptopMatch}" disable
       }
 
-      profile immersed-streaming-with-laptop {
-        output "${laptopMatch}" enable mode ${cfg.laptopResolution} position 0,0
-        output immersed-1 mode --custom ${cfg.immersedWideResolution} position ${toString (calcCenterX cfg.laptopResolution 1.0 cfg.immersedWideResolution cfg.immersedWideScale)},${toString (- (parseLogical cfg.immersedWideResolution cfg.immersedWideScale).height)} scale ${toString cfg.immersedWideScale}
-        output immersed-2 mode --custom ${cfg.immersedSecondaryResolution} position ${toString ((calcCenterX cfg.laptopResolution 1.0 cfg.immersedWideResolution cfg.immersedWideScale) + (calcCenterX cfg.immersedWideResolution cfg.immersedWideScale cfg.immersedSecondaryResolution cfg.immersedSecondaryScale))},${toString (- (parseLogical cfg.immersedWideResolution cfg.immersedWideScale).height - (parseLogical cfg.immersedSecondaryResolution cfg.immersedSecondaryScale).height)} scale ${toString cfg.immersedSecondaryScale}
+      profile ultrawide-30436 {
+        output "Goldstar Company Ltd LG ULTRAWIDE Unknown" mode 3440x1440@60Hz position 0,0
+      }
+
+      profile ultrawide-41127 {
+        output "Dell Inc. DELL U3415W PXF7965O1HTL" mode 3440x1440@60Hz position 0,0
+      }
+
+      profile ultrawide-499P9 {
+        output "Philips Consumer Electronics Company PHL 499P9 AU02135004295" mode 5120x1440@29.98Hz position 0,0
       }
     '';
   };

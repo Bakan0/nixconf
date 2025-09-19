@@ -143,8 +143,12 @@ with pkgs;
 
               # Calculate remote sizes
               echo "Checking remote Zettelkasten sizes..."
-              REMOTE_ZETTEL_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "du -sb ~/zettelkasten 2>/dev/null | cut -f1 || echo 0")
-              REMOTE_CONFIG_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "du -sb ~/.config/zettelkasten 2>/dev/null | cut -f1 || echo 0")
+              REMOTE_ZETTEL_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "du -sb ~/zettelkasten 2>/dev/null | cut -f1" || echo 0)
+              REMOTE_CONFIG_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "du -sb ~/.config/zettelkasten 2>/dev/null | cut -f1" || echo 0)
+
+              # Ensure variables are valid integers
+              REMOTE_ZETTEL_SIZE=''${REMOTE_ZETTEL_SIZE:-0}
+              REMOTE_CONFIG_SIZE=''${REMOTE_CONFIG_SIZE:-0}
 
               if [ "$REMOTE_ZETTEL_SIZE" -gt 0 ]; then
                   REMOTE_ZETTEL_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "du -sh ~/zettelkasten | cut -f1")

@@ -24,11 +24,12 @@ in {
     "snd_pcm"           # PCM sound support
   ];
 
-  # Apple keyboard function key behavior (if not set by nixos-hardware T2)
+  # Apple keyboard function key behavior and T2-specific overrides
   boot.kernelParams = [
     "hid_apple.fnmode=2"  # Use F-keys as function keys by default
     "hid_apple.swap_fn_leftctrl=1"  # Swap fn and left ctrl keys
   ] ++ lib.optionals (cfg.modelOverrides == "T2") [
+    # Override nixos-hardware T2 IOMMU settings for better TPM compatibility
     "intel_iommu=off"   # Disable Intel IOMMU for T2 TPM compatibility
     "iommu=off"         # Disable IOMMU completely for T2 TPM compatibility
   ];
@@ -73,7 +74,21 @@ in {
   # Additional firmware support for Apple devices
   hardware.firmware = with pkgs; [
     wireless-regdb  # Wireless regulatory database for proper WiFi/BT firmware
+  ] ++ lib.optionals (cfg.modelOverrides == "T2" && builtins.pathExists /etc/nixos/firmware/brcm) [
+    # Apple T2 firmware - declarative approach from t2linux.org
+    # See: https://wiki.t2linux.org/distributions/nixos/installation/
+    (stdenvNoCC.mkDerivation {
+      name = "brcm-firmware";
+      src = /etc/nixos/firmware/brcm;
+      installPhase = ''
+        mkdir -p $out/lib/firmware/brcm
+        cp -r ${src}/* "$out/lib/firmware/brcm"
+      '';
+      allowSubstitutes = false;
+      preferLocalBuild = true;
+    })
   ];
+
 
   # TouchBar support for MacBook Pro with Touch Bar
   hardware.apple.touchBar = {
@@ -85,7 +100,6 @@ in {
     };
   };
 
-  # Useful utilities for Apple hardware monitoring
   environment.systemPackages = with pkgs; [
     lm_sensors
     brightnessctl

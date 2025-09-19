@@ -17,7 +17,7 @@
   config = {
     myHomeManager.zathura.enable = lib.mkDefault true;
     myHomeManager.rofi.enable = lib.mkDefault true;
-    myHomeManager.alacritty.enable = lib.mkDefault true;
+    myHomeManager.foot.enable = lib.mkDefault true;
     myHomeManager.kitty.enable = lib.mkDefault true;
     myHomeManager.xremap.enable = lib.mkDefault false;
     myHomeManager.imv.enable = lib.mkDefault false;
@@ -105,7 +105,6 @@
 
       virt-manager
 
-      wezterm
       kitty
 
       bitwarden-desktop
