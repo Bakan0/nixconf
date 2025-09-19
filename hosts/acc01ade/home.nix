@@ -12,9 +12,9 @@
 
   # Host-specific overrides for server
   myHomeManager = {
-    # This host doesn't need desktop or gaming bundles
+    # This host doesn't need desktop or graphics-performance bundles
     bundles.databender.enable = false;
-    bundles.gaming.enable = false;
+    bundles.graphics-performance.enable = false;
     bundles.desktop.enable = false;         # No browsers, MIME associations, desktop apps
     bundles.desktop-full.enable = false;    # No additional desktop applications
     

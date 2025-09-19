@@ -26,7 +26,7 @@
     bundles.general.enable = lib.mkDefault true;
     bundles.desktop.enable = lib.mkDefault true;
     bundles.desktop-full.enable = lib.mkDefault true;
-    bundles.gaming.enable = lib.mkDefault true;
+    bundles.graphics-performance.enable = lib.mkDefault true;
     bundles.databender.enable = lib.mkDefault true;
     bundles.xfer-scripts.enable = lib.mkDefault true;
 

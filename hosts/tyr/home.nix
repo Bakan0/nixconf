@@ -12,8 +12,8 @@
 
   # Host-specific overrides
   myHomeManager = {
-    # This host doesn't need gaming bundle
-    bundles.gaming.enable = false;
+    # This host doesn't need graphics-performance bundle
+    bundles.graphics-performance.enable = false;
 
     # Disable Microsoft tools on this host
     microsoft.enable = false;

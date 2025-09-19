@@ -5,7 +5,6 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./zfs-optimizations.nix
-    # Apple T2 hardware support (required for Apple module)
     inputs.nixos-hardware.nixosModules.apple-t2
   ];
 

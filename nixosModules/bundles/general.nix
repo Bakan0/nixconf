@@ -107,6 +107,7 @@
     eza         # Better ls replacement
     fastfetch   # System information tool
     fd          # Fast file finder
+    home-manager # For debugging home-manager activation issues
     file        # File type detection
     fwupd       # Firmware update daemon
     git
