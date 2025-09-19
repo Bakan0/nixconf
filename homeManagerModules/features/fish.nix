@@ -4,6 +4,18 @@
   config,
   ...
 }: {
+  # Robust backup handling - remove existing backups before creating new ones
+  home.activation.cleanFishBackups = config.lib.dag.entryBefore ["checkLinkTargets"] ''
+    if [ -f "$HOME/.config/fish/config.fish.backup" ]; then
+      $DRY_RUN_CMD rm -f "$HOME/.config/fish/config.fish.backup"
+    fi
+    if [ -f "$HOME/.config/fish/functions/fish_prompt.fish.backup" ]; then
+      $DRY_RUN_CMD rm -f "$HOME/.config/fish/functions/fish_prompt.fish.backup"
+    fi
+  '';
+
+  home-manager.backupFileExtension = "backup";
+
   programs.fish = {
     enable = true;
 
