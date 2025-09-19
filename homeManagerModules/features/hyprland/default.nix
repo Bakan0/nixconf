@@ -19,10 +19,16 @@
     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
     # hyprctl setcursor Bibata-Modern-Ice 16 &
 
+    # Start gnome-keyring daemon for credential storage
+    ${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --components=pkcs11,secrets,ssh -r -d &
+
     # Wait for Hyprland environment to be fully set
     sleep 1
 
-    # Import environment for systemd services
+    # Update dbus environment for keyring integration
+    ${pkgs.dbus}/bin/dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP
+
+    # Import environment for systemd services and keyring
     systemctl --user start hyprland-session-vars.service
 
     # Wait for environment import to complete
@@ -321,6 +327,8 @@ in {
       hyprlock
       procps
       xfce.thunar
+      gnome-keyring
+      libsecret
     ];
     services.hypridle = {
       enable = true;
@@ -371,7 +379,7 @@ in {
       };
       Service = {
         Type = "oneshot";
-        ExecStart = "${pkgs.systemd}/bin/systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP PATH";
+        ExecStart = "${pkgs.systemd}/bin/systemctl --user import-environment WAYLAND_DISPLAY XDG_CURRENT_DESKTOP PATH SSH_AUTH_SOCK";
         RemainAfterExit = true;
       };
     };
@@ -391,6 +399,17 @@ in {
         TimeoutStopSec = "10";
       };
       Install.WantedBy = [ "graphical-session.target" ];
+    };
+
+    # Wayland environment variables for better app compatibility
+    home.sessionVariables = {
+      # Electron/Chromium Wayland fixes
+      NIXOS_OZONE_WL = "1";
+      # Additional Wayland app support
+      MOZ_ENABLE_WAYLAND = "1";
+      QT_QPA_PLATFORM = "wayland;xcb";
+      SDL_VIDEODRIVER = "wayland,x11";
+      _JAVA_AWT_WM_NONREPARENTING = "1";
     };
   };
 }
