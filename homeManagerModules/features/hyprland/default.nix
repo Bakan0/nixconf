@@ -307,7 +307,7 @@ in {
       swww
       networkmanagerapplet
       blueman
-      rofi-wayland
+      rofi
       hypridle
       hyprlock
       procps

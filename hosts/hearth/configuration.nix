@@ -84,37 +84,22 @@
     acpi
     brightnessctl
     colorls
-    dunst
     fastfetch
-    flatpak
-    font-awesome
     freerdp
     geany
     glxinfo
-    hyprland
-    kitty
-    libnotify
     mesa-demos
     neovide
-    networkmanagerapplet
     nh
     nix-output-monitor
     ntfs3g
     openconnect
-    pavucontrol
     qbittorrent
-    rofi-wayland
-    swww
     tmux
     unzip
     vim
     vulkan-tools
-    waybar
-    wayland
     wget
-    wl-clipboard
-    xorg.xorgserver
-    xwayland
     zip
   ];
 

@@ -49,33 +49,19 @@
     brightnessctl
     colorls
     curl
-    dunst
     fastfetch
-    flatpak
-    font-awesome
     freerdp
     git
-    hyprland
     kitty
-    libnotify
     neovide
-    networkmanagerapplet
     nh
     nix-output-monitor
     ntfs3g
     openconnect
-    pavucontrol
-    rofi-wayland
-    swww
     tmux
     unzip
     vim
-    waybar
-    wayland
     wget
-    wl-clipboard
-    xorg.xorgserver
-    xwayland
     zip
    ];
 
