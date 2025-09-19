@@ -12,26 +12,31 @@ in {
   };
 
   config = mkIf cfg.enable {
-  # Apple T2 MacBook support (keyboards, trackpads, early boot)
-  # Based on t2linux.org guides and your working notes
-  # NOTE: When enabling this module, also add the T2 import to your host's configuration.nix:
+  # Apple hardware support (keyboards, trackpads, early boot)
+  # NOTE: For T2 Macs, also add to your host's configuration.nix:
   # imports = [ inputs.nixos-hardware.nixosModules.apple-t2 ];
 
-  # Early boot modules for LUKS decryption (Apple keyboard/trackpad support)
-  boot.initrd.kernelModules = [
+  # Early boot modules for T2 devices (Apple keyboard/trackpad support in LUKS)
+  boot.initrd.kernelModules = lib.optionals (cfg.modelOverrides == "T2") [
     "apple-bce"         # Apple BCE driver for T2 devices
-    "snd"               # Sound support
-    "snd_pcm"           # PCM sound support
+    "snd"               # Sound support for T2
+    "snd_pcm"           # PCM sound support for T2
   ];
 
-  # Apple keyboard function key behavior and T2-specific overrides
+  # TPM support for T2 chip
+  boot.kernelModules = lib.optionals (cfg.modelOverrides == "T2") [
+    "tpm_tis"           # TPM TIS driver
+    "tpm_tis_core"      # TPM TIS core
+  ];
+
+  # Apple keyboard function key behavior (applies to all Apple keyboards)
   boot.kernelParams = [
     "hid_apple.fnmode=2"  # Use F-keys as function keys by default
     "hid_apple.swap_fn_leftctrl=1"  # Swap fn and left ctrl keys
   ] ++ lib.optionals (cfg.modelOverrides == "T2") [
-    # Override nixos-hardware T2 IOMMU settings for better TPM compatibility
-    "intel_iommu=off"   # Disable Intel IOMMU for T2 TPM compatibility
-    "iommu=off"         # Disable IOMMU completely for T2 TPM compatibility
+    # T2 Mac specific fixes for WiFi and TPM
+    "pci=nobbn"         # Fix DMA overflow for Broadcom WiFi on T2 Macs
+    # Note: nixos-hardware already sets IOMMU params, we don't override
   ];
 
   # Kernel module configuration for Apple devices
@@ -74,24 +79,11 @@ in {
   # Additional firmware support for Apple devices
   hardware.firmware = with pkgs; [
     wireless-regdb  # Wireless regulatory database for proper WiFi/BT firmware
-  ] ++ lib.optionals (cfg.modelOverrides == "T2" && builtins.pathExists /etc/nixos/firmware/brcm) [
-    # Apple T2 firmware - declarative approach from t2linux.org
-    # See: https://wiki.t2linux.org/distributions/nixos/installation/
-    (stdenvNoCC.mkDerivation {
-      name = "brcm-firmware";
-      src = /etc/nixos/firmware/brcm;
-      installPhase = ''
-        mkdir -p $out/lib/firmware/brcm
-        cp -r ${src}/* "$out/lib/firmware/brcm"
-      '';
-      allowSubstitutes = false;
-      preferLocalBuild = true;
-    })
   ];
 
 
-  # TouchBar support for MacBook Pro with Touch Bar
-  hardware.apple.touchBar = {
+  # TouchBar support for MacBook Pro with Touch Bar (T2 models)
+  hardware.apple.touchBar = lib.mkIf (cfg.modelOverrides == "T2") {
     enable = true;
     settings = {
       MediaLayerDefault = true;      # Show media controls by default
@@ -104,7 +96,8 @@ in {
     lm_sensors
     brightnessctl
     macchanger     # Useful for managing MAC addresses on Apple hardware
-    tiny-dfr       # TouchBar daemon for MacBook Pro
+  ] ++ lib.optionals (cfg.modelOverrides == "T2") [
+    tiny-dfr       # TouchBar daemon for T2 MacBook Pro models
   ];
   };
 }

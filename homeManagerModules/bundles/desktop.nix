@@ -17,7 +17,6 @@
   config = {
     myHomeManager.zathura.enable = lib.mkDefault true;
     myHomeManager.rofi.enable = lib.mkDefault true;
-    myHomeManager.foot.enable = lib.mkDefault true;
     myHomeManager.kitty.enable = lib.mkDefault true;
     myHomeManager.xremap.enable = lib.mkDefault false;
     myHomeManager.imv.enable = lib.mkDefault false;
@@ -99,8 +98,7 @@
       mpv
       sxiv
       zathura
-
-
+      foot
       cm_unicode
 
       virt-manager
@@ -119,7 +117,23 @@
     ];
 
     # Make mimeapps.list writable for runtime browser changes (like VSCode settings)
-    home.activation.mimeAppsWritable = lib.hm.dag.entryAfter ["linkGeneration"] ''
+    home.activation.mimeAppsWritable = lib.hm.dag.entryBefore ["linkGeneration"] ''
+      configMimeApps="$HOME/.config/mimeapps.list"
+      localMimeApps="$HOME/.local/share/applications/mimeapps.list"
+
+      # Clean up any existing files that would conflict
+      if [ -f "$configMimeApps" ] && [ ! -L "$configMimeApps" ]; then
+        echo "Removing existing non-symlink mimeapps.list to prevent conflicts..."
+        rm -f "$configMimeApps"
+      fi
+
+      if [ -f "$localMimeApps" ] && [ ! -L "$localMimeApps" ]; then
+        echo "Removing existing non-symlink local mimeapps.list to prevent conflicts..."
+        rm -f "$localMimeApps"
+      fi
+    '';
+
+    home.activation.mimeAppsWritablePost = lib.hm.dag.entryAfter ["linkGeneration"] ''
       configMimeApps="$HOME/.config/mimeapps.list"
       localMimeApps="$HOME/.local/share/applications/mimeapps.list"
 

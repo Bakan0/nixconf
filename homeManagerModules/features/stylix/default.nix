@@ -85,6 +85,7 @@ in {
       
       # Explicit targets for applications that need them
       targets = {
+        foot.enable = true;
         kitty.enable = true;
         waybar.enable = true;
         rofi.enable = true;

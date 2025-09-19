@@ -1,6 +1,9 @@
 homeManagerModules/features/ags/types
 result
 result-*
+
+# Apple T2 firmware files
+nixosModules/features/apple/firmware/
 *.bak
 *~
 .direnv/

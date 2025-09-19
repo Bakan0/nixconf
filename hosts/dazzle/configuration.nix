@@ -14,6 +14,9 @@
     "iommu=off"         # Force disable for T2 compatibility
   ];
 
+  # Enable T2 firmware for WiFi/Bluetooth
+  hardware.apple-t2.firmware.enable = true;
+
   myNixOS = {
     bundles.general-desktop.enable = true;
     bundles.users = {

@@ -126,6 +126,8 @@ in {
           "XCURSOR_THEME,Bibata-Modern-Amber"
           "GTK_THEME,Adwaita:dark"
           "NIXOS_OZONE_WL,1"
+          "CHROMIUM_FLAGS,--enable-features=UseOzonePlatform --ozone-platform=wayland"
+          "ELECTRON_OZONE_PLATFORM_HINT,wayland"
           "XDG_CURRENT_DESKTOP,Hyprland"
           "XDG_SESSION_TYPE,wayland"
           "GDK_BACKEND,wayland,x11"
@@ -205,6 +207,7 @@ in {
           # "3, horizontal, workspace"  # 3-finger horizontal swipe for workspace switching
         ];
         "$mainMod" = "SUPER";
+        "$terminal" = "foot";
         # "$mainMod" =
         # if (osConfig.altIsSuper or false)
         # then "ALT"
@@ -212,7 +215,7 @@ in {
         # Example binds, see https://wiki.hyprland.org/Configuring/Binds/ for more
         bind =
           [
-            "$mainMod, return, exec, kitty"
+            "$mainMod, return, exec, $terminal"
             "$mainMod, Q, killactive,"
             "$mainMod SHIFT, M, exit,"
             "$mainMod SHIFT, F, togglefloating,"
@@ -288,16 +291,18 @@ in {
         # "forceinput,^(league of legends.exe)$"
         # ];
         windowrulev2 = [
-          # Bitwarden floating
+          # Bitwarden floating (both XWayland and Wayland versions)
           "float,class:^(Vivaldi-stable)$,title:^(Bitwarden - Vivaldi)$"
+          "float,class:^(vivaldi-stable)$,title:^(Bitwarden - Vivaldi)$"
           "float,class:^(msedge-_jbkfoedolllekgbhcbcoahefnbanhhlh-.*)"
           "workspace 1,title:^(Select what to share)$"
           "workspace 1,class:^(Immersed)$"
           "workspace 1,title:^(Immersed)"
           # Workspace 2 applications
           "workspace 2,class:^(code)$"
-          # Workspace 3 applications
+          # Workspace 3 applications (both XWayland and Wayland versions)
           "workspace 3,class:^(Vivaldi-stable)$"
+          "workspace 3,class:^(vivaldi-stable)$"
           "workspace 3,class:^(Signal)$"
           # Workspace 4 applications with default positioning
           "workspace 4,title:.*GDS-Admin.*Microsoft.*Edge.*"
