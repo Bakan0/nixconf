@@ -7,22 +7,23 @@
     };
 
     packages = with pkgs; [
-      bat
-      fzf
+      # Core packages now provided by bundles
     ];
   };
 
   # Joelle's minimal configuration
   myHomeManager = {
-    # Individual features, no heavy bundles
+    # GNOME-compatible desktop bundle (includes general but avoids Hyprland-specific configs)
+    bundles.desktop-gnome.enable = true;
+
+    # Individual features
     nvim.enable = true;
     fish.enable = false;
     zsh.enable = false;
     git.enable = true;
-    kitty.enable = true;
     firefox.enable = true;
-    stylix.enable = true;
-    stylix.theme = "crimson-noir";
+    # Stylix disabled - let GNOME handle theming
+    stylix.enable = false;
   };
 
   programs = {

@@ -16,7 +16,7 @@
     bundles.databender.enable = false;
     bundles.graphics-performance.enable = false;
     bundles.desktop.enable = false;         # No browsers, MIME associations, desktop apps
-    bundles.desktop-full.enable = false;    # No additional desktop applications
+    bundles.desktop-hyprland.enable = false;    # No Hyprland desktop
     
     # Disable desktop components on server
     hyprland.enable = false;

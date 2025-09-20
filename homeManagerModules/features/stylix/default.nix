@@ -120,6 +120,9 @@ in {
         rofi.enable = true;
         gtk.enable = true;
         hyprland.enable = true;
+        gnome.enable = true;
+        firefox.enable = true;
+        vscode.enable = true;
       };
       
       polarity = "dark";
@@ -130,6 +133,22 @@ in {
       iconTheme = {
         name = "candy-icons";  # Sweet gradients complement terracotta perfectly
         package = pkgs.candy-icons;
+      };
+    };
+
+    # Force GNOME to use stylix wallpaper and theming
+    dconf.settings = {
+      "org/gnome/desktop/background" = {
+        picture-uri = "file://${config.stylix.image}";
+        picture-uri-dark = "file://${config.stylix.image}";
+        picture-options = "zoom";
+      };
+      "org/gnome/desktop/screensaver" = {
+        picture-uri = "file://${config.stylix.image}";
+        picture-options = "zoom";
+      };
+      "org/gnome/desktop/interface" = {
+        color-scheme = if config.stylix.polarity == "dark" then "prefer-dark" else "prefer-light";
       };
     };
   };
