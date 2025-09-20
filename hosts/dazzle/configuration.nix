@@ -25,6 +25,12 @@
     apple = {
       enable = true;
       modelOverrides = "T2";
+      tpmUnlock = {
+        enable = true;
+        luksDevice = "/dev/disk/by-uuid/e846c9e1-b9b6-489a-b5a7-ae891ca9786f";
+        luksName = "luks-rpool";  # or your LUKS name
+        tpmHandle = "0x81010000";  # Handle where key was sealed
+      };
     };
 
     # ZFS support and monitoring tools
