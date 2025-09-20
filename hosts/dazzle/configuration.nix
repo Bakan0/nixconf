@@ -8,11 +8,6 @@
     inputs.nixos-hardware.nixosModules.apple-t2
   ];
 
-  # Override nixos-hardware T2 IOMMU settings with higher priority
-  boot.kernelParams = lib.mkAfter [
-    "intel_iommu=off"   # Force disable for T2 compatibility
-    "iommu=off"         # Force disable for T2 compatibility
-  ];
 
   # Enable T2 firmware for WiFi/Bluetooth
   hardware.apple-t2.firmware.enable = true;

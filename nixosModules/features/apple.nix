@@ -30,14 +30,15 @@ in {
   ];
 
   # Apple keyboard function key behavior (applies to all Apple keyboards)
-  boot.kernelParams = [
+  boot.kernelParams = lib.mkAfter ([
     "hid_apple.fnmode=2"  # Use F-keys as function keys by default
     "hid_apple.swap_fn_leftctrl=1"  # Swap fn and left ctrl keys
   ] ++ lib.optionals (cfg.modelOverrides == "T2") [
-    # T2 Mac specific fixes for WiFi and TPM
-    "pci=nobbn"         # Fix DMA overflow for Broadcom WiFi on T2 Macs
-    # Note: nixos-hardware already sets IOMMU params, we don't override
-  ];
+    # T2 Mac specific fixes - these come AFTER nixos-hardware params
+    "intel_iommu=on"    # Override any "off" setting with "on"
+    "iommu=pt"          # Override any "off" setting with passthrough
+    "pci=noaer"         # Disable PCIe Advanced Error Reporting
+  ]);
 
   # Kernel module configuration for Apple devices
   boot.extraModprobeConfig = ''
@@ -79,6 +80,35 @@ in {
   # Additional firmware support for Apple devices
   hardware.firmware = with pkgs; [
     wireless-regdb  # Wireless regulatory database for proper WiFi/BT firmware
+  ] ++ lib.optionals (cfg.modelOverrides == "T2") [
+    # T2 WiFi firmware - use existing firmware from linux-firmware
+    (runCommand "apple-t2-wifi-firmware" {} ''
+      mkdir -p $out/lib/firmware/brcm
+
+      # First copy all the base firmware files from linux-firmware
+      cp -v ${linux-firmware}/lib/firmware/brcm/brcmfmac4364b3-pcie* $out/lib/firmware/brcm/ 2>/dev/null || true
+
+      # Now create the specific symlinks the T2 driver looks for
+      cd $out/lib/firmware/brcm
+
+      # Check what files we actually have
+      ls -la brcmfmac4364b3-pcie* || true
+
+      # Create symlinks to whichever base file exists
+      if [ -f brcmfmac4364b3-pcie.bin ]; then
+        echo "Creating symlinks to brcmfmac4364b3-pcie.bin"
+        ln -sf brcmfmac4364b3-pcie.bin brcmfmac4364b3-pcie.apple,bali.bin
+        ln -sf brcmfmac4364b3-pcie.bin brcmfmac4364b3-pcie.apple,bali-HRPN.bin
+        ln -sf brcmfmac4364b3-pcie.bin brcmfmac4364b3-pcie.apple,bali-HRPN-u.bin
+        ln -sf brcmfmac4364b3-pcie.bin brcmfmac4364b3-pcie.apple,bali-HRPN-u-7.7.bin
+        ln -sf brcmfmac4364b3-pcie.bin brcmfmac4364b3-pcie.apple,bali-HRPN-u-7.7-X0.bin
+        ln -sf brcmfmac4364b3-pcie.bin brcmfmac4364b3-pcie.apple,bali-X0.bin
+      elif [ -f brcmfmac4364b3-pcie.txt ]; then
+        echo "Warning: Only found txt file, not bin file"
+      else
+        echo "Warning: No brcmfmac4364b3-pcie files found in linux-firmware"
+      fi
+    '')
   ];
 
 
