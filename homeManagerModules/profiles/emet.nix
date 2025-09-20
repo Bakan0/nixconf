@@ -29,7 +29,6 @@
     bundles.xfer-scripts.enable = lib.mkDefault true;
 
     # Features
-    fish.enable = true;   # Fish is the preferred shell for emet
     zsh.enable = false;   # Legacy vimjoyer code - not used
     firefox.enable = true;
     # hyprland and waybar now handled by desktop-hyprland bundle
@@ -40,7 +39,11 @@
     };
     
     # Stylix theme preference for emet
-    stylix.enable = lib.mkDefault true;
+    stylix = {
+      enable = lib.mkDefault true;
+      theme = lib.mkDefault "atomic-terracotta";
+      iconTheme = lib.mkDefault "candy-icons";  # Or "papirus-orange" for orange folders
+    };
 
     # Transfer scripts now enabled via bundles.xfer-scripts
   };

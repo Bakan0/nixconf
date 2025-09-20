@@ -16,9 +16,11 @@
   };
 
   # GNOME-friendly QT theming (let GNOME handle it)
-  qt.enable = true;
-  qt.platformTheme.name = "gnome";
-
+  qt = {
+    enable = true;
+    platformTheme.name = "adwaita";
+    style.name = "adwaita-dark";
+  };
 
   xdg.mimeApps = {
     enable = true;

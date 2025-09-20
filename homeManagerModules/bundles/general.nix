@@ -14,6 +14,7 @@
   myHomeManager.git.enable = lib.mkDefault true;
   myHomeManager.nvim.enable = lib.mkDefault true;
   myHomeManager.foot.enable = lib.mkDefault true;
+  myHomeManager.fish.enable = lib.mkDefault true;  # Fish works for everyone - those who don't use terminal won't notice
 
   myHomeManager.stylix.enable = lib.mkDefault true;
 

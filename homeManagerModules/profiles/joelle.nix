@@ -18,14 +18,17 @@
 
     # Individual features
     nvim.enable = true;
-    fish.enable = false;
+    yazi.enable = false;  # Explicitly disable yazi for GNOME
     zsh.enable = false;
     git.enable = true;
     firefox.enable = true;
-    # Stylix disabled - let GNOME handle theming
-    stylix.enable = false;
+    # Stylix with crimson-noir theme for Joelle
+    stylix = {
+      enable = true;
+      theme = "crimson-noir";
+      iconTheme = "dracula";  # Gothic dark with red accents
+    };
   };
-
   programs = {
     home-manager.enable = true;
     nix-index = {

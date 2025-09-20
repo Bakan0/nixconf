@@ -8,6 +8,37 @@ with lib;
 let
   cfg = config.myHomeManager.stylix;
 
+  # Icon theme definitions
+  iconThemes = {
+    candy-icons = {
+      name = "candy-icons";
+      package = pkgs.candy-icons;
+      description = "Sweet gradients, perfect for terracotta themes";
+    };
+    papirus-dark = {
+      name = "Papirus-Dark";
+      package = pkgs.papirus-icon-theme;
+      description = "Dark icons with customizable folder colors, crimson-noir aesthetic";
+    };
+    papirus-orange = {
+      name = "Papirus-Dark";  # Use dark variant
+      package = pkgs.symlinkJoin {
+        name = "papirus-orange";
+        paths = [ pkgs.papirus-icon-theme ];
+        postBuild = ''
+          # Apply orange folder color using papirus-folders
+          ${pkgs.papirus-folders}/bin/papirus-folders -C orange --theme Papirus-Dark
+        '';
+      };
+      description = "Papirus with orange folders for atomic/rust themes";
+    };
+    dracula = {
+      name = "Dracula";
+      package = pkgs.dracula-icon-theme;
+      description = "Gothic dark theme with purple and red accents";
+    };
+  };
+
   # Theme definitions
   themes = {
     atomic-terracotta = {
@@ -81,6 +112,12 @@ in {
       default = "atomic-terracotta";
       description = "The stylix theme to use";
     };
+
+    iconTheme = mkOption {
+      type = types.enum [ "candy-icons" "papirus-dark" "papirus-orange" "dracula" ];
+      default = "candy-icons";
+      description = "The icon theme to use";
+    };
   };
 
   config = {
@@ -128,11 +165,11 @@ in {
       polarity = "dark";
     };
 
-    # Configure icon theme - candy-icons perfect for terracotta with sweet gradients
+    # Configure selected icon theme
     gtk = {
       iconTheme = {
-        name = "candy-icons";  # Sweet gradients complement terracotta perfectly
-        package = pkgs.candy-icons;
+        name = iconThemes.${cfg.iconTheme}.name;
+        package = iconThemes.${cfg.iconTheme}.package;
       };
     };
 

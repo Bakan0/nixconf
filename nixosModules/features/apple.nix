@@ -23,11 +23,14 @@ in {
     "snd_pcm"           # PCM sound support for T2
   ];
 
-  # TPM support for T2 chip
+  # TPM support for T2 chip (using software TPM since T2 SEP isn't accessible)
   boot.kernelModules = lib.optionals (cfg.modelOverrides == "T2") [
     "tpm_tis"           # TPM TIS driver
     "tpm_tis_core"      # TPM TIS core
   ];
+
+  # Note: Software TPM (swtpm) is available via virtualisation.tpm for VMs only
+  # For physical T2 Macs, we just provide the tools to work with TPM if one is added
 
   # Apple keyboard function key behavior (applies to all Apple keyboards)
   boot.kernelParams = lib.mkAfter ([
@@ -128,6 +131,8 @@ in {
     macchanger     # Useful for managing MAC addresses on Apple hardware
   ] ++ lib.optionals (cfg.modelOverrides == "T2") [
     tiny-dfr       # TouchBar daemon for T2 MacBook Pro models
+    tpm2-tools     # TPM 2.0 tools for working with software TPM
+    tpm2-tss       # TPM Software Stack
   ];
   };
 }
