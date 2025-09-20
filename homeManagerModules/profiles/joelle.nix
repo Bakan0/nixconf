@@ -21,7 +21,8 @@
     git.enable = true;
     kitty.enable = true;
     firefox.enable = true;
-    stylix.enable = false;
+    stylix.enable = true;
+    stylix.theme = "crimson-noir";
   };
 
   programs = {

@@ -6,13 +6,14 @@
 }:
 with lib;
 let
-  
+  cfg = config.myHomeManager.stylix;
+
   # Theme definitions
   themes = {
     atomic-terracotta = {
       base00 = "1a1a1a"; # Dark background (charcoal/ash)
       base01 = "2d2d2d"; # Lighter background
-      base02 = "3d3d3d"; # Selection background  
+      base02 = "3d3d3d"; # Selection background
       base03 = "4a4a4a"; # Comments/disabled
       base04 = "b8b8b8"; # Dark foreground
       base05 = "d4d4d4"; # Default foreground
@@ -27,7 +28,7 @@ let
       base0E = "a47996"; # Purple/magenta
       base0F = "8b4513"; # Saddle brown - deep burnt orange
     };
-    
+
     gruvbox = {
       base00 = "242424"; # ----
       base01 = "3c3836"; # ---
@@ -46,18 +47,46 @@ let
       base0E = "e089a1"; # purple
       base0F = "f28534"; # brown
     };
+
+    crimson-noir = {
+      base00 = "0a0a0a"; # Pure black background
+      base01 = "1a1a1a"; # Slightly lighter black
+      base02 = "2a2a2a"; # Dark gray for selection
+      base03 = "404040"; # Medium gray for comments
+      base04 = "a0a0a0"; # Light gray
+      base05 = "e0e0e0"; # Off-white for main text
+      base06 = "f0f0f0"; # Bright white
+      base07 = "ffffff"; # Pure white for emphasis
+      base08 = "dc143c"; # Crimson red (primary accent)
+      base09 = "ff4444"; # Bright red
+      base0A = "ff6666"; # Light red/pink
+      base0B = "cc4444"; # Dark red for success
+      base0C = "b04040"; # Deep red for info
+      base0D = "a03030"; # Wine red for links
+      base0E = "ff1744"; # Vivid red for purple replacement
+      base0F = "8b0000"; # Dark red for brown replacement
+    };
   };
   
   # Theme wallpapers
   wallpapers = {
     atomic-terracotta = ./atomic-terracotta-canyon.jpeg;
     gruvbox = ./gruvbox-mountain-village.png;
+    crimson-noir = ./butterfly-red-jellyfish.jpeg;
   };
 in {
+  options.myHomeManager.stylix = {
+    theme = mkOption {
+      type = types.enum [ "atomic-terracotta" "gruvbox" "crimson-noir" ];
+      default = "atomic-terracotta";
+      description = "The stylix theme to use";
+    };
+  };
+
   config = {
     stylix = {
-      base16Scheme = themes.atomic-terracotta;
-      image = wallpapers.atomic-terracotta;
+      base16Scheme = themes.${cfg.theme};
+      image = wallpapers.${cfg.theme};
       
       fonts = {
         monospace = {

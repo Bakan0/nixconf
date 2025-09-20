@@ -186,6 +186,30 @@
     interactiveShellInit = ''
       fish_vi_key_bindings
       function fish_mode_prompt; end
+
+      # Wrapper to allow browser switching for az login and other tools
+      function browser-switch
+        set -l browser $argv[1]
+        if test -z "$browser"
+          echo "Usage: browser-switch <edge|vivaldi>"
+          echo "Current BROWSER: $BROWSER"
+          return 1
+        end
+
+        switch $browser
+          case edge microsoft-edge
+            set -gx BROWSER microsoft-edge
+            env -u BROWSER xdg-settings set default-web-browser microsoft-edge.desktop
+            echo "Switched to Microsoft Edge"
+          case vivaldi
+            set -gx BROWSER vivaldi
+            env -u BROWSER xdg-settings set default-web-browser vivaldi-stable.desktop
+            echo "Switched to Vivaldi"
+          case '*'
+            echo "Unknown browser: $browser (use 'edge' or 'vivaldi')"
+            return 1
+        end
+      end
     '';
   };
 

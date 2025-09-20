@@ -39,11 +39,24 @@
       enable = true;
       defaultApplications = lib.mkDefault {
         "text/plain" = ["neovide.desktop"];
-        "application/pdf" = ["zathura.desktop"];
-        "image/*" = ["imv.desktop"];
+        "application/pdf" = ["org.pwmt.zathura-pdf-mupdf.desktop"];
+        # Image formats - explicit types needed, wildcards don't work
+        "image/jpeg" = ["imv.desktop"];
+        "image/jpg" = ["imv.desktop"];
+        "image/png" = ["imv.desktop"];
+        "image/gif" = ["imv.desktop"];
+        "image/webp" = ["imv.desktop"];
+        "image/bmp" = ["imv.desktop"];
+        "image/svg+xml" = ["imv.desktop"];
+        "image/tiff" = ["imv.desktop"];
+        # Video formats
+        "video/mp4" = ["mpv.desktop"];
+        "video/webm" = ["mpv.desktop"];
+        "video/x-matroska" = ["mpv.desktop"];
+        "video/quicktime" = ["mpv.desktop"];
+        "video/x-msvideo" = ["mpv.desktop"];
         "video/png" = ["mpv.desktop"];
         "video/jpg" = ["mpv.desktop"];
-        "video/*" = ["mpv.desktop"];
         "inode/directory" = ["thunar.desktop"];
         "application/x-directory" = ["thunar.desktop"];
         "application/x-iso9660-image" = ["thunar.desktop"];
@@ -116,19 +129,19 @@
       ".local/state/wireplumber"
     ];
 
-    # Make mimeapps.list writable for runtime browser changes (like VSCode settings)
+    # Fix mimeapps.list handling - ALWAYS work regardless of file state
     home.activation.mimeAppsWritable = lib.hm.dag.entryBefore ["linkGeneration"] ''
       configMimeApps="$HOME/.config/mimeapps.list"
       localMimeApps="$HOME/.local/share/applications/mimeapps.list"
 
-      # Clean up any existing files that would conflict
-      if [ -f "$configMimeApps" ] && [ ! -L "$configMimeApps" ]; then
-        echo "Removing existing non-symlink mimeapps.list to prevent conflicts..."
+      # Remove existing files before linkGeneration to avoid conflicts
+      if [ -e "$configMimeApps" ] && [ ! -L "$configMimeApps" ]; then
+        echo "Removing existing mimeapps.list to prevent conflicts..."
         rm -f "$configMimeApps"
       fi
 
-      if [ -f "$localMimeApps" ] && [ ! -L "$localMimeApps" ]; then
-        echo "Removing existing non-symlink local mimeapps.list to prevent conflicts..."
+      if [ -e "$localMimeApps" ] && [ ! -L "$localMimeApps" ]; then
+        echo "Removing existing local mimeapps.list to prevent conflicts..."
         rm -f "$localMimeApps"
       fi
     '';
@@ -137,17 +150,15 @@
       configMimeApps="$HOME/.config/mimeapps.list"
       localMimeApps="$HOME/.local/share/applications/mimeapps.list"
 
-      # Make config mimeapps.list writable if it's a symlink
+      # Now make them writable after linkGeneration created them
       if [ -L "$configMimeApps" ]; then
-        echo "Making mimeapps.list writable for runtime browser changes..."
+        echo "Making mimeapps.list writable..."
         target=$(readlink "$configMimeApps")
         rm "$configMimeApps"
         cp "$target" "$configMimeApps"
         chmod 644 "$configMimeApps"
-        echo "mimeapps.list is now writable. Changes will persist until next home-manager switch."
       fi
 
-      # Make local mimeapps.list writable if it's a symlink
       if [ -L "$localMimeApps" ]; then
         target=$(readlink "$localMimeApps")
         rm "$localMimeApps"
