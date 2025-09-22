@@ -1,4 +1,4 @@
-{ config, lib, pkgs, inputs, ... }:
+{ config, lib, pkgs, inputs, utils, ... }:
 with lib;
 let
   cfg = config.myNixOS.apple;
@@ -41,11 +41,17 @@ in {
     ] ++ lib.optionals cfg.tpmUnlock.enable [
       "tpm_tis"
       "tpm_tis_core"
+      "vfat"
+      "nls_cp437"
+      "nls_iso8859_1"
     ];
 
     boot.initrd.availableKernelModules = lib.optionals cfg.tpmUnlock.enable [
       "tpm_tis"
       "tpm_tis_core"
+      "vfat"
+      "nls_cp437"
+      "nls_iso8859_1"
     ];
 
     # TPM support for T2 chip (using software TPM since T2 SEP isn't accessible)
@@ -71,17 +77,17 @@ in {
 
       serviceConfig = {
         Type = "simple";
-        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /var/lib/swtpm";
+        # Use /boot for persistent TPM state (accessible in initrd)
+        ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /boot/swtpm-state";
         ExecStart = ''
           ${pkgs.swtpm}/bin/swtpm socket \
-            --tpmstate dir=/var/lib/swtpm \
+            --tpmstate dir=/boot/swtpm-state \
             --tpm2 \
             --server type=tcp,port=2321,disconnect \
             --ctrl type=tcp,port=2322 \
             --flags not-need-init
         '';
         Restart = "always";
-        StateDirectory = "swtpm";
       };
     };
 
@@ -94,46 +100,92 @@ in {
       initrdBin = with pkgs; [
         swtpm
         tpm2-tools
+        cryptsetup
+        coreutils  # For timeout command
       ];
 
-      # swtpm service in initrd
+      # Mount /boot in initrd so we can access TPM state
+      mounts = [{
+        what = "/dev/disk/by-label/EFI";
+        where = "/boot";
+        type = "vfat";
+      }];
+
+      # swtpm service in initrd - uses /boot for persistent state
       services.swtpm-initrd = {
         description = "Software TPM for initrd";
         wantedBy = [ "sysinit.target" ];
-        before = [ "cryptsetup-pre.target" ];
+        after = [ "boot.mount" ];  # Wait for /boot to be mounted
+        requires = [ "boot.mount" ];
+        before = [ "cryptsetup-pre.target" "systemd-cryptsetup@${utils.escapeSystemdPath cfg.tpmUnlock.luksName}.service" ];
 
         serviceConfig = {
           Type = "forking";
-          ExecStart = "${pkgs.swtpm}/bin/swtpm socket --tpmstate dir=/var/lib/swtpm --tpm2 --server type=tcp,port=2321,disconnect --ctrl type=tcp,port=2322 --daemon --flags not-need-init";
-          StateDirectory = "swtpm";
+          # /boot is mounted in initrd, use it for TPM state
+          ExecStartPre = "${pkgs.coreutils}/bin/mkdir -p /boot/swtpm-state";
+          ExecStart = "${pkgs.swtpm}/bin/swtpm socket --tpmstate dir=/boot/swtpm-state --tpm2 --server type=tcp,port=2321,disconnect --ctrl type=tcp,port=2322 --daemon --flags not-need-init";
         };
       };
 
-      # TPM unlock service
+      # TPM unlock service - runs early in boot
       services.tpm-unlock = {
         description = "TPM LUKS Unlock";
-        after = [ "swtpm-initrd.service" ];
-        requires = [ "swtpm-initrd.service" ];
-        before = [ "cryptsetup-pre.target" ];
-        wantedBy = [ "sysinit.target" ];
+        after = [ "swtpm-initrd.service" "boot.mount" ];
+        requires = [ "swtpm-initrd.service" "boot.mount" ];
+        before = [ "systemd-cryptsetup@${utils.escapeSystemdPath cfg.tpmUnlock.luksName}.service" ];
+        requiredBy = [ "systemd-cryptsetup@${utils.escapeSystemdPath cfg.tpmUnlock.luksName}.service" ];
+        wantedBy = [ "cryptsetup.target" ];
 
         script = ''
-          export TPM2TOOLS_TCTI="swtpm:host=localhost,port=2321"
-          sleep 1
-          ${pkgs.tpm2-tools}/bin/tpm2_startup -c || true
+          # Use IP address instead of localhost in early boot
+          export TPM2TOOLS_TCTI="swtpm:host=127.0.0.1,port=2321"
+
+          # Wait for swtpm to be ready
+          echo "Waiting for swtpm to be ready..."
+          for i in {1..10}; do
+            if ${pkgs.tpm2-tools}/bin/tpm2_startup -c 2>/dev/null; then
+              echo "swtpm is ready"
+              break
+            fi
+            echo "Waiting for swtpm... attempt $i/10"
+            sleep 0.5
+          done
+
+          # Wait for the LUKS device to be available
+          LUKS_DEVICE="${cfg.tpmUnlock.luksDevice}"
+          echo "Waiting for LUKS device: $LUKS_DEVICE"
+          for i in {1..20}; do
+            if [ -e "$LUKS_DEVICE" ]; then
+              echo "LUKS device found"
+              break
+            fi
+            echo "Waiting for device... attempt $i/20"
+            sleep 0.5
+          done
+
+          if [ ! -e "$LUKS_DEVICE" ]; then
+            echo "ERROR: LUKS device $LUKS_DEVICE not found!"
+            exit 0  # Exit success so systemd-cryptsetup can prompt for password
+          fi
 
           echo "Attempting TPM unlock from handle ${cfg.tpmUnlock.tpmHandle}..."
-          if ${pkgs.tpm2-tools}/bin/tpm2_unseal -c ${cfg.tpmUnlock.tpmHandle} 2>/dev/null | \
-             ${pkgs.cryptsetup}/bin/cryptsetup open ${cfg.tpmUnlock.luksDevice} ${cfg.tpmUnlock.luksName} --key-file=- 2>/dev/null; then
+          if ${pkgs.tpm2-tools}/bin/tpm2_unseal -c ${cfg.tpmUnlock.tpmHandle} 2>&1 | \
+             ${pkgs.cryptsetup}/bin/cryptsetup open "$LUKS_DEVICE" ${cfg.tpmUnlock.luksName} --key-file=- 2>&1; then
             echo "TPM unlock successful!"
+            # Device is now unlocked, systemd-cryptsetup will see it's already open
+            exit 0
           else
             echo "TPM unlock failed, falling back to password prompt"
+            exit 0  # Exit success so systemd-cryptsetup can prompt for password
           fi
         '';
 
         serviceConfig = {
           Type = "oneshot";
-          RemainAfterExit = true;
+          RemainAfterExit = false;
+          StandardInput = "null";
+          StandardOutput = "journal+console";
+          StandardError = "journal+console";
         };
       };
     };
@@ -358,7 +410,11 @@ in {
                         echo ""
 
                         # Check if already configured
-                        if [ "${toString cfg.tpmUnlock.enable}" = "true" ] && [ "$LUKS_DEVICE" = "${cfg.tpmUnlock.luksDevice}" ]; then
+                        CONFIG_FILE="/home/emet/nixconf/hosts/$(hostname)/configuration.nix"
+                        if grep -q "tpmUnlock.*{" "$CONFIG_FILE" 2>/dev/null && \
+                           grep -q "enable.*=.*true" "$CONFIG_FILE" 2>/dev/null && \
+                           grep -q "$LUKS_DEVICE" "$CONFIG_FILE" 2>/dev/null && \
+                           grep -q "$TPM_HANDLE" "$CONFIG_FILE" 2>/dev/null; then
                           echo "✓ Your configuration already has TPM unlock enabled!"
                           echo ""
                           echo "Just reboot and enjoy password-free boot!"
@@ -464,31 +520,54 @@ in {
         # Use first device or let user choose
         LUKS_DEVICE=$(echo "$LUKS_DEVICES" | head -1)
 
-        echo "Configuration for /home/emet/nixconf/hosts/$(hostname)/configuration.nix:"
-        echo ""
-        echo "    apple = {"
-        echo "      enable = true;"
-        echo "      modelOverrides = \"T2\";"
-        echo "      tpmUnlock = {"
-        echo "        enable = true;"
-        echo "        luksDevice = \"$LUKS_DEVICE\";"
-        echo "        luksName = \"luks-rpool\";  # Change if needed"
+        # Check if already configured
+        CONFIG_FILE="/home/emet/nixconf/hosts/$(hostname)/configuration.nix"
+        CONFIG_EXISTS=0
 
         if [ -n "$SEALED_HANDLE" ]; then
-          echo "        tpmHandle = \"$SEALED_HANDLE\";  # Existing sealed key found!"
-          echo "      };"
-          echo "    };"
+          if grep -q "tpmUnlock.*{" "$CONFIG_FILE" 2>/dev/null && \
+             grep -q "enable.*=.*true" "$CONFIG_FILE" 2>/dev/null && \
+             grep -q "$LUKS_DEVICE" "$CONFIG_FILE" 2>/dev/null && \
+             grep -q "$SEALED_HANDLE" "$CONFIG_FILE" 2>/dev/null; then
+            CONFIG_EXISTS=1
+          fi
+        fi
+
+        if [ $CONFIG_EXISTS -eq 1 ]; then
+          echo "✅ Configuration already set in $CONFIG_FILE!"
           echo ""
-          echo "TPM key already sealed! Just add this config and rebuild."
+          echo "TPM unlock is configured with:"
+          echo "  • LUKS device: $LUKS_DEVICE"
+          echo "  • TPM handle: $SEALED_HANDLE"
+          echo ""
+          echo "Ready to reboot for auto-unlock!"
         else
-          echo "        tpmHandle = \"0x81010000\";  # Default - will be set by setup"
-          echo "      };"
-          echo "    };"
+          echo "Configuration for /home/emet/nixconf/hosts/$(hostname)/configuration.nix:"
           echo ""
-          echo "After adding this configuration:"
-          echo "1. Run: sudo nh os switch ."
-          echo "2. Run: apple-t2-tpm-setup"
-          echo "3. Reboot and enjoy auto-unlock!"
+          echo "    apple = {"
+          echo "      enable = true;"
+          echo "      modelOverrides = \"T2\";"
+          echo "      tpmUnlock = {"
+          echo "        enable = true;"
+          echo "        luksDevice = \"$LUKS_DEVICE\";"
+          echo "        luksName = \"luks-rpool\";  # Change if needed"
+
+          if [ -n "$SEALED_HANDLE" ]; then
+            echo "        tpmHandle = \"$SEALED_HANDLE\";  # Existing sealed key found!"
+            echo "      };"
+            echo "    };"
+            echo ""
+            echo "TPM key already sealed! Just add this config and rebuild."
+          else
+            echo "        tpmHandle = \"0x81010000\";  # Default - will be set by setup"
+            echo "      };"
+            echo "    };"
+            echo ""
+            echo "After adding this configuration:"
+            echo "1. Run: sudo nh os switch ."
+            echo "2. Run: apple-t2-tpm-setup"
+            echo "3. Reboot and enjoy auto-unlock!"
+          fi
         fi
       '')
     ];
