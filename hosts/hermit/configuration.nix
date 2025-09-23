@@ -13,7 +13,6 @@
       enable = true;
       user = "emet";
     };
-    greetd.enable = true;  # Display manager for Hyprland
     kanshi = {
       laptopModel = "ASUS_A16_FA617NT";
       laptopResolution = "1920x1200@165Hz";

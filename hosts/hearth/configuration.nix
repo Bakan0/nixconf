@@ -4,7 +4,7 @@
   imports = [
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
-      ./zfs-optimizations.nix
+    ./zfs-optimizations.nix
   ];
 
   myNixOS = {
@@ -29,6 +29,7 @@
 
   networking = {
     hostName = "hearth";
+    hostID = "a701a1c0"; # atoMico
     networkmanager.enable = true;
   };
 
