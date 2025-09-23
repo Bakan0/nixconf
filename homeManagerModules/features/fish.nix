@@ -187,6 +187,9 @@
       fish_vi_key_bindings
       function fish_mode_prompt; end
 
+      # Restore Ctrl+R for fzf history search even in vi mode
+      bind -M insert \cr 'commandline -f repaint; history --show-time="%F %T " | ${pkgs.fzf}/bin/fzf --tiebreak=index | read -l result; and commandline -- (echo $result | sed "s/^[0-9-]* [0-9:]* //")'
+
       # Wrapper to allow browser switching for az login and other tools
       function browser-switch
         set -l browser $argv[1]

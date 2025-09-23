@@ -207,7 +207,7 @@ in {
           # "3, horizontal, workspace"  # 3-finger horizontal swipe for workspace switching
         ];
         "$mainMod" = "SUPER";
-        "$terminal" = "foot";
+        "$terminal" = "kitty";
         # "$mainMod" =
         # if (osConfig.altIsSuper or false)
         # then "ALT"

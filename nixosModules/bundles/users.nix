@@ -44,6 +44,9 @@ in {
 
     programs.hyprland.enable = cfg.hyprland.enable;
 
+    services.xserver.enable = lib.mkIf cfg.gnome.enable true;
+    services.xserver.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable true;
+
     services.displayManager = lib.mkIf cfg.hyprland.enable {
       defaultSession = "hyprland";
     };

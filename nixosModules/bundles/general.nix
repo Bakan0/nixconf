@@ -10,6 +10,10 @@
 
   # Nix experimental features
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Increase download buffer to prevent "buffer full" warnings on fast connections
+  # 500MB should be sufficient for most use cases, prevents download stalls
+  nix.settings.download-buffer-size = 524288000; # 500MB in bytes
   
   # Automatic generation cleanup - keep max 17 generations  
   nix.gc = {

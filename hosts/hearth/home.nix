@@ -10,6 +10,7 @@
   # Use emet's profile for consistent configuration
   myHomeManager = {
     profiles.emet.enable = true;
+    bundles.desktop-gnome.enable = true;
     
     # Add any host-specific customizations here
     # Example: bundles.desktop.enable = true;

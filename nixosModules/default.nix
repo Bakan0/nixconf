@@ -75,15 +75,11 @@ in {
 
   options.myNixOS = {
     hyprland.enable = lib.mkEnableOption "enable hyprland";
+    gnome.enable = lib.mkEnableOption "enable gnome";
   };
 
   config = {
-    nix.settings = {
-      experimental-features = ["nix-command" "flakes"];
-      download-buffer-size = 268435456;  # 256MB
-    };
     programs.nix-ld.enable = true;
-    nixpkgs.config.allowUnfree = true;
   };
 }
 

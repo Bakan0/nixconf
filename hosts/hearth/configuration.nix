@@ -13,6 +13,7 @@
       enable = true;
       user = "emet";
     };
+    gnome.enable = true;  # Enable GNOME desktop environment
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
   };
@@ -29,7 +30,6 @@
 
   networking = {
     hostName = "hearth";
-    hostID = "a701a1c0"; # atoMico
     networkmanager.enable = true;
   };
 

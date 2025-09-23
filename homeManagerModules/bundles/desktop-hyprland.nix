@@ -22,7 +22,7 @@
 
   # Hyprland-specific QT theming
   qt.enable = true;
-  qt.platformTheme.name = "gtk";
+  qt.platformTheme.name = "adwaita";
   qt.style.name = "adwaita-dark";
 
   home.sessionVariables = {
