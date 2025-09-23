@@ -83,7 +83,7 @@
   boot.zfs.forceImportAll = false;
 
   # Networking with unique hostId
-  networking.hostId = lib.mkDefault "3054d730";
+  networking.hostId = lib.mkDefault "21854e38";
 
   # No swap (as requested)
   swapDevices = [ ];
@@ -105,9 +105,8 @@
     '';
   };
 
-  # ZFS and performance monitoring tools
+  # Performance monitoring tools (ZFS tools moved to nixosModules/features/zfs.nix)
   environment.systemPackages = with pkgs; [
-    zfs          # Keep zfs package here for safety
     nvme-cli
     lm_sensors
     pciutils

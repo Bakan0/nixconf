@@ -13,25 +13,8 @@
       enable = true;
       user = "emet";
     };
-    sysadmin.enable = true;
-    sysadmin.allowedActions = "anarchy";  # No prompts for curated admin commands
-    greetd.enable = true;  # Display manager for Hyprland
-    kanshi.enable = true;  # Display management
-    tpm2.enable = true;  # TPM2 support for LUKS auto-unlock
-    home-users = {
-      "emet" = {
-        userConfig = ./home.nix;  # Use host-specific home config
-        userSettings = {};  # Use default groups from users bundle
-      };
-    };
-
-    # ZFS support and monitoring tools
-    zfs.enable = true;
-
-    # Laptop-specific packages
-    bundles.laptop.enable = true;
-    virtualisation.enable = true;
-    wake-on-lan.enable = true;
+    # User configuration handled via home-manager userConfig
+    home-users."emet".userConfig = ./home.nix;
   };
 
   boot = {
@@ -46,29 +29,12 @@
 
   networking = {
     hostName = "hearth";
-    hostId = "a701a1c0";  # atomic + terracotta theme
     networkmanager.enable = true;
   };
 
   system.autoUpgrade.enable = false;
 
-  users.users.root = {
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
-    ];
-  };
-
-  users.users.emet = {
-    isNormalUser = true;
-    openssh.authorizedKeys.keys = [
-      "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
-    ];
-    packages = with pkgs; [
-      appimage-run
-      remmina
-      yazi
-    ];
-  };
+  # User configuration provided by user bundle - no manual setup needed
 
   # Enable flakes and allow unfree
   nix.settings = {
@@ -79,16 +45,9 @@
 
   nixpkgs.config.allowUnfree = true;
 
-  nixpkgs.config.permittedInsecurePackages = [
-    "dotnet-sdk-6.0.428"
-    "dotnet-runtime-6.0.36"
-  ];
-
+  # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
-    freerdp
-    geany
-    glxinfo
-    neovide
+    # Additional packages not in bundles
     qbittorrent
   ];
 
@@ -106,5 +65,5 @@
   services.protonmail-bridge.enable = false;
   services.teamviewer.enable = false;
 
-  system.stateVersion = "25.05";
+  system.stateVersion = "25.05"; # Did you read the comment?
 }
