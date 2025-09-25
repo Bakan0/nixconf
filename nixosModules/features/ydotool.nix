@@ -25,7 +25,8 @@ in {
 
     # Set up uinput permissions for ydotool - create the device node and set permissions
     services.udev.extraRules = ''
-      KERNEL=="uinput", MODE="0660", GROUP="input", OPTIONS+="static_node=uinput"
+      KERNEL=="uinput", SUBSYSTEM=="misc", TAG+="uaccess", OPTIONS+="static_node=uinput"
+      KERNEL=="uinput", GROUP="input", MODE="0660"
     '';
 
     # Ensure uinput module is loaded

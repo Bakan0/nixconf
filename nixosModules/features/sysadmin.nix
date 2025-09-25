@@ -52,12 +52,15 @@ in {
 
       # File operations (harmless read-only)
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/du"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/find"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ls"; options = ["NOPASSWD"]; }]; }
 
       # Libvirt management (for xfer-libvirt script)
-      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/virsh"; options = ["NOPASSWD"]; }]; }
-      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/mkdir -p /var/lib/libvirt/*"; options = ["NOPASSWD"]; }]; }
-      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/mkdir -p /etc/libvirt/*"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/virsh *"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/mkdir"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/rsync"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/*/bin/rsync"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/systemctl restart libvirtd"; options = ["NOPASSWD"]; }]; }
     ] ++ optionals (cfg.allowedActions == "anarchy") [
       # Anarchy mode: curated administrative commands with no prompts
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/switch-to-configuration"; options = ["NOPASSWD"]; }]; }

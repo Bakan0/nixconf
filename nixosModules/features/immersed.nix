@@ -84,20 +84,20 @@ let
     hyprland-portal-reset
 
     # Auto-start work apps if workMode is configured
-    ${optionalString (cfg.workMode == "gds") ''
-      echo "Starting GDS work apps..."
+    ${optionalString (cfg.workMode == "work") ''
+      echo "Starting work apps..."
       sleep 5  # Wait for Immersed to fully initialize
-      
+
       # Move to workspace 6 on immersed-2 and start Edge PWAs
       ${pkgs.hyprland}/bin/hyprctl dispatch workspace 6
       ${pkgs.hyprland}/bin/hyprctl dispatch focusmonitor immersed-2
-      
-      # Start Edge PWAs for GDS work
+
+      # Start Edge PWAs for work
       ${pkgs.microsoft-edge}/bin/microsoft-edge --app-id=_famdcdojlmjefmhdpbpmekhodagkodei &  # Outlook PWA
       sleep 2
       ${pkgs.microsoft-edge}/bin/microsoft-edge --app-id=_ckdeglopgbdgpkmhnmkigpfgebcdbanf &  # Microsoft Teams PWA
-      
-      echo "GDS work apps started"
+
+      echo "Work apps started"
     ''}
 
     cleanup() {
@@ -135,9 +135,9 @@ in {
     };
     
     workMode = mkOption {
-      type = types.nullOr (types.enum [ "gds" ]);
+      type = types.nullOr (types.enum [ "work" ]);
       default = null;
-      description = "Work mode for auto-starting GDS apps on workspace 6 (immersed-2)";
+      description = "Work mode for auto-starting work apps on workspace 6 (immersed-2)";
     };
   };
 

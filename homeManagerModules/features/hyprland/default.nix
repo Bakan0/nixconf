@@ -305,12 +305,12 @@ in {
           "workspace 3,class:^(vivaldi-stable)$"
           "workspace 3,class:^(Signal)$"
           # Workspace 4 applications with default positioning
-          "workspace 4,title:.*GDS-Admin.*Microsoft.*Edge.*"
-          "workspace 4,title:.*GDS-User.*Microsoft.*Edge.*"
+          "workspace 4,title:.*-Admin.*Microsoft.*Edge.*"
+          "workspace 4,title:.*-User.*Microsoft.*Edge.*"
           "workspace 4,class:^(obsidian)$"
           # Workspace 4 percentage-based sizing  
-          "size 50% 100%,title:.*GDS-Admin.*Microsoft.*Edge.*"
-          "size 50% 100%,title:.*GDS-User.*Microsoft.*Edge.*"
+          "size 50% 100%,title:.*-Admin.*Microsoft.*Edge.*"
+          "size 50% 100%,title:.*-User.*Microsoft.*Edge.*"
           "size 25% 50%,class:^(obsidian)$"
           # Workspace 4 PWA applications
           "workspace 4,class:^(msedge-outlook.office365.us__-Default)$"

@@ -189,7 +189,7 @@ with pkgs;
               sleep 3
 
               echo "3. Auto-defining VMs from transferred configurations..."
-              VM_XMLS=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo find /var/lib/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null" || true)
+              VM_XMLS=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo find /etc/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null" || true)
               if [ -n "$VM_XMLS" ]; then
                   echo "$VM_XMLS" | while IFS= read -r xml_path; do
                       if [ -n "$xml_path" ]; then
@@ -233,36 +233,36 @@ with pkgs;
               echo "Checking remote libvirt data sizes..."
 
               # Check and receive VM images
-              REMOTE_IMAGES_SIZE=$(${openssh}/bin/ssh -At "$TARGET_IP" "sudo du -sb /var/lib/libvirt/images 2>/dev/null | cut -f1 || echo 0")
+              REMOTE_IMAGES_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sb /var/lib/libvirt/images 2>/dev/null | cut -f1 || echo 0" | tr -d '\r')
               if [ "$REMOTE_IMAGES_SIZE" -gt 0 ]; then
-                  REMOTE_IMAGES_SIZE_HUMAN=$(${openssh}/bin/ssh -At "$TARGET_IP" "sudo du -sh /var/lib/libvirt/images | cut -f1")
+                  REMOTE_IMAGES_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sh /var/lib/libvirt/images | cut -f1" | tr -d '\r')
                   echo "Remote VM images size: $REMOTE_IMAGES_SIZE_HUMAN ($REMOTE_IMAGES_SIZE bytes)"
 
                   echo "Receiving VM images from $TARGET_IP..."
                   sudo mkdir -p "$VM_IMAGES_PATH"
-                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/var/lib/libvirt/images/" "$VM_IMAGES_PATH/"
+                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --rsync-path="sudo rsync" -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/var/lib/libvirt/images/" "$VM_IMAGES_PATH/"
               fi
 
               # Check and receive VM configurations
-              REMOTE_CONFIGS_SIZE=$(${openssh}/bin/ssh -At "$TARGET_IP" "sudo du -sb /etc/libvirt/qemu 2>/dev/null | cut -f1 || echo 0")
+              REMOTE_CONFIGS_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sb /etc/libvirt/qemu 2>/dev/null | cut -f1 || echo 0" | tr -d '\r')
               if [ "$REMOTE_CONFIGS_SIZE" -gt 0 ]; then
-                  REMOTE_CONFIGS_SIZE_HUMAN=$(${openssh}/bin/ssh -At "$TARGET_IP" "sudo du -sh /etc/libvirt/qemu | cut -f1")
+                  REMOTE_CONFIGS_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sh /etc/libvirt/qemu | cut -f1" | tr -d '\r')
                   echo "Remote VM configs size: $REMOTE_CONFIGS_SIZE_HUMAN ($REMOTE_CONFIGS_SIZE bytes)"
 
                   echo "Receiving VM configurations from $TARGET_IP..."
                   sudo mkdir -p "$VM_CONFIGS_PATH"
-                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/" "$VM_CONFIGS_PATH/"
+                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --rsync-path="sudo rsync" -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/" "$VM_CONFIGS_PATH/"
               fi
 
               # Check and receive network configurations
-              REMOTE_NETWORK_SIZE=$(${openssh}/bin/ssh -At "$TARGET_IP" "sudo du -sb /etc/libvirt/qemu/networks 2>/dev/null | cut -f1 || echo 0")
+              REMOTE_NETWORK_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sb /etc/libvirt/qemu/networks 2>/dev/null | cut -f1 || echo 0" | tr -d '\r')
               if [ "$REMOTE_NETWORK_SIZE" -gt 0 ]; then
-                  REMOTE_NETWORK_SIZE_HUMAN=$(${openssh}/bin/ssh -At "$TARGET_IP" "sudo du -sh /etc/libvirt/qemu/networks | cut -f1")
+                  REMOTE_NETWORK_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sh /etc/libvirt/qemu/networks | cut -f1" | tr -d '\r')
                   echo "Remote network configs size: $REMOTE_NETWORK_SIZE_HUMAN ($REMOTE_NETWORK_SIZE bytes)"
 
                   echo "Receiving network configurations from $TARGET_IP..."
                   sudo mkdir -p "$NETWORK_CONFIGS_PATH"
-                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/networks/" "$NETWORK_CONFIGS_PATH/"
+                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --rsync-path="sudo rsync" -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/networks/" "$NETWORK_CONFIGS_PATH/"
               fi
 
               # Check and receive user configurations
@@ -289,8 +289,8 @@ with pkgs;
               sleep 3
 
               echo "3. Auto-defining VMs from received configurations..."
-              if [ -d "/var/lib/libvirt/qemu" ]; then
-                  VM_XMLS=$(sudo find /var/lib/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null || true)
+              if [ -d "/etc/libvirt/qemu" ]; then
+                  VM_XMLS=$(sudo find /etc/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null || true)
                   if [ -n "$VM_XMLS" ]; then
                       echo "$VM_XMLS" | while IFS= read -r xml_path; do
                           if [ -n "$xml_path" ]; then

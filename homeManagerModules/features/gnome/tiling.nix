@@ -230,17 +230,17 @@
         binding = "<Super><Shift>m";
       };
 
-      # Screenshot area using GNOME's native interactive screenshot
+      # Screenshot area using GNOME's built-in screenshot UI keybinding
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/screenshot-clip" = {
         name = "Screenshot Area";
-        command = "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell/Screenshot --method org.gnome.Shell.Screenshot.InteractiveScreenshot";
+        command = "sh -c 'ydotool key shift+Print'";  # Shift+Print triggers area selection in GNOME
         binding = "<Super><Shift>s";
       };
 
-      # Screenshot area to file (same as clipboard - GNOME handles both)
+      # Screenshot area to file - same as above (GNOME saves both to clipboard and file)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/screenshot-file" = {
         name = "Screenshot Area to File";
-        command = "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell/Screenshot --method org.gnome.Shell.Screenshot.InteractiveScreenshot";
+        command = "sh -c 'ydotool key shift+Print'";  # Shift+Print triggers area selection
         binding = "<Super><Alt>s";
       };
 
