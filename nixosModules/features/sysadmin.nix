@@ -54,6 +54,7 @@ in {
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/du"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/find"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ls"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/lsof"; options = ["NOPASSWD"]; }]; }
 
       # Libvirt management (for xfer-libvirt script)
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/virsh *"; options = ["NOPASSWD"]; }]; }

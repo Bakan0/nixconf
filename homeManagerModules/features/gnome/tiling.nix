@@ -48,8 +48,8 @@
       # Additional tools for functionality parity
       dconf-editor               # For GNOME configuration
       gnome-tweaks               # Additional GNOME settings
-      wmctrl                     # Window management commands
-      xdotool                    # Additional automation
+      wmctrl                     # Window management commands (X11 compatibility)
+      xdotool                    # Additional automation (X11 compatibility)
     ]);
 
     # GNOME settings via dconf
@@ -92,16 +92,20 @@
         experimental-features = ["scale-monitor-framebuffer"];  # Enable fractional scaling
         overlay-key = "";  # Disable Super key alone (like Hyprland) to prevent interference
         attach-modal-dialogs = false;  # Allow modal dialogs to float freely
+        # CRITICAL: Keep floating windows on top
+        keep-on-top = true;  # Windows marked as always-on-top stay above others
       };
 
       "org/gnome/desktop/wm/preferences" = {
         num-workspaces = 10;  # Use all number keys 1-9,0
         workspace-names = [ "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" ];
-        focus-mode = "sloppy";  # Follow mouse focus like Hyprland
-        auto-raise = true;      # Auto-raise focused windows
-        auto-raise-delay = 25;  # Super fast auto-raise (25ms)
+        focus-mode = "click";  # CRITICAL: Use click focus to prevent floating windows from losing focus
+        auto-raise = false;      # DON'T auto-raise windows - prevents floating windows from disappearing
+        auto-raise-delay = 500;  # Slower auto-raise if ever re-enabled
         button-layout = ":minimize,maximize,close";  # Window buttons on right
         resize-with-right-button = true;
+        # Raise windows on click to bring them forward
+        raise-on-click = true;
       };
 
       # Window management keybindings (Hyprland-style)
@@ -111,6 +115,10 @@
         toggle-fullscreen = ["<Super>f"];
         toggle-maximized = ["<Super>m"];
         minimize = ["<Super>n"];
+
+        # CRITICAL: Toggle always-on-top for current window (Super+Shift+T)
+        # Use this to keep floating windows visible above tiled windows
+        always-on-top = ["<Super><Shift>t"];
 
         # Workspace switching - Meta+1,2,3... switches TO workspace
         switch-to-workspace-1 = ["<Super>1"];
@@ -167,6 +175,7 @@
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/screenshot-file/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clipboard-paste/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clear-notifications/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-window-on-top/"
         ];
 
         # Media keys
@@ -258,6 +267,13 @@
         binding = "<Super><Shift>i";
       };
 
+      # Float window and set always-on-top (Super+Shift+Space)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-window-on-top" = {
+        name = "Float Window and Set Always On Top";
+        command = "sh -c 'ydotool key super+shift+f && sleep 0.2 && gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval \"global.display.focus_window.make_above()\"'";
+        binding = "<Super><Shift>space";
+      };
+
 
 
 
@@ -320,10 +336,14 @@
 
         # IMPORTANT: Disable stacking (windows on top of each other)
         stacking-with-mouse = false;
+
+        # CRITICAL: Mouse cursor MUST follow active window to prevent focus loss
+        # This ensures floating windows stay focused when created
         mouse-cursor-follows-active-window = true;   # Enable cursor following focus
-        mouse-cursor-focus-location = lib.hm.gvariant.mkUint32 4;  # 0=top-left, 1=top-right, 4=center
+        mouse-cursor-focus-location = lib.hm.gvariant.mkUint32 4;  # 4=center mouse on window
 
         float-all-windows = false;  # Don't float all windows by default
+
 
         # Pop Shell keybindings (vim-style navigation)
         focus-left = ["<Super>h"];
@@ -470,10 +490,10 @@
       };
 
 
-      # Top Bar Organizer - move clock to far right past quick settings
+      # Top Bar Organizer - move clock to left of quick settings
       "org/gnome/shell/extensions/top-bar-organizer" = {
-        # Move clock (dateMenu) to the far right - past all system indicators
-        right-box-order = ["quickSettings" "dateMenu"];  # Put dateMenu after quickSettings
+        # Move clock (dateMenu) to the left of quick settings menu
+        right-box-order = ["dateMenu" "quickSettings"];  # Put dateMenu before quickSettings
       };
 
       # Notification Position - move notifications to right side under clock

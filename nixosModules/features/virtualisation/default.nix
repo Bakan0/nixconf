@@ -50,6 +50,13 @@ in {
             packages = [pkgs.OVMFFull.fd];
           };
         };
+        # Allow libvirt to auto-detect firmware instead of hardcoded paths
+        extraConfig = ''
+          nvram = [
+            "${pkgs.OVMFFull.fd}/FV/OVMF_CODE.ms.fd:${pkgs.OVMFFull.fd}/FV/OVMF_VARS.ms.fd",
+            "${pkgs.OVMFFull.fd}/FV/OVMF_CODE.fd:${pkgs.OVMFFull.fd}/FV/OVMF_VARS.fd"
+          ]
+        '';
       };
       spiceUSBRedirection.enable = true;
     };
