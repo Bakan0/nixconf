@@ -45,10 +45,17 @@ in {
     programs.hyprland.enable = cfg.hyprland.enable;
 
     services.xserver.enable = lib.mkIf cfg.gnome.enable true;
-    services.xserver.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable true;
+    services.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable true;
 
-    services.displayManager = lib.mkIf cfg.hyprland.enable {
-      defaultSession = "hyprland";
+    # Locking GNOME requires gdm: https://github.com/NixOS/nixpkgs/issues/415677
+    myNixOS.gdm.enable = lib.mkDefault (cfg.hyprland.enable || cfg.gnome.enable);
+
+    # Set default session - prefer GNOME Wayland when both are available
+    services.displayManager = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) {
+      defaultSession =
+        if cfg.gnome.enable then "gnome"  # GNOME Wayland is default for "gnome"
+        else if cfg.hyprland.enable then "hyprland"
+        else null;
     };
 
     home-manager = {
@@ -118,15 +125,28 @@ in {
           allowedActions = "anarchy";  # No prompts for curated admin commands
         };
         hyprland.enable = lib.mkDefault true;  # Enable Hyprland window manager
+        gnome.enable = lib.mkDefault true;     # Enable GNOME desktop environment
         kanshi.enable = true;  # Display management
         vpn.enable = true;     # VPN support
 
         home-users.emet = {
           userSettings = {
-            extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
+            description = "JM";
+            extraGroups = [ "incus-admin" "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" "input" ];
+            packages = with pkgs; [
+              protonmail-bridge  # CLI version
+            ];
           };
         };
       };
+
+      # Only enable desktop services if desktop environments are enabled
+      services.teamviewer.enable = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) (lib.mkDefault true);
+      services.protonmail-bridge.enable = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) (lib.mkDefault true);
+
+      # Only enable desktop services if desktop environments are enabled
+      services.xserver.enable = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) (lib.mkDefault true);
+      services.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable (lib.mkDefault true);
 
       users.users = {
         root.openssh.authorizedKeys.keys = [
@@ -142,7 +162,8 @@ in {
     (mkIf (cfg.bundles.users.user == "joelle") {
       myNixOS.home-users.joelle = {
         userSettings = {
-          extraGroups = [ "networkmanager" "wheel" "audio" "video" ];
+          description = "Joelle";
+          extraGroups = [ "networkmanager" "wheel" "audio" "video" "input" ];
           packages = with pkgs; [
             appimage-run
             signal-desktop
@@ -158,7 +179,6 @@ in {
 
       # GNOME desktop environment (joelle's preference)  
       services.xserver.enable = true;
-      services.displayManager.gdm.enable = true;
       services.desktopManager.gnome.enable = true;
       
       # Printing support

@@ -22,8 +22,15 @@
 
   # Enable emet's preferred bundles by default (can be overridden per host)
   myHomeManager = {
-    # Bundles - desktop-hyprland includes desktop -> general cascade
-    bundles.desktop-hyprland.enable = lib.mkDefault true;
+    # Bundles - desktop with BOTH Hyprland and GNOME
+    bundles.desktop = {
+      enable = lib.mkDefault true;
+      hyprland.enable = lib.mkDefault true;
+      gnome = {
+        enable = lib.mkDefault true;
+        tiling.enable = lib.mkDefault true;  # Hyprland-like tiling for GNOME
+      };
+    };
     bundles.graphics-performance.enable = lib.mkDefault true;
     bundles.databender.enable = lib.mkDefault true;
     bundles.xfer-scripts.enable = lib.mkDefault true;
@@ -42,7 +49,7 @@
     stylix = {
       enable = lib.mkDefault true;
       theme = lib.mkDefault "atomic-terracotta";
-      iconTheme = lib.mkDefault "candy-icons";  # Or "papirus-orange" for orange folders
+      iconTheme = lib.mkDefault "numix";  # Professional with orange accents
     };
 
     # Transfer scripts now enabled via bundles.xfer-scripts

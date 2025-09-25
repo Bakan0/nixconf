@@ -247,6 +247,100 @@ in {
       clevis         # Automated decryption framework
       jose           # JOSE tools for clevis
 
+      # Script to cleanup TPM state created by apple-t2-tpm-setup
+      (pkgs.writeShellScriptBin "apple-tpm-cleanup" ''
+        #!${pkgs.bash}/bin/bash
+        set -e
+
+        echo "=== Apple T2 TPM Cleanup Script ==="
+        echo "This will undo what apple-t2-tpm-setup created"
+        echo ""
+
+        # Check if running as root
+        if [ "$EUID" -ne 0 ]; then
+           echo "This script needs sudo access to clean up /boot"
+           SUDO="sudo"
+        else
+           SUDO=""
+        fi
+
+        # Step 1: Clear TPM persistent handles (the sealed LUKS keys)
+        echo "Step 1: Clearing TPM persistent handles..."
+        export TPM2TOOLS_TCTI="swtpm:host=localhost,port=2321"
+
+        # Start swtpm if not running (needed to clear handles)
+        if ! systemctl is-active --quiet swtpm; then
+            echo "Starting swtpm temporarily to clear handles..."
+            $SUDO systemctl start swtpm
+            sleep 2
+        fi
+
+        # Try to clear all possible handles used by the setup script
+        for handle in 0x81000000 0x81010000 0x81010001 0x81010002; do
+            echo "Clearing handle $handle..."
+            ${pkgs.tpm2-tools}/bin/tpm2_evictcontrol -C o -c "$handle" 2>/dev/null || true
+        done
+
+        # Show what's left
+        echo "Remaining persistent handles:"
+        ${pkgs.tpm2-tools}/bin/tpm2_getcap handles-persistent 2>/dev/null || echo "No handles found"
+
+        # Step 2: Remove swtpm state from /boot (this is what causes boot hangs)
+        echo ""
+        echo "Step 2: Removing swtpm state from /boot..."
+        if [ -d "/boot/swtpm-state" ]; then
+            echo "Found /boot/swtpm-state - removing..."
+            $SUDO rm -rf /boot/swtpm-state
+            echo "Removed /boot/swtpm-state"
+        else
+            echo "/boot/swtpm-state not found (already clean)"
+        fi
+
+        # Step 3: Check LUKS for the TPM-sealed keyfile slot
+        echo ""
+        echo "Step 3: Checking LUKS devices..."
+        LUKS_DEVICE="${cfg.tpmUnlock.luksDevice}"
+
+        if [ -n "$LUKS_DEVICE" ] && [ -e "$LUKS_DEVICE" ]; then
+            echo "LUKS device configured: $LUKS_DEVICE"
+            echo ""
+            echo "Current LUKS key slots:"
+            $SUDO ${pkgs.cryptsetup}/bin/cryptsetup luksDump "$LUKS_DEVICE" | grep "Key Slot" || true
+            echo ""
+            echo "WARNING: The TPM-sealed key may still be in a LUKS slot."
+            echo "To remove it (if you know which slot), run:"
+            echo "  sudo cryptsetup luksKillSlot $LUKS_DEVICE <slot_number>"
+            echo ""
+            echo "Make sure you have another way to unlock before removing slots!"
+        else
+            # Fallback to auto-detect
+            LUKS_DEVICES=$(${pkgs.util-linux}/bin/lsblk -o NAME,FSTYPE,UUID | grep crypto_LUKS | awk '{print "/dev/disk/by-uuid/" $3}' || true)
+            if [ -n "$LUKS_DEVICES" ]; then
+                echo "Found LUKS devices:"
+                for device in $LUKS_DEVICES; do
+                    echo "  $device"
+                done
+                echo ""
+                echo "Check slots with: sudo cryptsetup luksDump <device>"
+            fi
+        fi
+
+        echo ""
+        echo "=== Cleanup Complete ==="
+        echo ""
+        echo "What was cleaned:"
+        echo "✓ Cleared TPM persistent handles (sealed keys)"
+        echo "✓ Removed /boot/swtpm-state directory"
+        echo "✓ Checked LUKS key slots"
+        echo ""
+        echo "Next steps:"
+        echo "1. Disable TPM in your configuration (already done in dazzle)"
+        echo "2. Rebuild: git add -A && nh os switch ~/nixconf/. -- --show-trace"
+        echo "3. Reboot - system should prompt for password normally"
+        echo ""
+        echo "The swtpm service will be removed after rebuild."
+      '')
+
       # Script to set up TPM unlock (fights through swtpm memory errors)
       (pkgs.writeShellScriptBin "apple-t2-tpm-setup" ''
         #!${pkgs.bash}/bin/bash

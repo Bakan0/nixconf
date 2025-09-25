@@ -15,6 +15,11 @@
       enable = true;
       user = "emet";
     };
+
+    # Server overrides - disable desktop environments
+    hyprland.enable = false;
+    gnome.enable = false;
+
     wake-on-lan.enable = true;
     virtualisation.enable = true;
     home-users = {

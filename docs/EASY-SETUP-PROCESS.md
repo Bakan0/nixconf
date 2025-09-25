@@ -68,8 +68,8 @@ After `nixos-install` completes, initialize your host configuration:
 # Initialize the new host (automatically detects hardware and creates configs)
 ./docs/flake-init.sh HOSTNAME
 
-# Example for ironclad:
-./docs/flake-init.sh ironclad
+# Example for hearth:
+./docs/flake-init.sh hearth
 ```
 
 This script will:

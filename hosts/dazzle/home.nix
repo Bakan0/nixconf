@@ -20,4 +20,9 @@
   home.packages = with pkgs; [
     # Additional packages specific to dazzle setup
   ];
+
+  # Temporary: Force kitty to use X11 until Wayland EGL/DMA-BUF issue is fixed
+  # Error: "failed to import supplied dmabufs: EGL failed to allocate resources"
+  # Affects hybrid Intel/AMD graphics on GNOME Wayland
+  programs.kitty.settings.linux_display_server = "x11";
 }

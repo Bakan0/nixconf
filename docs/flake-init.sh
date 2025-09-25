@@ -136,8 +136,6 @@ $ZFS_IMPORT
   };
 
 
-  services.protonmail-bridge.enable = false;
-  services.teamviewer.enable = false;
 
 $STATE_VERSION
 }
@@ -217,6 +215,20 @@ echo ""
 # Get this system's IP dynamically
 SYSTEM_IP=$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
 
+# Optimize hardware configuration for this system
+echo "🔧 Optimizing hardware configuration for optimal performance..."
+if command -v hardware-config-insert >/dev/null 2>&1; then
+    if hardware-config-insert --commit-only; then
+        echo "✅ Hardware configuration optimized and committed"
+    else
+        echo "⚠️  Hardware optimization failed, using basic configuration"
+    fi
+else
+    echo "⚠️  Hardware analysis tools not available, using basic configuration"
+    echo "   (Run 'hardware-config-insert' manually after system deployment)"
+fi
+
+echo ""
 echo "Host $HOSTNAME configuration created successfully!"
 echo ""
 echo "Next steps - run these commands from your development machine:"

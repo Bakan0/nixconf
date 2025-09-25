@@ -10,6 +10,11 @@ let
 
   # Icon theme definitions
   iconThemes = {
+    numix = {
+      name = "Numix";
+      package = pkgs.numix-icon-theme-circle;  # Circle variant has better color support
+      description = "Professional circular icons with orange folders";
+    };
     candy-icons = {
       name = "candy-icons";
       package = pkgs.candy-icons;
@@ -114,8 +119,8 @@ in {
     };
 
     iconTheme = mkOption {
-      type = types.enum [ "candy-icons" "papirus-dark" "papirus-orange" "dracula" ];
-      default = "candy-icons";
+      type = types.enum [ "numix" "candy-icons" "papirus-dark" "papirus-orange" "dracula" ];
+      default = "numix";
       description = "The icon theme to use";
     };
   };

@@ -21,18 +21,6 @@
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
 
-    # Apple T2 MacBook support for early boot keyboard/trackpad
-    apple = {
-      enable = true;
-      modelOverrides = "T2";
-      tpmUnlock = {
-        enable = true;
-        luksDevice = "/dev/disk/by-uuid/e846c9e1-b9b6-489a-b5a7-ae891ca9786f";
-        luksName = "luks-rpool";  # or your LUKS name
-        tpmHandle = "0x81010000";  # Handle where key was sealed
-      };
-    };
-
     # ZFS support and monitoring tools
     zfs.enable = true;
 
@@ -47,15 +35,26 @@
       laptopScale = 1.333333;
     };
 
-    # AMD Radeon RX 5500M support
-    amd = {
+    # Apple T2 MacBook support for early boot keyboard/trackpad
+    apple = {
       enable = true;
-      supergfxMode = "Hybrid";  # Intel UHD 630 + AMD RX 5500M
-      conservativePowerManagement = false;  # Causes ZFS boot failures
+      modelOverrides = "T2";
+      # TPM unlock disabled - use apple-tpm-cleanup to remove all swtpm state
     };
 
-    # TPM support for Apple T2 chip
-    tpm2.enable = true;
+    # TPM support disabled - was causing boot hangs
+    # tpm2.enable = true;
+
+    # Intel graphics support
+    intel.enable = true;
+
+    # AMD graphics support
+    amd = {
+      enable = true;
+      supergfxMode = "Hybrid";
+      primaryGpu = "amd";
+      driPrimeAmd = "0";
+    };
   };
 
   boot = {
@@ -103,8 +102,6 @@
   };
 
 
-  services.protonmail-bridge.enable = false;
-  services.teamviewer.enable = false;
 
   system.stateVersion = "25.11"; # Did you read the comment?
 }

@@ -22,6 +22,7 @@ in {
       sddm = {
         enable = lib.mkDefault true;
         theme = "${sddmTheme}";  # Atomic-terracotta themed SDDM
+        wayland.enable = true;  # Enable Wayland support for SDDM
         settings = lib.mkIf cfg.preferExternalMonitor {
           X11 = {
             DisplayCommand = "${pkgs.writeShellScript "sddm-display-setup" ''

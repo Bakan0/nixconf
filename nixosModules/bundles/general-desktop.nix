@@ -7,8 +7,6 @@
   myNixOS.bundles.general.enable = lib.mkDefault true;
 
   # Desktop-specific features
-  myNixOS.sddm.enable = lib.mkDefault true;
-  myNixOS.greetd.enable = lib.mkDefault false;
   myNixOS.autologin.enable = lib.mkDefault false;
   myNixOS.pipewire.enable = lib.mkDefault true;
   myNixOS.batteryManagement.enable = lib.mkDefault false;  # Enable only on laptops
@@ -20,15 +18,21 @@
     extraPortals = with pkgs; [
       xdg-desktop-portal-gtk
       xdg-desktop-portal-hyprland
+      xdg-desktop-portal-gnome
     ];
     config = {
-      preferred = {
-        default = ["hyprland" "gtk"];
-      };
+      # Session-specific portal configuration
       hyprland = {
+        default = ["hyprland" "gtk"];
         "org.freedesktop.impl.portal.FileChooser" = "hyprland";
         "org.freedesktop.impl.portal.ScreenCast" = "hyprland";
         "org.freedesktop.impl.portal.Screenshot" = "hyprland";
+      };
+      gnome = {
+        default = ["gnome" "gtk"];
+        "org.freedesktop.impl.portal.FileChooser" = "gnome";
+        "org.freedesktop.impl.portal.ScreenCast" = "gnome";
+        "org.freedesktop.impl.portal.Screenshot" = "gnome";
       };
       common = {
         "org.freedesktop.impl.portal.FileChooser" = "gtk";
@@ -46,6 +50,9 @@
     dmidecode
     openconnect        # VPN client used across multiple hosts
     wl-clipboard       # Wayland clipboard utilities
+    wtype             # Wayland keyboard input simulation
+    wlr-randr         # Wayland display configuration
+    ydotool           # Cross-platform input simulation
     
     # Icon themes - recent updates, perfect for terracotta theme
     fluent-icon-theme     # Modern fluent design (2025-08-21)
@@ -133,6 +140,15 @@
   ];
 
   security.polkit.enable = true;
+
+  # GNOME keyring PAM configuration for auto-unlock
+  security.pam.services.gdm.enableGnomeKeyring = true;
+  security.pam.services.gdm-password.enableGnomeKeyring = true;
+  security.pam.services.sddm.enableGnomeKeyring = true;
+  security.pam.services.login.enableGnomeKeyring = true;
+
+  # Enable gnome keyring service
+  services.gnome.gnome-keyring.enable = true;
 
   programs.dconf.enable = true;
 

@@ -19,9 +19,6 @@
     ${pkgs.networkmanagerapplet}/bin/nm-applet --indicator &
     ${pkgs.hyprland}/bin/hyprctl setcursor Bibata-Modern-Amber 24 &
 
-    # Start gnome-keyring daemon for credential storage
-    ${pkgs.gnome-keyring}/bin/gnome-keyring-daemon --components=pkcs11,secrets,ssh -r -d &
-
     # Wait for Hyprland environment to be fully set
     sleep 1
 
@@ -291,6 +288,9 @@ in {
         # "forceinput,^(league of legends.exe)$"
         # ];
         windowrulev2 = [
+          # Temporary: Force kitty to tile when running via XWayland
+          "tile,class:^(kitty)$"
+
           # Bitwarden floating (both XWayland and Wayland versions)
           "float,class:^(Vivaldi-stable)$,title:^(Bitwarden - Vivaldi)$"
           "float,class:^(vivaldi-stable)$,title:^(Bitwarden - Vivaldi)$"
@@ -321,11 +321,37 @@ in {
         exec-once = exec-once;
       };
     };
+
+    # Hypridle configuration file
+    home.file.".config/hypr/hypridle.conf".text = ''
+      general {
+          after_sleep_cmd = hyprctl dispatch dpms on
+          before_sleep_cmd = hyprlock
+          ignore_dbus_inhibit = false
+          lock_cmd = pidof hyprlock || hyprlock
+      }
+
+      listener {
+          timeout = 3000
+          on-timeout = hyprlock
+      }
+
+      listener {
+          timeout = 2400
+          on-timeout = hyprctl dispatch dpms off
+          on-resume = hyprctl dispatch dpms on
+      }
+
+      listener {
+          timeout = 5400
+          on-timeout = systemctl suspend
+      }
+    '';
+
     home.packages = with pkgs; [
       bibata-cursors
       grim
       slurp
-      wl-clipboard
       swww
       networkmanagerapplet
       blueman
@@ -338,37 +364,30 @@ in {
       libsecret
       weston  # Nested Wayland compositor for testing X11 apps
     ];
-    services.hypridle = {
-      enable = true;
-      settings = {
-        general = {
-          after_sleep_cmd = "hyprctl dispatch dpms on";
-          before_sleep_cmd = "hyprlock";
-          ignore_dbus_inhibit = false;
-          lock_cmd = "pidof hyprlock || hyprlock";
-        };
-   
-        listener = [
-          {
-            timeout = 3000; # 50 minutes
-            on-timeout = "hyprlock";
-          }
-          {
-            timeout = 2400; # 40 minutes
-            on-timeout = "hyprctl dispatch dpms off";
-            on-resume = "hyprctl dispatch dpms on";
-          }
-          {
-            timeout = 5400; # 90 minutes
-            on-timeout = "systemctl suspend";
-          }
-        ];
+    # Custom hypridle service that only runs in Hyprland
+    systemd.user.services.hypridle = {
+      Unit = {
+        Description = "Hyprland idle daemon";
+        PartOf = [ "graphical-session.target" ];
+        After = [ "graphical-session.target" ];
+        ConditionEnvironment = [ "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=Hyprland" ];
+      };
+      Service = {
+        Type = "simple";
+        ExecStart = "${pkgs.hypridle}/bin/hypridle";
+        Restart = "on-failure";
+        RestartSec = 3;
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
       };
     };
+
     systemd.user.services.lock-on-suspend = {
       Unit = {
         Description = "Lock screen before suspend";
         Before = [ "sleep.target" ];
+        ConditionEnvironment = "XDG_CURRENT_DESKTOP=Hyprland";
       };
       Install.WantedBy = [ "sleep.target" ];
       Service = {
@@ -384,6 +403,7 @@ in {
         Description = "Import Hyprland session environment";
         DefaultDependencies = false;
         Before = [ "waybar.service" "hypridle.service" ];
+        ConditionEnvironment = "XDG_CURRENT_DESKTOP=Hyprland";
       };
       Service = {
         Type = "oneshot";
@@ -398,6 +418,7 @@ in {
         WantedBy = [ "graphical-session.target" ];
         Wants = [ "graphical-session.target" ];
         After = [ "graphical-session.target" ];
+        ConditionEnvironment = "XDG_CURRENT_DESKTOP=Hyprland";
       };
       Service = {
         Type = "simple";

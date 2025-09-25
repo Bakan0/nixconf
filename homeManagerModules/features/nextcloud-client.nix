@@ -38,17 +38,16 @@ in {
         Wants = [ "graphical-session.target" ];
         # Only start if config exists (after initial setup)
         ConditionPathExists = "%h/.config/Nextcloud/nextcloud.cfg";
+        # Only start when display is available
+        ConditionEnvironment = "WAYLAND_DISPLAY";
       };
-      
+
       Service = {
         Type = "simple";
         ExecStart = "${pkgs.nextcloud-client}/bin/nextcloud --background";
         Restart = "on-failure";
         RestartSec = "10s";
-        Environment = [
-          "QT_QPA_PLATFORM=wayland"
-          "QT_WAYLAND_FORCE_DPI=96"
-        ];
+        # Let Qt detect the best platform automatically
       };
       
       Install = {

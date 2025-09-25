@@ -71,12 +71,26 @@ EOF
       # Create simple Main.qml without user silhouette
       cat > Main.qml << 'QMLEOF'
 import QtQuick 2.11
-import QtQuick.Controls 2.4
 import SddmComponents 2.0
 
 Rectangle {
     width: 640
     height: 480
+    property int sessionIndex: 0
+    property var filteredSessions: []
+    property var sessionMapping: []  // Maps filtered index to real sessionModel index
+
+    // Create a ListView to access session data like ComboBox does
+    ListView {
+        id: hiddenSessionList
+        visible: false
+        width: 0
+        height: 0
+        model: sessionModel
+        delegate: Item {
+            property variant modelItem: model
+        }
+    }
 
     Image {
         anchors.fill: parent
@@ -95,6 +109,28 @@ Rectangle {
         Column {
             anchors.centerIn: parent
             spacing: 20
+
+            // Clock with seconds
+            Text {
+                id: clock
+                color: "${colors.base07}"
+                font.pixelSize: 18
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                Timer {
+                    interval: 1000
+                    running: true
+                    repeat: true
+                    onTriggered: {
+                        var now = new Date()
+                        clock.text = Qt.formatTime(now, "hh:mm:ss")
+                    }
+                }
+                Component.onCompleted: {
+                    var now = new Date()
+                    clock.text = Qt.formatTime(now, "hh:mm:ss")
+                }
+            }
 
             Text {
                 text: "Login"
@@ -179,7 +215,8 @@ Rectangle {
 
                     onAccepted: {
                         errorMessage.text = ""
-                        sddm.login(username.text, password.text, sessionButton.currentIndex)
+                        var realIndex = sessionMapping[sessionIndex] || 0
+                        sddm.login(username.text, password.text, realIndex)
                     }
                 }
             }
@@ -190,7 +227,7 @@ Rectangle {
 
                 Rectangle {
                     id: loginButton
-                    width: 200
+                    width: 120
                     height: 40
                     color: "${colors.base08}"
                     border.color: "${colors.base0A}"
@@ -208,17 +245,20 @@ Rectangle {
                         anchors.fill: parent
                         onClicked: {
                             errorMessage.text = ""
-                            sddm.login(username.text, password.text, sessionButton.currentIndex)
+                            var realIndex = sessionMapping[sessionIndex] || 0
+                            sddm.login(username.text, password.text, realIndex)
                         }
                     }
 
                     Keys.onReturnPressed: {
                         errorMessage.text = ""
-                        sddm.login(username.text, password.text, sessionButton.currentIndex)
+                        var realIndex = sessionMapping[sessionIndex] || 0
+                        sddm.login(username.text, password.text, realIndex)
                     }
                     Keys.onEnterPressed: {
                         errorMessage.text = ""
-                        sddm.login(username.text, password.text, sessionButton.currentIndex)
+                        var realIndex = sessionMapping[sessionIndex] || 0
+                        sddm.login(username.text, password.text, realIndex)
                     }
                     Keys.onTabPressed: username.focus = true
                     Keys.onBacktabPressed: password.focus = true
@@ -232,9 +272,7 @@ Rectangle {
 
                 Rectangle {
                     id: sessionButton
-                    property int currentIndex: 0
-                    property var sessionNames: []
-                    width: 90
+                    width: 170
                     height: 40
                     color: "${colors.base02}"
                     border.color: "${colors.base0D}"
@@ -243,11 +281,33 @@ Rectangle {
 
                     Text {
                         anchors.centerIn: parent
-                        text: sessionButton.sessionNames.length > 0 ? sessionButton.sessionNames[sessionButton.currentIndex] : "Session"
+                        text: {
+                            // Use the same approach as ComboBox to get the session name
+                            if (typeof sessionModel !== "undefined" && sessionModel.count > 0) {
+                                var realIdx = sessionMapping[sessionIndex] || 0
+                                if (realIdx < sessionModel.count) {
+                                    hiddenSessionList.currentIndex = realIdx
+                                    if (hiddenSessionList.currentItem && hiddenSessionList.currentItem.modelItem) {
+                                        var sessionName = hiddenSessionList.currentItem.modelItem.name || ""
+                                        // Clean up the display name
+                                        if (sessionName.indexOf("Hyprland") >= 0) {
+                                            return "Hyprland"
+                                        } else if (sessionName.indexOf("Xorg") >= 0 || sessionName.indexOf("xorg") >= 0) {
+                                            return "GNOME on Xorg"
+                                        } else if (sessionName.indexOf("GNOME") >= 0 || sessionName.indexOf("gnome") >= 0) {
+                                            return "GNOME"
+                                        }
+                                        return sessionName
+                                    }
+                                }
+                            }
+                            // Only show this during initial loading
+                            return "Loading..."
+                        }
                         color: "${colors.base07}"
                         font.pixelSize: 10
                         elide: Text.ElideRight
-                        width: parent.width - 8
+                        width: parent.width - 10
                         horizontalAlignment: Text.AlignHCenter
                     }
 
@@ -255,36 +315,94 @@ Rectangle {
                         anchors.fill: parent
                         acceptedButtons: Qt.LeftButton | Qt.RightButton
                         onClicked: {
-                            if (mouse.button === Qt.LeftButton) {
-                                // Left click: next session
-                                sessionButton.currentIndex = (sessionButton.currentIndex + 1) % sessionButton.sessionNames.length
-                            } else if (mouse.button === Qt.RightButton) {
-                                // Right click: previous session
-                                sessionButton.currentIndex = (sessionButton.currentIndex - 1 + sessionButton.sessionNames.length) % sessionButton.sessionNames.length
+                            if (filteredSessions.length > 0) {
+                                if (mouse.button === Qt.LeftButton) {
+                                    sessionIndex = (sessionIndex + 1) % filteredSessions.length
+                                } else if (mouse.button === Qt.RightButton) {
+                                    sessionIndex = (sessionIndex - 1 + filteredSessions.length) % filteredSessions.length
+                                }
                             }
                         }
                     }
 
                     Component.onCompleted: {
-                        // Get actual sessions from SDDM - accessing data properly
                         if (typeof sessionModel !== "undefined" && sessionModel.count > 0) {
-                            var sessions = []
+                            var allSessions = []
+
+                            // Get all session names by cycling through the ListView
                             for (var i = 0; i < sessionModel.count; i++) {
-                                // Try different ways to access the model data
-                                var item = sessionModel.data(sessionModel.index(i, 0), Qt.DisplayRole)
-                                if (item) {
-                                    sessions.push(item)
-                                } else {
-                                    // Fallback to just using index names
-                                    sessions.push("Hyprland")
+                                hiddenSessionList.currentIndex = i
+
+                                var name = ""
+                                if (hiddenSessionList.currentItem && hiddenSessionList.currentItem.modelItem) {
+                                    name = hiddenSessionList.currentItem.modelItem.name || ""
+                                }
+
+                                if (!name) {
+                                    // Try direct model access as fallback
+                                    var item = sessionModel.get ? sessionModel.get(i) : null
+                                    if (item && item.name) {
+                                        name = item.name
+                                    } else {
+                                        name = "Session " + i
+                                    }
+                                }
+
+                                allSessions.push({
+                                    name: name,
+                                    realIndex: i
+                                })
+                            }
+
+                            // Now filter duplicates
+                            var filtered = []
+                            var seen = {}
+
+                            for (var j = 0; j < allSessions.length; j++) {
+                                var s = allSessions[j]
+                                var key = ""
+
+                                // Create unique key for each session type
+                                if (s.name.indexOf("Hyprland") >= 0) {
+                                    key = "Hyprland"
+                                } else if (s.name.indexOf("Xorg") >= 0 || s.name.indexOf("xorg") >= 0) {
+                                    key = "GNOME on Xorg"
+                                } else if (s.name.indexOf("GNOME") >= 0 || s.name.indexOf("gnome") >= 0) {
+                                    // First GNOME without Xorg is Wayland
+                                    if (!seen["GNOME"]) {
+                                        key = "GNOME"
+                                    }
+                                }
+
+                                if (key && !seen[key]) {
+                                    seen[key] = true
+                                    filtered.push({
+                                        name: key,
+                                        realIndex: s.realIndex
+                                    })
+                                    sessionMapping.push(s.realIndex)
                                 }
                             }
-                            if (sessions.length > 0) {
-                                sessionButton.sessionNames = sessions
-                                sessionButton.currentIndex = sessionModel.lastIndex || 0
+
+                            filteredSessions = filtered
+
+                            // Default to GNOME (Wayland), fallback to Hyprland
+                            for (var k = 0; k < filtered.length; k++) {
+                                if (filtered[k].name === "GNOME") {
+                                    sessionIndex = k
+                                    break
+                                }
+                            }
+                            // If GNOME not found, try Hyprland
+                            if (sessionIndex === 0 && filteredSessions.length > 0) {
+                                for (var k = 0; k < filtered.length; k++) {
+                                    if (filtered[k].name === "Hyprland") {
+                                        sessionIndex = k
+                                        break
+                                    }
+                                }
                             }
                         }
-                        // If no sessions detected, leave empty array - shows "Session"
                     }
                 }
             }

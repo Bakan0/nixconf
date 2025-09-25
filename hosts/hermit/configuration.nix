@@ -28,7 +28,6 @@
       enable = true;
       # autoToggleLaptop = true;
     };
-    powerManagement.enable = false;  # TEMP DEBUG
     virtualisation.enable = true;
     wake-on-lan.enable = true;
 
@@ -83,7 +82,6 @@
        quickemu
        remmina
        sidequest
-       teamviewer
        yazi
     ];
   };
@@ -122,8 +120,6 @@
   };
 
 
-  services.protonmail-bridge.enable = false;
-  services.teamviewer.enable = false;
 
   system.stateVersion = "25.05";
 }

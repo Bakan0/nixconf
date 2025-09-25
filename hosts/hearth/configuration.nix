@@ -63,8 +63,6 @@
   };
 
 
-  services.protonmail-bridge.enable = false;
-  services.teamviewer.enable = false;
 
   system.stateVersion = "25.05"; # Did you read the comment?
 }

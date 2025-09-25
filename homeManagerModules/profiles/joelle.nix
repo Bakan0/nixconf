@@ -14,7 +14,10 @@
   # Joelle's minimal configuration
   myHomeManager = {
     # GNOME-compatible desktop bundle (includes general but avoids Hyprland-specific configs)
-    bundles.desktop-gnome.enable = true;
+    bundles.desktop = {
+      enable = true;
+      gnome.enable = true;
+    };
 
     # Individual features
     nvim.enable = true;

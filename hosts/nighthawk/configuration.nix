@@ -91,10 +91,6 @@
     binfmt = true;
   };
 
-
-  services.protonmail-bridge.enable = true;
-  services.teamviewer.enable = true;
-
   system.stateVersion = "24.11";
 }
 

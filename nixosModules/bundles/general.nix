@@ -3,6 +3,10 @@
   lib,
   ...
 }: {
+  imports = [
+    ../hardware/processors.nix
+  ];
+
   # System-wide nixpkgs configuration
   nixpkgs.config = {
     allowUnfree = true;
@@ -104,15 +108,19 @@
 
   # Essential system packages
   environment.systemPackages = with pkgs; [
+    bat         # Better cat with syntax highlighting
     bc          # CLI calculator
+    btop        # Better htop with detailed system monitoring
     caligula    # User-friendly du/df alternative
     colorls     # Colorized ls
     curl
     dnsutils    # dig, nslookup - essential for servers
+    du-dust     # Better du for disk usage analysis
     dysk        # Get information on mounted disks
     eza         # Better ls replacement
     fastfetch   # System information tool
     fd          # Fast file finder
+    ffmpeg-headless # Media processing without X11 deps - needed for Jellyfin etc
     home-manager # For debugging home-manager activation issues
     file        # File type detection
     fwupd       # Firmware update daemon
@@ -122,6 +130,7 @@
     lm_sensors  # Hardware monitoring for servers
     lsof        # List open files - debugging essential
     neofetch    # System info display
+    neovim      # Modern vim replacement
     nh          # Nix helper
     nix-output-monitor
     ntfs3g      # NTFS filesystem support

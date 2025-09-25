@@ -9,11 +9,24 @@ in {
       default = "Integrated";
       description = "SuperGFX graphics mode - determines which AMD settings to apply";
     };
-    
+
     conservativePowerManagement = mkOption {
       type = types.bool;
       default = false;
       description = "Enable conservative power management to prevent ZFS conflicts (may hurt performance)";
+    };
+
+    # Hybrid mode GPU preference options
+    primaryGpu = mkOption {
+      type = types.enum [ "amd" "intel" "auto" ];
+      default = "auto";
+      description = "Which GPU to prefer as primary in hybrid setups (auto = system default)";
+    };
+
+    driPrimeAmd = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      description = "DRI_PRIME value for AMD GPU (null = auto-detect, '0' or '1' for specific)";
     };
   };
 
@@ -84,11 +97,23 @@ in {
         kernelModules = [ "amdgpu" ];
       };
 
-      # Hybrid-specific VAAPI environment variables
-      environment.sessionVariables = {
-        VAAPI_DISABLE_VBV = "1";      # Hybrid mode encoding fix
-        LIBVA_MESSAGING_LEVEL = "2";  # Debug hybrid issues
-      };
+      # Hybrid-specific environment variables for proper GPU switching
+      environment.sessionVariables = mkMerge [
+        {
+          VAAPI_DISABLE_VBV = "1";      # Hybrid mode encoding fix
+          LIBVA_MESSAGING_LEVEL = "2";  # Debug hybrid issues
+
+          # Wayland-specific fixes for hybrid graphics
+          WLR_DRM_DEVICES = "/dev/dri/card0:/dev/dri/card1";  # Make both GPUs available
+          # Note: __GLX_VENDOR_LIBRARY_NAME is intentionally not set here
+          # as it could conflict with other GPU configurations (e.g., NVIDIA)
+        }
+
+        # Host-configurable GPU preference
+        (mkIf (cfg.primaryGpu == "amd" && cfg.driPrimeAmd != null) {
+          DRI_PRIME = cfg.driPrimeAmd;
+        })
+      ];
 
       # ROCm support for compute workloads
       hardware.graphics.extraPackages = with pkgs; [
