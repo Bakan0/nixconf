@@ -23,11 +23,6 @@
       supergfxMode = "Hybrid";
     };
     asus.enable = true;
-    immersed.enable = true;
-    sunshine = {
-      enable = true;
-      # autoToggleLaptop = true;
-    };
     virtualisation.enable = true;
     wake-on-lan.enable = true;
 

@@ -22,5 +22,6 @@
   # Host-specific packages and configurations can go here
   home.packages = with pkgs; [
     # Additional packages specific to hearth setup
+    gnucash
   ];
 }

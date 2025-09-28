@@ -326,11 +326,31 @@ in {
       mesonFlags = oldAttrs.mesonFlags ++ ["-Dexperimental=true"];
     });
     systemd = {
-      enable = true;
-      target = "graphical-session.target";
+      enable = false;  # We'll define our own service below
     };
     style = css;
     settings = {mainBar = mainWaybarConfig;};
+  };
+
+  # Custom waybar service that only runs on Hyprland
+  systemd.user.services.waybar = {
+    Unit = {
+      Description = "Highly customizable Wayland bar for Wlroots based compositors";
+      Documentation = "https://github.com/Alexays/Waybar/wiki";
+      ConditionEnvironment = [ "WAYLAND_DISPLAY" "XDG_CURRENT_DESKTOP=Hyprland" ];
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session-pre.target" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${config.programs.waybar.package}/bin/waybar";
+      ExecReload = "${pkgs.util-linux}/bin/kill -SIGUSR2 $MAINPID";
+      Restart = "on-failure";
+      KillMode = "mixed";
+    };
+    Install = {
+      WantedBy = [ "graphical-session.target" ];
+    };
   };
 
 }

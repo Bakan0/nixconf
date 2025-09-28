@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 let 
-  cfg = config.myNixOS.immersed;
+  cfg = config.myNixOS.immersed-hyprland;
 
   # Create a custom package set with gjs tests disabled, only for immersed's dependency chain
   # immersedPkgs = pkgs.extend (final: prev: {
@@ -127,7 +127,7 @@ let
   '';
 
 in {
-  options.myNixOS.immersed = {
+  options.myNixOS.immersed-hyprland = {
     autoToggleLaptop = mkOption {
       type = types.bool;
       default = false;

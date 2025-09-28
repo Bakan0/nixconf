@@ -360,8 +360,6 @@ in {
       hyprlock
       procps
       xfce.thunar
-      gnome-keyring
-      libsecret
       weston  # Nested Wayland compositor for testing X11 apps
     ];
     # Custom hypridle service that only runs in Hyprland

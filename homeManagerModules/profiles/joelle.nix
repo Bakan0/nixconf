@@ -1,15 +1,8 @@
-{ config, pkgs, ... }:
+{ config, pkgs, lib, ... }:
 
 {
-  home = {
-    sessionVariables = {
-      EDITOR = "nvim";
-    };
-
-    packages = with pkgs; [
-      # Core packages now provided by bundles
-    ];
-  };
+  # Inherit common settings for all users
+  myHomeManager.profiles.common.enable = true;
 
   # Joelle's minimal configuration
   myHomeManager = {
@@ -30,13 +23,6 @@
       enable = true;
       theme = "crimson-noir";
       iconTheme = "dracula";  # Gothic dark with red accents
-    };
-  };
-  programs = {
-    home-manager.enable = true;
-    nix-index = {
-      enable = true;
-      enableZshIntegration = false;
     };
   };
 }

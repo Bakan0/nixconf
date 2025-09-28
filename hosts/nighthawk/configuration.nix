@@ -14,7 +14,6 @@
       user = "emet";
     };
     kanshi.laptopResolution = "1920x1080@60Hz";
-    immersed.enable = true;
     virtualisation = {
       username = "emet";
     };

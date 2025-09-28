@@ -89,19 +89,25 @@
 
         # Power button action
         power-button-action = "interactive";
+
+        # Screen brightness and dimming
+        idle-brightness = 30;  # Dim to 30% when idle
+        idle-dim = true;  # Enable screen dimming
+
+        # Ensure power management is active
+        active = true;
       };
 
       "org/gnome/desktop/session" = {
-        idle-delay = 600;  # 10 minutes before dimming screen
+        idle-delay = 1800;  # 30 minutes before dimming screen
       };
 
       "org/gnome/desktop/screensaver" = {
         idle-activation-enabled = true;
         lock-enabled = true;
-        lock-delay = 0;  # Lock immediately when screen blanks
-        # Blank screen after 30 minutes (safe for modern displays)
+        lock-delay = 1800;  # Wait 30 minutes before locking (after screen dims)
         # Note: Most modern monitors/OLEDs have built-in protection
-        idle-delay = 1800;  # 30 minutes to blank screen
+        # No need for separate idle-delay here since session idle-delay controls dimming
       };
 
       # Set Vivaldi as default browser in GNOME
@@ -157,6 +163,15 @@
 
     # Note: Universal mimeApps defaults are configured in the desktop bundle
     # This ensures proper handling when both GNOME and Hyprland are enabled
+
+    # Enable SSH to use GNOME keyring for automatic key unlocking
+    programs.ssh = {
+      enable = true;
+      enableDefaultConfig = false;  # Explicitly set defaults below
+      matchBlocks."*" = {
+        addKeysToAgent = "yes";  # Automatically add keys when first used
+      };
+    };
 
     # GNOME-compatible packages only
     home.packages = with pkgs; [

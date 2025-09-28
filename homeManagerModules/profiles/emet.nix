@@ -1,27 +1,12 @@
 { config, pkgs, lib, myLib, ... }:
 
 {
-  # No additional imports needed - using individual script feature modules
-  home = {
-    sessionVariables = {
-      EDITOR = "nvim";
-    };
-
-    packages = with pkgs; [
-      # Core packages moved to general bundle
-    ];
-  };
-
-
-
-  xdg.userDirs = {
-    enable = true;
-    createDirectories = true;
-  };
-
+  # Inherit common settings for all users
+  myHomeManager.profiles.common.enable = true;
 
   # Enable emet's preferred bundles by default (can be overridden per host)
   myHomeManager = {
+
     # Bundles - desktop with BOTH Hyprland and GNOME
     bundles.desktop = {
       enable = lib.mkDefault true;
@@ -55,12 +40,19 @@
     # Transfer scripts now enabled via bundles.xfer-scripts
   };
 
-  programs = {
-    home-manager.enable = true;
+  # Auto-start btop when desktop starts (Hyprland)
+  myHomeManager.startupScript = ''
+    ${pkgs.kitty}/bin/kitty --title "System Monitor - btop" ${pkgs.btop}/bin/btop &
+  '';
 
-    nix-index = {
-      enable = true;
-      enableZshIntegration = false;
-    };
-  };
+  # Auto-start btop when desktop starts (GNOME and other XDG-compliant desktops)
+  xdg.configFile."autostart/btop.desktop".text = ''
+    [Desktop Entry]
+    Type=Application
+    Name=System Monitor (btop)
+    Exec=${pkgs.kitty}/bin/kitty --title "System Monitor - btop" ${pkgs.btop}/bin/btop
+    Hidden=false
+    NoDisplay=false
+    X-GNOME-Autostart-enabled=true
+  '';
 }

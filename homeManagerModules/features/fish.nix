@@ -175,6 +175,9 @@
       # System management
       os = "nh os";
 
+      # Navigation
+      ni = "cd ~/nixconf";  # "ni" for nix (right-hand typable)
+
       # Convenience aliases from zsh config
       cal = "cal -s";
       grep = "grep --color=auto";

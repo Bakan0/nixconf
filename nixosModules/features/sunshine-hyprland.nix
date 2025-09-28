@@ -1,7 +1,7 @@
 { config, lib, pkgs, ... }:
 with lib;
 let 
-  cfg = config.myNixOS.sunshine;
+  cfg = config.myNixOS.sunshine-hyprland;
 
   sunshineStream = pkgs.writeShellScript "sunshine-headless" ''
     echo "Setting up headless display for Sunshine streaming..."
@@ -109,7 +109,7 @@ EOF
   '';
 
 in {
-  options.myNixOS.sunshine = {
+  options.myNixOS.sunshine-hyprland = {
     autoToggleLaptop = mkOption {
       type = types.bool;
       default = false;

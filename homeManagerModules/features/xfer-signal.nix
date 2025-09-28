@@ -8,20 +8,22 @@ with pkgs;
       APP_PATH="$HOME/.config/Signal"
 
       show_help() {
-          echo "Usage: xfer-signal [--send|--receive] <target_ip> [--dry-run] [--force-relink]"
+          echo "Usage: xfer-signal [--send|--receive] <target_ip> [--dry-run]"
           echo "       xfer-signal --break-connection"
           echo "Transfer Signal Desktop profile between hosts using zstd+rsync"
           echo ""
           echo "Options:"
-          echo "  --force-relink      Force re-authentication by clearing session data"
-          echo "                      (preserves messages/contacts but requires device re-linking)"
           echo "  --break-connection  Break Signal connection locally (no transfer)"
           echo "                      (preserves messages/contacts but requires device re-linking)"
+          echo ""
+          echo "Notes:"
+          echo "  - Receive ALWAYS cleans device identity to prevent conflicts"
+          echo "  - Messages and contacts are preserved during transfer"
+          echo "  - You'll need to re-link Signal after receiving on new machine"
           echo ""
           echo "Examples:"
           echo "  xfer-signal --send 10.17.19.89"
           echo "  xfer-signal --receive 10.17.19.89 --dry-run"
-          echo "  xfer-signal --receive 10.17.19.89 --force-relink"
           echo "  xfer-signal --break-connection"
       }
 
@@ -80,6 +82,14 @@ with pkgs;
           echo "Removing preference files..."
           rm -f "$APP_PATH/Preferences" "$APP_PATH/Network Persistent State" 2>/dev/null || true
 
+          # Remove device-specific config that stores hostname/machine identity
+          echo "Removing device identity files..."
+          rm -f "$APP_PATH/config.json" 2>/dev/null || true
+          rm -rf "$APP_PATH/logs" 2>/dev/null || true
+
+          # Clear any GPUCache that might have machine-specific data
+          rm -rf "$APP_PATH/GPUCache" 2>/dev/null || true
+
           echo "Cleanup complete. Database and encryption keys preserved."
           echo "Signal will require device re-linking on next startup."
       }
@@ -88,7 +98,6 @@ with pkgs;
       ACTION=""
       TARGET_IP=""
       DRY_RUN=""
-      FORCE_RELINK=""
 
       while [[ $# -gt 0 ]]; do
           case $1 in
@@ -96,7 +105,6 @@ with pkgs;
               --receive) ACTION="receive"; TARGET_IP="$2"; shift 2 ;;
               --break-connection) ACTION="break-connection"; shift ;;
               --dry-run) DRY_RUN="--dry-run"; shift ;;
-              --force-relink) FORCE_RELINK="--force-relink"; shift ;;
               --help) show_help; exit 0 ;;
               *) echo "Unknown option: $1"; show_help; exit 1 ;;
           esac
@@ -156,11 +164,14 @@ with pkgs;
               echo "Receiving Signal profile from $TARGET_IP..."
               ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats -e "ssh -A" $DRY_RUN "$TARGET_IP:.config/Signal/" "$APP_PATH/"
 
-              # Apply force relink cleanup if requested
-              if [ -n "$FORCE_RELINK" ] && [ -z "$DRY_RUN" ]; then
+              # ALWAYS clean up device identity after receive to prevent conflicts
+              # This ensures the new machine gets its own device identity
+              if [ -z "$DRY_RUN" ]; then
+                  echo ""
+                  echo "Cleaning up device identity to prevent conflicts..."
                   force_relink_cleanup
-              elif [ -n "$FORCE_RELINK" ] && [ -n "$DRY_RUN" ]; then
-                  echo "DRY RUN: Would perform force relink cleanup (remove session data, preserve messages)"
+              else
+                  echo "DRY RUN: Would perform automatic device identity cleanup after transfer"
               fi
               ;;
           break-connection)

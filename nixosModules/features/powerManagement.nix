@@ -25,8 +25,9 @@ in {
 
   config = mkIf cfg.enable {
     powerManagement = {
-      enable = true;
-      cpuFreqGovernor = "schedutil";
+      enable = mkDefault true;
+      # GNOME/KDE handle CPU freq through power-profiles-daemon, so disable kernel governor
+      cpuFreqGovernor = mkDefault (if hasTraditionalDE then null else "schedutil");
     };
 
     services = {
@@ -35,6 +36,30 @@ in {
 
       # Traditional DEs (GNOME/KDE) use power-profiles-daemon
       power-profiles-daemon.enable = mkDefault hasTraditionalDE;
+
+      # Enable upower for traditional DEs
+      upower.enable = mkDefault hasTraditionalDE;
+
+      # Enable thermal management for Intel CPUs (compatible with all DEs)
+      thermald.enable = mkDefault true;
+
+      # Enable ACPI daemon for proper power event handling
+      acpid.enable = mkDefault true;
+    };
+
+    # Configure logind for GNOME/KDE compatibility using new settings format
+    services.logind.settings = mkIf hasTraditionalDE {
+      Login = {
+        # Lid switch behavior
+        HandleLidSwitch = mkDefault "suspend";
+        HandleLidSwitchDocked = mkDefault "ignore";  # Don't suspend when docked
+        HandleLidSwitchExternalPower = mkDefault "ignore";  # Don't suspend on AC with lid closed
+
+        # Let GNOME/KDE handle idle timeouts through their own mechanisms
+        IdleAction = "ignore";
+        IdleActionSec = "0";
+        UserStopDelaySec = "10";
+      };
     };
 
     # PROPERLY MODULAR: Let user choose or include both (kernel ignores wrong ones)

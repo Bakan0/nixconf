@@ -27,6 +27,10 @@
 
   home.packages = with pkgs; [
     # Tools moved to system for server/root access: nh, jq, dnsutils, eza, fd, htop, lm_sensors, tree, ripgrep, openssl, lsof, unzip, fwupd, bc, neofetch, file, zip
+    # Keyring/secret management - needed by many desktop apps (Nextcloud, browsers, etc)
+    gnome-keyring
+    libsecret
+    libgnome-keyring
     nil
     pistol
     p7zip
