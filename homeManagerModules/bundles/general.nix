@@ -25,6 +25,9 @@
   programs.lazygit.enable = true;
   programs.bat.enable = true;
 
+  # SSH agent service for persistent key storage across sessions
+  services.ssh-agent.enable = true;
+
   home.packages = with pkgs; [
     # Tools moved to system for server/root access: nh, jq, dnsutils, eza, fd, htop, lm_sensors, tree, ripgrep, openssl, lsof, unzip, fwupd, bc, neofetch, file, zip
     # Keyring/secret management - needed by many desktop apps (Nextcloud, browsers, etc)

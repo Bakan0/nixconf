@@ -27,9 +27,7 @@ in {
       wayland = true;  # Enable Wayland support for GDM
     };
 
-    # Hide root/"System Administrator" from login screen
-    # This prevents root from appearing in GDM even if it has SSH keys
-    services.displayManager.hiddenUsers = [ "root" ];
+    # Note: hiddenUsers for root is handled by users bundle where SSH keys are added
 
     # Configure fonts and packages for GDM
     environment.systemPackages = with pkgs; [

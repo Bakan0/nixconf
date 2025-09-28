@@ -148,6 +148,10 @@ in {
       services.xserver.enable = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) (lib.mkDefault true);
       services.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable (lib.mkDefault true);
 
+      # Hide root from display managers since we're adding SSH keys to it
+      # This prevents "System administrator" from appearing in GDM/SDDM login screens
+      services.displayManager.hiddenUsers = [ "root" ];
+
       users.users = {
         root.openssh.authorizedKeys.keys = [
           "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
@@ -158,8 +162,11 @@ in {
       };
     })
 
-    # Joelle user profile  
+    # Joelle user profile
     (mkIf (cfg.bundles.users.user == "joelle") {
+      # Enable GNOME for joelle to get custom GDM theme and desktop environment
+      myNixOS.gnome.enable = lib.mkDefault true;
+
       myNixOS.home-users.joelle = {
         userSettings = {
           description = "Joelle";

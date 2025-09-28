@@ -99,15 +99,13 @@
       };
 
       "org/gnome/desktop/session" = {
-        idle-delay = 1800;  # 30 minutes before dimming screen
+        idle-delay = 1800;  # 30 minutes before screen dims/blanks
       };
 
       "org/gnome/desktop/screensaver" = {
-        idle-activation-enabled = true;
-        lock-enabled = true;
-        lock-delay = 1800;  # Wait 30 minutes before locking (after screen dims)
-        # Note: Most modern monitors/OLEDs have built-in protection
-        # No need for separate idle-delay here since session idle-delay controls dimming
+        idle-activation-enabled = true;  # Enable automatic screensaver
+        lock-enabled = true;  # Enable screen locking
+        lock-delay = 1800;  # Lock 30 minutes AFTER screen blanks (total 60 min from idle)
       };
 
       # Set Vivaldi as default browser in GNOME
@@ -225,6 +223,32 @@
 
           # Mute the microphone
           ${pkgs.pulseaudio}/bin/pactl set-source-mute @DEFAULT_SOURCE@ 1
+        '';
+      };
+      Install = {
+        WantedBy = [ "graphical-session.target" ];
+      };
+    };
+
+    # GNOME power settings enforcement service - ensure dconf settings are applied
+    systemd.user.services.gnome-power-settings = {
+      Unit = {
+        Description = "Enforce GNOME power management settings";
+        After = [ "graphical-session.target" ];
+        ConditionEnvironment = "XDG_CURRENT_DESKTOP=GNOME";
+      };
+      Service = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        ExecStart = pkgs.writeShellScript "gnome-power-settings" ''
+          # Wait for GNOME to be fully loaded
+          ${pkgs.coreutils}/bin/sleep 5
+
+          # Force apply power management settings
+          ${pkgs.glib}/bin/gsettings set org.gnome.desktop.session idle-delay 1800
+          ${pkgs.glib}/bin/gsettings set org.gnome.desktop.screensaver idle-activation-enabled true
+          ${pkgs.glib}/bin/gsettings set org.gnome.desktop.screensaver lock-enabled true
+          ${pkgs.glib}/bin/gsettings set org.gnome.desktop.screensaver lock-delay 1800
         '';
       };
       Install = {
