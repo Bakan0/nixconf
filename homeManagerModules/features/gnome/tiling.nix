@@ -46,7 +46,6 @@
       notification-banner-position  # Move notifications to right side under clock
 
       # Optional/alternative extensions
-      compiz-windows-effect      # Additional window effects
       clipboard-indicator        # Clipboard manager
     ]) ++ (with pkgs; [
       # Additional tools for functionality parity
@@ -77,7 +76,6 @@
           "just-perfection-desktop@just-perfection"
           "top-bar-organizer@julian.gse.jsts.xyz"
           "notification-position@drugo.dev"
-          "compiz-windows-effect@hermes83.github.com"
           "clipboard-indicator@tudmotu.com"
         ];
 
@@ -227,6 +225,10 @@
       "org/gnome/shell/extensions/notification-position" = {
         # Move notifications to top-right (under the clock area)
         banner-pos = 2;  # 0=top-left, 1=top-center, 2=top-right
+      };
+
+      "org/gnome/desktop/notifications" = {
+        show-in-lock-screen = false;
       };
 
       # Default applications

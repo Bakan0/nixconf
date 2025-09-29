@@ -11,7 +11,7 @@ let
     EDGE_FLAGS=""
     if [[ "''${XDG_SESSION_TYPE:-}" == "wayland" ]] || [[ -n "''${WAYLAND_DISPLAY:-}" ]]; then
         echo "🖥️  Wayland session detected - enabling screen sharing support"
-        EDGE_FLAGS="--enable-features=WebRTCPipeWireCapturer,WaylandWindowDecorations --ozone-platform-hint=auto --enable-webrtc-pipewire-capturer"
+        EDGE_FLAGS="--ozone-platform=wayland --enable-features=WebRTCPipeWireSupport,WebRTCPipeWireCapturer,WaylandWindowDecorations --enable-webrtc-pipewire-capturer"
     fi
 
     # Discover existing Edge profiles and their names
