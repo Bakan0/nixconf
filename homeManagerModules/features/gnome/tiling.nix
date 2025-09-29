@@ -9,6 +9,17 @@
 
 
   config = lib.mkIf (config.myHomeManager.gnome.enable && config.myHomeManager.gnome.tiling.enable) {
+    # Override desktop bundle's thunar defaults with nautilus for better GNOME integration
+    xdg.mimeApps.defaultApplications = {
+      "inode/directory" = "org.gnome.Nautilus.desktop";
+      "application/x-directory" = "org.gnome.Nautilus.desktop";
+      # Archive formats - also use nautilus for consistency
+      "application/zip" = "org.gnome.Nautilus.desktop";
+      "application/x-rar" = "org.gnome.Nautilus.desktop";
+      "application/x-tar" = "org.gnome.Nautilus.desktop";
+      "application/x-7z-compressed" = "org.gnome.Nautilus.desktop";
+      "application/gzip" = "org.gnome.Nautilus.desktop";
+    };
     # Hyprland-like tiling configuration for GNOME
     # Provides tiling window management, keybindings, and behaviors similar to Hyprland
 
@@ -234,6 +245,16 @@
       # Default applications
       "org/gnome/system/proxy" = {
         mode = "none";
+      };
+
+      # GNOME default applications
+      "org/gnome/desktop/applications/terminal" = {
+        exec = "kitty";
+      };
+
+      # Set Nautilus as default file manager for better GNOME integration
+      "org/gnome/desktop/applications/file-manager" = {
+        exec = "nautilus";
       };
 
     };

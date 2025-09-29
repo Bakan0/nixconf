@@ -24,9 +24,11 @@
         toggle-maximized = ["<Super>m"];
         minimize = ["<Super>n"];
 
-        # CRITICAL: Toggle always-on-top for current window (Super+Shift+T only)
-        # Use this to keep floating windows visible above tiled windows
-        always-on-top = ["<Super><Shift>t"];
+        # Always on top toggle (Super+Shift+R for "raise")
+        always-on-top = ["<Super><Shift>r"];
+
+        # Always on visible workspace (Super+Shift+D for "display")
+        always-on-visible-workspace = ["<Super><Shift>d"];
 
         # Workspace switching - Meta+1,2,3... switches TO workspace
         switch-to-workspace-1 = ["<Super>1"];
@@ -77,21 +79,24 @@
 
         # Clear any other potential conflicts
         logout = [];
-        home = [];
 
         custom-keybindings = [
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/terminal/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/filemanager/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/logout/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clipboard-paste/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clear-notifications/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-and-raise/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/signal/"
         ];
 
         # Media keys
         volume-up = ["XF86AudioRaiseVolume"];
         volume-down = ["XF86AudioLowerVolume"];
         volume-mute = ["XF86AudioMute"];
+
+        # App launchers
+        calculator = ["<Super>c"];
+        www = ["<Super>b"];  # Browser (Vivaldi)
+        home = ["<Super>e"];  # File manager (uses system default)
 
         # Disable built-in screenshot keys (we'll use custom keybindings)
         screenshot = [];  # Disable full screen screenshot
@@ -134,12 +139,6 @@
         binding = "<Super>Return";
       };
 
-      # File manager keybinding
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/filemanager" = {
-        name = "File Manager";
-        command = "thunar";
-        binding = "<Super>e";
-      };
 
       # Logout immediately (like hyprctl dispatch exit)
       "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/logout" = {
@@ -162,12 +161,16 @@
         binding = "<Super><Shift>i";
       };
 
-      # Float window and make it always-on-top (Super+Shift+F)
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-and-raise" = {
-        name = "Float Window and Make Always On Top";
-        command = "sh -c 'sleep 0.5 && gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval \"global.display.focus_window.make_above()\"'";
-        binding = "<Super><Shift>f";
+      # Signal launcher (Super+Z)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/signal" = {
+        name = "Signal";
+        command = "signal-desktop";
+        binding = "<Super>z";
       };
+
+
+
+
 
 
       # Pop Shell keybindings configuration
@@ -200,6 +203,9 @@
 
         # CRITICAL: Disable toggle-tiling to stop Meta+Y from disabling ALL tiling
         toggle-tiling = [];
+
+        # Toggle tile orientation (horizontal/vertical layout) - like Hyprland dwindle
+        tile-orientation = ["<Super>y"];
 
         # Move windows WITHIN workspace with Meta+Shift+vim keys (like Hyprland movewindow)
         # These don't exist as direct Pop Shell bindings, will use tile-move in non-management mode
