@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }: {
   imports = [
@@ -26,8 +27,8 @@
     options = "--delete-older-than 7d";
   };
   
-  # Automatically clean up old boot entries (keep 17 generations)
-  boot.loader.systemd-boot.configurationLimit = 17;
+  # Automatically clean up old boot entries (keep 17 generations) - only if systemd-boot is enabled
+  boot.loader.systemd-boot.configurationLimit = lib.mkIf config.boot.loader.systemd-boot.enable 17;
 
   # US Central time zone
   time.timeZone = lib.mkDefault "America/Chicago";

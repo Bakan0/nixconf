@@ -92,8 +92,12 @@ $ZFS_IMPORT
   };
 
   boot = {
+    lanzaboote = {
+      enable = true;
+      pkiBundle = "/etc/secureboot";
+      configurationLimit = 17;
+    };
     loader = {
-      systemd-boot.enable = true;
       efi = {
         canTouchEfiVariables = true;
         efiSysMountPoint = "/boot";
