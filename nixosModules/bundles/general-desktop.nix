@@ -52,7 +52,6 @@
     wl-clipboard       # Wayland clipboard utilities
     wtype             # Wayland keyboard input simulation
     wlr-randr         # Wayland display configuration
-    ydotool           # Cross-platform input simulation
     
     # Icon themes - recent updates, perfect for terracotta theme
     fluent-icon-theme     # Modern fluent design (2025-08-21)

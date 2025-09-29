@@ -4,6 +4,10 @@
   lib,
   ...
 }: {
+  # Always import keybindings.nix - it will only apply if both gnome and tiling are enabled
+  imports = [ ./keybindings.nix ];
+
+
   config = lib.mkIf (config.myHomeManager.gnome.enable && config.myHomeManager.gnome.tiling.enable) {
     # Hyprland-like tiling configuration for GNOME
     # Provides tiling window management, keybindings, and behaviors similar to Hyprland
@@ -54,6 +58,12 @@
 
     # GNOME settings via dconf
     dconf.settings = {
+
+      # Clear any mutter keybindings that might conflict with tiling
+      "org/gnome/mutter/keybindings" = {
+        # Ensure Meta+vim keys are free for Pop Shell
+      };
+
       # Enable extensions
       "org/gnome/shell" = {
         enabled-extensions = [
@@ -99,7 +109,7 @@
       "org/gnome/desktop/wm/preferences" = {
         num-workspaces = 10;  # Use all number keys 1-9,0
         workspace-names = [ "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" ];
-        focus-mode = "click";  # CRITICAL: Use click focus to prevent floating windows from losing focus
+        focus-mode = "sloppy";  # CRITICAL: Use sloppy focus - mouse hover focuses window
         auto-raise = false;      # DON'T auto-raise windows - prevents floating windows from disappearing
         auto-raise-delay = 500;  # Slower auto-raise if ever re-enabled
         button-layout = ":minimize,maximize,close";  # Window buttons on right
@@ -108,223 +118,13 @@
         raise-on-click = true;
       };
 
-      # Window management keybindings (Hyprland-style)
-      "org/gnome/desktop/wm/keybindings" = {
-        # Window operations
-        close = ["<Super>q"];
-        toggle-fullscreen = ["<Super>f"];
-        toggle-maximized = ["<Super>m"];
-        minimize = ["<Super>n"];
-
-        # CRITICAL: Toggle always-on-top for current window (Super+Shift+T)
-        # Use this to keep floating windows visible above tiled windows
-        always-on-top = ["<Super><Shift>t"];
-
-        # Workspace switching - Meta+1,2,3... switches TO workspace
-        switch-to-workspace-1 = ["<Super>1"];
-        switch-to-workspace-2 = ["<Super>2"];
-        switch-to-workspace-3 = ["<Super>3"];
-        switch-to-workspace-4 = ["<Super>4"];
-        switch-to-workspace-5 = ["<Super>5"];
-        switch-to-workspace-6 = ["<Super>6"];
-        switch-to-workspace-7 = ["<Super>7"];
-        switch-to-workspace-8 = ["<Super>8"];
-        switch-to-workspace-9 = ["<Super>9"];
-        switch-to-workspace-10 = ["<Super>0"];
-
-        # Window movement to workspaces - Shift+Meta+1,2,3... MOVES window to workspace
-        move-to-workspace-1 = ["<Super><Shift>1"];
-        move-to-workspace-2 = ["<Super><Shift>2"];
-        move-to-workspace-3 = ["<Super><Shift>3"];
-        move-to-workspace-4 = ["<Super><Shift>4"];
-        move-to-workspace-5 = ["<Super><Shift>5"];
-        move-to-workspace-6 = ["<Super><Shift>6"];
-        move-to-workspace-7 = ["<Super><Shift>7"];
-        move-to-workspace-8 = ["<Super><Shift>8"];
-        move-to-workspace-9 = ["<Super><Shift>9"];
-        move-to-workspace-10 = ["<Super><Shift>0"];
-
-        # Directional window switching (vim keys)
-        switch-windows = ["<Super>Tab"];
-        switch-applications = ["<Super><Shift>Tab"];
-        cycle-windows = ["<Alt>Tab"];
-
-        # Window tiling operations - DISABLED to let Pop Shell handle vim keys
-        toggle-tiled-left = [];
-        toggle-tiled-right = [];
-        maximize = [];
-        unmaximize = [];
-
-        # Additional Hyprland-like bindings
-        switch-to-workspace-left = ["<Super>comma"];
-        switch-to-workspace-right = ["<Super>period"];
-        move-to-workspace-left = ["<Super><Shift>comma"];
-        move-to-workspace-right = ["<Super><Shift>period"];
-      };
-
-      # Custom keybindings (Hyprland-style)
-      "org/gnome/settings-daemon/plugins/media-keys" = {
-        # Native GNOME lock screen (Meta+Escape)
-        screensaver = ["<Super>Escape"];
-
-        custom-keybindings = [
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/terminal/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/filemanager/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/logout/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/screenshot-clip/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/screenshot-file/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clipboard-paste/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clear-notifications/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-window-on-top/"
-        ];
-
-        # Media keys
-        volume-up = ["XF86AudioRaiseVolume"];
-        volume-down = ["XF86AudioLowerVolume"];
-        volume-mute = ["XF86AudioMute"];
-
-        # Disable built-in screenshot keys (we'll use custom keybindings)
-        screenshot = [];  # Disable full screen screenshot
-        screenshot-window = [];  # Disable window screenshot
-
-        # Disable accessibility shortcuts that conflict
-        screenreader = [];  # Was Alt+Super+S - conflicts with screenshot
-        magnifier = [];
-        magnifier-zoom-in = [];
-        magnifier-zoom-out = [];
-      };
-
-      # Disable GNOME's conflicting keybindings
-      "org/gnome/shell/keybindings" = {
-        show-screenshot-ui = [];  # Disable default screenshot UI
-        toggle-quick-settings = [];  # Disable Super+S for quick settings (now free for application launcher)
-        toggle-application-view = ["<Super>s"];  # App grid - escapes to overview (GNOME limitation)
-        toggle-overview = ["<Super>a"];  # Activities overview with Meta+A
-        toggle-message-tray = ["<Super>i"];  # Show/hide notifications with Meta+I
-        screenshot = [];  # Disable default screenshot
-        screenshot-window = [];  # Disable default window screenshot
-
-        # CRITICAL: Disable switch-to-application bindings that steal Super+1-9
-        switch-to-application-1 = [];
-        switch-to-application-2 = [];
-        switch-to-application-3 = [];
-        switch-to-application-4 = [];
-        switch-to-application-5 = [];
-        switch-to-application-6 = [];
-        switch-to-application-7 = [];
-        switch-to-application-8 = [];
-        switch-to-application-9 = [];
-      };
-
-      # Terminal keybinding (Super+Return like Hyprland)
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/terminal" = {
-        name = "Terminal";
-        command = "kitty";
-        binding = "<Super>Return";
-      };
-
-
-      # File manager keybinding
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/filemanager" = {
-        name = "File Manager";
-        command = "thunar";
-        binding = "<Super>e";
-      };
-
-
-      # Logout immediately (like hyprctl dispatch exit)
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/logout" = {
-        name = "Logout Immediately";
-        command = "gnome-session-quit --no-prompt --force";
-        binding = "<Super><Shift>m";
-      };
-
-      # Screenshot area using GNOME's built-in screenshot UI keybinding
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/screenshot-clip" = {
-        name = "Screenshot Area";
-        command = "sh -c 'ydotool key shift+Print'";  # Shift+Print triggers area selection in GNOME
-        binding = "<Super><Shift>s";
-      };
-
-      # Screenshot area to file - same as above (GNOME saves both to clipboard and file)
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/screenshot-file" = {
-        name = "Screenshot Area to File";
-        command = "sh -c 'ydotool key shift+Print'";  # Shift+Print triggers area selection
-        binding = "<Super><Alt>s";
-      };
-
-      # Paste clipboard contents
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clipboard-paste" = {
-        name = "Paste Clipboard Contents";
-        command = "sh -c 'wl-paste | wtype -'";
-        binding = "<Super>v";
-      };
-
-      # Clear all notifications
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clear-notifications" = {
-        name = "Clear All Notifications";
-        command = "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval 'Main.panel.statusArea.dateMenu._messageList._sectionList.get_children().forEach(s => s.clear())'";
-        binding = "<Super><Shift>i";
-      };
-
-      # Float window and set always-on-top (Super+Shift+Space)
-      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-window-on-top" = {
-        name = "Float Window and Set Always On Top";
-        command = "sh -c 'ydotool key super+shift+f && sleep 0.2 && gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval \"global.display.focus_window.make_above()\"'";
-        binding = "<Super><Shift>space";
-      };
 
 
 
-
-
-
-      # Blur my Shell configuration (enhanced settings)
-      "org/gnome/shell/extensions/blur-my-shell" = {
-        # Global blur settings
-        brightness = 0.85;  # ~85% brightness
-        sigma = 100;  # Maximum blur radius
-      };
-
-      # Panel blur
-      "org/gnome/shell/extensions/blur-my-shell/panel" = {
-        blur = true;
-        brightness = 0.85;
-        sigma = 100;
-        customize = true;
-      };
-
-      # Overview blur
-      "org/gnome/shell/extensions/blur-my-shell/overview" = {
-        blur = true;
-        brightness = 0.85;
-        sigma = 100;
-      };
-
-      # Application blur
-      "org/gnome/shell/extensions/blur-my-shell/applications" = {
-        blur = true;
-        brightness = 0.85;
-        sigma = 100;
-        enable-all = true;  # Enable blur for all applications by default
-      };
-
-      # Default dash blur (stock GNOME panel)
-      "org/gnome/shell/extensions/blur-my-shell/dash-to-dock" = {
-        blur = true;
-        brightness = 0.85;
-        sigma = 100;
-        customize = true;
-      };
-
-      # Rounded corners configuration (reduced radius)
-      "org/gnome/shell/extensions/rounded-window-corners" = {
-        global-rounded-corner-settings = ''{"padding": <{"top": <uint32 0>, "left": <uint32 0>, "right": <uint32 0>, "bottom": <uint32 0>}>, "keep_rounded_corners": <{"maximized": <false>, "fullscreen": <false>}>, "border_radius": <uint32 20>, "smoothing": <0.5>}'';
-        settings-version = 5;
-      };
 
       # Pop Shell tiling configuration
       "org/gnome/shell/extensions/pop-shell" = {
+        # Core tiling settings
         tile-by-default = true;
         gap-inner = lib.mkDefault 5;
         gap-outer = lib.mkDefault 10;
@@ -337,85 +137,12 @@
         # IMPORTANT: Disable stacking (windows on top of each other)
         stacking-with-mouse = false;
 
-        # CRITICAL: Mouse cursor MUST follow active window to prevent focus loss
-        # This ensures floating windows stay focused when created
+        # CRITICAL: Mouse cursor MUST follow active window and center on it
         mouse-cursor-follows-active-window = true;   # Enable cursor following focus
         mouse-cursor-focus-location = lib.hm.gvariant.mkUint32 4;  # 4=center mouse on window
 
         float-all-windows = false;  # Don't float all windows by default
-
-
-        # Pop Shell keybindings (vim-style navigation)
-        focus-left = ["<Super>h"];
-        focus-down = ["<Super>j"];
-        focus-up = ["<Super>k"];
-        focus-right = ["<Super>l"];
-
-        # Move/swap windows WITHIN workspace (non-management mode)
-        # Super+Shift+vim to move focused window around
-        swap-left = ["<Super><Shift>h"];
-        swap-down = ["<Super><Shift>j"];
-        swap-up = ["<Super><Shift>k"];
-        swap-right = ["<Super><Shift>l"];
-
-        # Window management mode (Super+T for "tiling")
-        tile-enter = ["<Super>t"];
-
-        # Toggle floating for current window (Super+Shift+F for "float" like Hyprland)
-        toggle-floating = ["<Super><Shift>f"];
-
-        # Toggle stacking mode (Super+G for "group" like Hyprland)
-        toggle-stacking = ["<Super>g"];
-
-        # Remove from stack/group (Super+\ like Hyprland)
-        toggle-stacking-global = ["<Super>backslash"];
-
-        # CRITICAL: Disable toggle-tiling to stop Meta+Y from disabling ALL tiling
-        toggle-tiling = [];
-
-        # Move windows WITHIN workspace with Meta+Shift+vim keys (like Hyprland movewindow)
-        # These don't exist as direct Pop Shell bindings, will use tile-move in non-management mode
-
-        # Move windows between MONITORS with Meta+Alt+vim keys
-        pop-monitor-left = ["<Super><Alt>h"];
-        pop-monitor-down = ["<Super><Alt>j"];
-        pop-monitor-up = ["<Super><Alt>k"];
-        pop-monitor-right = ["<Super><Alt>l"];
-
-        # Move to different workspace
-        pop-workspace-down = ["<Super><Control>j"];
-        pop-workspace-up = ["<Super><Control>k"];
-
-        # In management mode: Shift windows around
-        tile-move-left = ["<Super><Shift>h"];
-        tile-move-down = ["<Super><Shift>j"];
-        tile-move-up = ["<Super><Shift>k"];
-        tile-move-right = ["<Super><Shift>l"];
-
-        # In management mode: Swap windows
-        tile-swap-left = ["<Super><Ctrl>h"];
-        tile-swap-down = ["<Super><Ctrl>j"];
-        tile-swap-up = ["<Super><Ctrl>k"];
-        tile-swap-right = ["<Super><Ctrl>l"];
-
-        # In management mode: Resize windows
-        tile-resize-left = ["h"];
-        tile-resize-down = ["j"];
-        tile-resize-up = ["k"];
-        tile-resize-right = ["l"];
-
-        # Accept changes in management mode
-        tile-accept = ["Return"];
-
-        # Reject/cancel management mode
-        tile-reject = ["Escape"];
-
-        # Disable broken Pop Shell launcher
-        activate-launcher = [];
       };
-
-
-
 
       # Net Speed Simplified - also position early in right section
       "org/gnome/shell/extensions/netspeedsimplified" = {

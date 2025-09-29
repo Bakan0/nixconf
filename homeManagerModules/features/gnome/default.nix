@@ -26,56 +26,6 @@
 
     # Core GNOME settings (apply regardless of tiling)
     dconf.settings = {
-      # Clear GNOME keybindings that conflict with Pop Shell
-      # These are set to empty to prevent interference with Pop Shell's vim navigation
-      "org/gnome/desktop/wm/keybindings" = {
-        # Clear any bindings that might conflict with Meta+vim keys
-        switch-applications = [];
-        switch-applications-backward = [];
-
-        # Ensure nothing else is bound to our vim keys
-        cycle-windows = [];
-        cycle-windows-backward = [];
-
-        # Clear any potential conflicts with specific Pop Shell keys
-        minimize = [];  # Often bound to Super+h (hide)
-        maximize = [];
-        unmaximize = [];
-
-        # Ensure directional movement keys are free
-        move-to-monitor-left = [];
-        move-to-monitor-right = [];
-        move-to-monitor-up = [];
-        move-to-monitor-down = [];
-
-        # Clear workspace navigation that might conflict
-        switch-to-workspace-left = [];
-        switch-to-workspace-right = [];
-        switch-to-workspace-up = [];
-        switch-to-workspace-down = [];
-      };
-
-      # Clear any mutter keybindings that might conflict
-      "org/gnome/mutter/keybindings" = {
-        # Ensure Meta+vim keys are free for Pop Shell
-      };
-
-      # Clear shell keybindings that might steal our keys
-      "org/gnome/shell/keybindings" = {
-        # Ensure nothing in GNOME Shell steals Meta+h/j/k/l
-        focus-active-notification = [];
-        toggle-message-tray = [];
-      };
-
-      # Clear media keys that might conflict
-      "org/gnome/settings-daemon/plugins/media-keys" = {
-        # Clear lock screen binding (often Super+l) to free it for Pop Shell focus-right
-        screensaver = [];  # We'll set this to Super+Escape in tiling.nix
-
-        # Clear any other potential conflicts
-        logout = [];
-        home = [];
-      };
 
       # Power management settings
       "org/gnome/settings-daemon/plugins/power" = {
