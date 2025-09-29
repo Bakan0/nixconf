@@ -50,7 +50,7 @@ mkdir -p "hosts/$HOSTNAME"
 cp "$CONFIG_DIR/hardware-configuration.nix" "hosts/$HOSTNAME/"
 if [[ -f "$CONFIG_DIR/zfs-optimizations.nix" ]]; then
     cp "$CONFIG_DIR/zfs-optimizations.nix" "hosts/$HOSTNAME/"
-    ZFS_IMPORT="      ./zfs-optimizations.nix"
+    ZFS_IMPORT="    ./zfs-optimizations.nix"
 else
     ZFS_IMPORT=""
 fi
@@ -79,6 +79,7 @@ cat > "hosts/$HOSTNAME/configuration.nix" << EOF
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
 $ZFS_IMPORT
+    inputs.lanzaboote.nixosModules.lanzaboote
   ];
 
   myNixOS = {
@@ -244,7 +245,7 @@ echo "# 2. Unmount, export ZFS pool and reboot target system:"
 echo "ssh root@$SYSTEM_IP 'umount -R /mnt && zpool export rpool && reboot'"
 echo ""
 echo "# 3. After reboot, deploy configuration:"
-echo "nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --show-trace --option extra-experimental-features 'nix-command flakes'"
+echo "nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --build-host $SYSTEM_IP --show-trace --option extra-experimental-features 'nix-command flakes'"
 echo ""
 echo "# 4. After successful deployment, celebrate with:"
 echo "git commit -m \"feat($HOSTNAME): PROFIT! new host deployed and ready\""

@@ -50,7 +50,7 @@
 
   # LUKS configuration with TPM2 support
   boot.initrd.luks.devices."luks-rpool" = {
-    device = "/dev/nvme0n1p2";
+    device = "/dev/nvme1n1p2";
     crypttabExtraOpts = [ "tpm2-device=auto" "tpm2-pcrs=0+2+7" ];
   };
 
@@ -83,7 +83,7 @@
   boot.zfs.forceImportAll = false;
 
   # Networking with unique hostId
-  networking.hostId = lib.mkDefault "224b4cd5";
+  networking.hostId = lib.mkDefault "45388e47";
 
   # No swap (as requested)
   swapDevices = [ ];
@@ -105,9 +105,8 @@
     '';
   };
 
-  # ZFS and performance monitoring tools
+  # Performance monitoring tools (ZFS tools moved to nixosModules/features/zfs.nix)
   environment.systemPackages = with pkgs; [
-    zfs          # Keep zfs package here for safety
     nvme-cli
     lm_sensors
     pciutils

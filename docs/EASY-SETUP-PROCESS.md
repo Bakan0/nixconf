@@ -92,7 +92,7 @@ reboot
 **Option B: Remote deployment (faster builds)**
 ```bash
 # From your development machine (after the target reboots)
-nixos-rebuild switch --flake ~/nixconf#HOSTNAME --target-host root@TARGET_IP --show-trace
+nixos-rebuild switch --flake ~/nixconf#HOSTNAME --target-host root@TARGET_IP --build-host TARGET_IP --show-trace
 ```
 
 ### 5. Reboot and Enjoy
