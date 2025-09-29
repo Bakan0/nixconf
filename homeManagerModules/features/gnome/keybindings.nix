@@ -24,7 +24,7 @@
         toggle-maximized = ["<Super>m"];
         minimize = ["<Super>n"];
 
-        # CRITICAL: Toggle always-on-top for current window (Super+Shift+T)
+        # CRITICAL: Toggle always-on-top for current window (Super+Shift+T only)
         # Use this to keep floating windows visible above tiled windows
         always-on-top = ["<Super><Shift>t"];
 
@@ -85,7 +85,7 @@
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/logout/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clipboard-paste/"
           "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/clear-notifications/"
-          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-window-on-top/"
+          "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-and-raise/"
         ];
 
         # Media keys
@@ -161,6 +161,14 @@
         command = "gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval 'Main.panel.statusArea.dateMenu._messageList._sectionList.get_children().forEach(s => s.clear())'";
         binding = "<Super><Shift>i";
       };
+
+      # Float window and make it always-on-top (Super+Shift+F)
+      "org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/float-and-raise" = {
+        name = "Float Window and Make Always On Top";
+        command = "sh -c 'sleep 0.5 && gdbus call --session --dest org.gnome.Shell --object-path /org/gnome/Shell --method org.gnome.Shell.Eval \"global.display.focus_window.make_above()\"'";
+        binding = "<Super><Shift>f";
+      };
+
 
       # Pop Shell keybindings configuration
       "org/gnome/shell/extensions/pop-shell" = {
