@@ -1,14 +1,17 @@
 { config, lib, pkgs, ... }:
-with pkgs;
 {
-  home.packages = [
+  home.packages = with pkgs; [
     (writeShellScriptBin "xfer-libvirt" ''
       set -euo pipefail
 
-      # Libvirt paths - typical locations
+      # NixOS-specific libvirt paths - IMPORTANT:
+      # Unlike standard Linux distros that use /etc/libvirt/qemu for VM configs,
+      # NixOS stores VM XML files in /var/lib/libvirt/qemu/ alongside the VM metadata.
+      # This is because NixOS treats /etc as immutable/declarative configuration.
+      # VM disk images are still in the standard /var/lib/libvirt/images location.
       VM_IMAGES_PATH="/var/lib/libvirt/images"
-      VM_CONFIGS_PATH="/etc/libvirt/qemu"
-      NETWORK_CONFIGS_PATH="/etc/libvirt/qemu/networks"
+      VM_CONFIGS_PATH="/var/lib/libvirt/qemu"
+      NETWORK_CONFIGS_PATH="/var/lib/libvirt/qemu/networks"
       USER_CONFIGS_PATH="$HOME/.config/libvirt"
 
       show_help() {
@@ -17,8 +20,8 @@ with pkgs;
           echo ""
           echo "Transfers:"
           echo "  /var/lib/libvirt/images (VM disk images - qcow2, raw, etc.)"
-          echo "  /etc/libvirt/qemu (VM XML configurations)"
-          echo "  /etc/libvirt/qemu/networks (network configurations)"
+          echo "  /var/lib/libvirt/qemu (VM XML configurations)"
+          echo "  /var/lib/libvirt/qemu/networks (network configurations)"
           echo "  ~/.config/libvirt (user-specific libvirt config)"
           echo ""
           echo "Examples:"
@@ -150,8 +153,8 @@ with pkgs;
                       echo "DRY RUN: Would transfer VM configurations"
                       sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete $DRY_RUN "$VM_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/"
                   else
-                      ${openssh}/bin/ssh -At "$TARGET_IP" "sudo mkdir -p /etc/libvirt/qemu"
-                      sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete --stats "$VM_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/"
+                      ${openssh}/bin/ssh -At "$TARGET_IP" "sudo mkdir -p /var/lib/libvirt/qemu"
+                      sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete --stats "$VM_CONFIGS_PATH/" "$TARGET_IP:/var/lib/libvirt/qemu/"
                   fi
               fi
 
@@ -162,8 +165,8 @@ with pkgs;
                       echo "DRY RUN: Would transfer network configurations"
                       sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete $DRY_RUN "$NETWORK_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/networks/"
                   else
-                      ${openssh}/bin/ssh -At "$TARGET_IP" "sudo mkdir -p /etc/libvirt/qemu/networks"
-                      sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete --stats "$NETWORK_CONFIGS_PATH/" "$TARGET_IP:/etc/libvirt/qemu/networks/"
+                      ${openssh}/bin/ssh -At "$TARGET_IP" "sudo mkdir -p /var/lib/libvirt/qemu/networks"
+                      sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress -e "ssh -A" --delete --stats "$NETWORK_CONFIGS_PATH/" "$TARGET_IP:/var/lib/libvirt/qemu/networks/"
                   fi
               fi
 
@@ -182,22 +185,24 @@ with pkgs;
               # Automatic post-transfer setup
               echo "Performing automatic post-transfer setup on $TARGET_IP..."
 
-              echo "1. Restarting libvirtd service..."
-              ${openssh}/bin/ssh -A "$TARGET_IP" "sudo systemctl restart libvirtd" || echo "Warning: Failed to restart libvirtd"
+              echo "1. Starting libvirtd service..."
+              ${openssh}/bin/ssh -A "$TARGET_IP" "sudo systemctl start libvirtd 2>/dev/null || sudo systemctl restart libvirtd 2>/dev/null || true"
 
               echo "2. Waiting for libvirtd to be ready..."
               sleep 3
 
               echo "3. Auto-defining VMs from transferred configurations..."
-              VM_XMLS=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo find /etc/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null" || true)
+              VM_XMLS=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo find /var/lib/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null" || true)
               if [ -n "$VM_XMLS" ]; then
-                  echo "$VM_XMLS" | while IFS= read -r xml_path; do
-                      if [ -n "$xml_path" ]; then
-                          vm_name=$(basename "$xml_path" .xml)
-                          echo "   Defining VM: $vm_name"
-                          ${openssh}/bin/ssh -A "$TARGET_IP" "sudo virsh define '$xml_path'" || echo "   Failed to define $vm_name"
-                      fi
-                  done
+                  echo "   Fixing firmware paths and defining VMs..."
+                  ${openssh}/bin/ssh -At "$TARGET_IP" "sudo sh -c '
+                      for xml in /var/lib/libvirt/qemu/*.xml; do
+                          [ -f \"\$xml\" ] || continue
+                          echo \"   Processing: \$(basename \"\$xml\" .xml)\"
+                          sed -i \"/<loader/d; /<nvram/d\" \"\$xml\"
+                          virsh define \"\$xml\" || echo \"   Failed to define \$(basename \"\$xml\")\"
+                      done
+                  '"
               else
                   echo "   No VM XML files found to define"
               fi
@@ -244,25 +249,25 @@ with pkgs;
               fi
 
               # Check and receive VM configurations
-              REMOTE_CONFIGS_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sb /etc/libvirt/qemu 2>/dev/null | cut -f1 || echo 0" | tr -d '\r')
+              REMOTE_CONFIGS_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sb /var/lib/libvirt/qemu 2>/dev/null | cut -f1 || echo 0" | tr -d '\r')
               if [ "$REMOTE_CONFIGS_SIZE" -gt 0 ]; then
-                  REMOTE_CONFIGS_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sh /etc/libvirt/qemu | cut -f1" | tr -d '\r')
+                  REMOTE_CONFIGS_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sh /var/lib/libvirt/qemu | cut -f1" | tr -d '\r')
                   echo "Remote VM configs size: $REMOTE_CONFIGS_SIZE_HUMAN ($REMOTE_CONFIGS_SIZE bytes)"
 
                   echo "Receiving VM configurations from $TARGET_IP..."
                   sudo mkdir -p "$VM_CONFIGS_PATH"
-                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --rsync-path="sudo rsync" -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/" "$VM_CONFIGS_PATH/"
+                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --rsync-path="sudo rsync" -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/var/lib/libvirt/qemu/" "$VM_CONFIGS_PATH/"
               fi
 
               # Check and receive network configurations
-              REMOTE_NETWORK_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sb /etc/libvirt/qemu/networks 2>/dev/null | cut -f1 || echo 0" | tr -d '\r')
+              REMOTE_NETWORK_SIZE=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sb /var/lib/libvirt/qemu/networks 2>/dev/null | cut -f1 || echo 0" | tr -d '\r')
               if [ "$REMOTE_NETWORK_SIZE" -gt 0 ]; then
-                  REMOTE_NETWORK_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sh /etc/libvirt/qemu/networks | cut -f1" | tr -d '\r')
+                  REMOTE_NETWORK_SIZE_HUMAN=$(${openssh}/bin/ssh -A "$TARGET_IP" "sudo du -sh /var/lib/libvirt/qemu/networks | cut -f1" | tr -d '\r')
                   echo "Remote network configs size: $REMOTE_NETWORK_SIZE_HUMAN ($REMOTE_NETWORK_SIZE bytes)"
 
                   echo "Receiving network configurations from $TARGET_IP..."
                   sudo mkdir -p "$NETWORK_CONFIGS_PATH"
-                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --rsync-path="sudo rsync" -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/etc/libvirt/qemu/networks/" "$NETWORK_CONFIGS_PATH/"
+                  sudo SSH_AUTH_SOCK="$SSH_AUTH_SOCK" ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --rsync-path="sudo rsync" -e "ssh -A" --delete --stats $DRY_RUN "$TARGET_IP:/var/lib/libvirt/qemu/networks/" "$NETWORK_CONFIGS_PATH/"
               fi
 
               # Check and receive user configurations
@@ -282,23 +287,25 @@ with pkgs;
               # Automatic post-transfer setup (local)
               echo "Performing automatic post-transfer setup locally..."
 
-              echo "1. Restarting libvirtd service..."
-              sudo systemctl restart libvirtd
+              echo "1. Starting libvirtd service..."
+              sudo systemctl start libvirtd 2>/dev/null || sudo systemctl restart libvirtd 2>/dev/null || true
 
               echo "2. Waiting for libvirtd to be ready..."
               sleep 3
 
               echo "3. Auto-defining VMs from received configurations..."
-              if [ -d "/etc/libvirt/qemu" ]; then
-                  VM_XMLS=$(sudo find /etc/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null || true)
+              if [ -d "/var/lib/libvirt/qemu" ]; then
+                  VM_XMLS=$(sudo find /var/lib/libvirt/qemu -name '*.xml' -maxdepth 1 2>/dev/null || true)
                   if [ -n "$VM_XMLS" ]; then
-                      echo "$VM_XMLS" | while IFS= read -r xml_path; do
-                          if [ -n "$xml_path" ]; then
-                              vm_name=$(basename "$xml_path" .xml)
-                              echo "   Defining VM: $vm_name"
-                              sudo virsh define "$xml_path" || echo "   Failed to define $vm_name"
-                          fi
-                      done
+                      echo "   Fixing firmware paths and defining VMs..."
+                      sudo sh -c '
+                          for xml in /var/lib/libvirt/qemu/*.xml; do
+                              [ -f "$xml" ] || continue
+                              echo "   Processing: $(basename "$xml" .xml)"
+                              sed -i "/<loader/d; /<nvram/d" "$xml"
+                              virsh define "$xml" || echo "   Failed to define $(basename "$xml")"
+                          done
+                      '
                   else
                       echo "   No VM XML files found to define"
                   fi
