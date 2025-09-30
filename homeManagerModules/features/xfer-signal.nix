@@ -1,7 +1,12 @@
 { config, lib, pkgs, ... }:
 with pkgs;
 {
+  # Signal requires transferring BOTH filesystem data AND keyring entries.
+  # The critical keyring entry is application=Signal with schema chrome_libsecret_os_crypt_password_v2.
+  # Must use Python/libsecret to store with correct schema (secret-tool creates wrong schema).
   home.packages = [
+    (python3.withPackages (ps: with ps; [ pygobject3 ]))
+    libsecret
     (writeShellScriptBin "xfer-signal" ''
       set -euo pipefail
 
@@ -82,13 +87,7 @@ with pkgs;
           echo "Removing preference files..."
           rm -f "$APP_PATH/Preferences" "$APP_PATH/Network Persistent State" 2>/dev/null || true
 
-          # Remove device-specific config that stores hostname/machine identity
-          echo "Removing device identity files..."
-          rm -f "$APP_PATH/config.json" 2>/dev/null || true
-          rm -rf "$APP_PATH/logs" 2>/dev/null || true
-
-          # Clear any GPUCache that might have machine-specific data
-          rm -rf "$APP_PATH/GPUCache" 2>/dev/null || true
+          # NOTE: Do NOT delete config.json - it contains encryptedKey needed to decrypt the database
 
           echo "Cleanup complete. Database and encryption keys preserved."
           echo "Signal will require device re-linking on next startup."
@@ -164,14 +163,36 @@ with pkgs;
               echo "Receiving Signal profile from $TARGET_IP..."
               ${rsync}/bin/rsync -avz --compress-choice=zstd --compress-level=3 --progress --delete --stats -e "ssh -A" $DRY_RUN "$TARGET_IP:.config/Signal/" "$APP_PATH/"
 
-              # ALWAYS clean up device identity after receive to prevent conflicts
-              # This ensures the new machine gets its own device identity
+              # Transfer Signal keyring entry with correct schema
               if [ -z "$DRY_RUN" ]; then
                   echo ""
-                  echo "Cleaning up device identity to prevent conflicts..."
-                  force_relink_cleanup
+                  echo "Transferring Signal encryption key from keyring..."
+                  SIGNAL_KEY=$(${openssh}/bin/ssh -A "$TARGET_IP" "${libsecret}/bin/secret-tool lookup application Signal 2>/dev/null || echo '''")
+
+                  if [ -n "$SIGNAL_KEY" ]; then
+                      echo "Storing Signal encryption key with correct schema..."
+                      GI_TYPELIB_PATH="${libsecret}/lib/girepository-1.0:$GI_TYPELIB_PATH" ${python3}/bin/python3 -c "
+import gi
+gi.require_version('Secret', '1')
+from gi.repository import Secret
+
+schema = Secret.Schema.new('chrome_libsecret_os_crypt_password_v2',
+                          Secret.SchemaFlags.NONE,
+                          {'application': Secret.SchemaAttributeType.STRING})
+
+Secret.password_store_sync(schema, {'application': 'Signal'},
+                           Secret.COLLECTION_DEFAULT,
+                           'Chromium Safe Storage',
+                           '$SIGNAL_KEY',
+                           None)
+"
+                      echo "Signal encryption key transferred successfully"
+                  else
+                      echo "WARNING: Could not retrieve Signal encryption key from $TARGET_IP"
+                      echo "Signal may not work properly"
+                  fi
               else
-                  echo "DRY RUN: Would perform automatic device identity cleanup after transfer"
+                  echo "DRY RUN: Would transfer Signal keyring entry with correct schema"
               fi
               ;;
           break-connection)

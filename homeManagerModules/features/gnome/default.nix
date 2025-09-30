@@ -49,13 +49,13 @@
       };
 
       "org/gnome/desktop/session" = {
-        idle-delay = 5400;  # 90 minutes before screen dims/blanks
+        idle-delay = lib.hm.gvariant.mkUint32 5400;  # 90 minutes before screen dims/blanks
       };
 
       "org/gnome/desktop/screensaver" = {
         idle-activation-enabled = true;  # Enable automatic screensaver
         lock-enabled = true;  # Enable screen locking
-        lock-delay = 1800;  # Lock 30 minutes AFTER screen blanks (total 60 min from idle)
+        lock-delay = lib.hm.gvariant.mkUint32 1800;  # Lock 30 minutes AFTER screen blanks (total 60 min from idle)
       };
 
       # Set Vivaldi as default browser in GNOME
