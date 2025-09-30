@@ -16,15 +16,6 @@
     };
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
-
-    # ASUS hardware support
-    asus.enable = true;
-
-    # AMD graphics support
-    amd = {
-      enable = true;
-      supergfxMode = "Hybrid";
-    };
   };
 
   boot = {

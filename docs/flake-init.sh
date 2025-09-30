@@ -216,18 +216,11 @@ fi
 echo "Host initialization complete!"
 echo ""
 
-# Generate secure boot keys for lanzaboote
-echo "Generating secure boot keys for lanzaboote..."
-if [[ ! -f "/mnt/var/lib/sbctl/keys/db/db.key" ]]; then
-    SBCTL=$(nix-build '<nixpkgs>' -A sbctl --no-out-link)/bin/sbctl
-    $SBCTL create-keys
-    mkdir -p /mnt/var/lib/sbctl
-    cp -r /var/lib/sbctl/* /mnt/var/lib/sbctl/
-    echo "✅ Secure boot keys created"
-else
-    echo "✅ Secure boot keys already exist"
+# Secure boot keys already handled by preflight-zfs-secure.sh
+if [[ -f "/mnt/var/lib/sbctl/keys/db/db.key" ]]; then
+    echo "✅ Secure Boot keys present (created by preflight-zfs-secure.sh)"
+    echo ""
 fi
-echo ""
 
 # Get this system's IP dynamically
 SYSTEM_IP=$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
@@ -241,8 +234,10 @@ echo ""
 echo "# 1. Copy files and stage for commit:"
 echo "scp -r root@$SYSTEM_IP:/root/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/ && scp root@$SYSTEM_IP:/root/nixconf/flake.nix ~/nixconf/ && cd ~/nixconf && git add -A"
 echo ""
-echo "# 2. Unmount, export ZFS pool, reboot target, and clean up old SSH key:"
-echo "ssh root@$SYSTEM_IP 'umount -R /mnt && zpool export rpool && reboot' && ssh-keygen -R $SYSTEM_IP"
+echo "# 2. Unmount, export ZFS pool, reboot to firmware, and clean up old SSH key:"
+echo "ssh root@$SYSTEM_IP 'umount -R /mnt && zpool export rpool && systemctl reboot --firmware-setup' && ssh-keygen -R $SYSTEM_IP"
+echo "# (In firmware: disable Secure Boot temporarily for first boot)"
+echo "# (Alternative: use 'reboot' instead of 'reboot --firmware-setup' and press F2/DEL manually)"
 echo ""
 echo "# 3. Deploy configuration:"
 echo "nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --build-host $SYSTEM_IP --show-trace --option extra-experimental-features 'nix-command flakes'"
@@ -251,19 +246,14 @@ echo "# 3b. (Optional) Monitor deployment in separate terminal:"
 echo "ssh root@$SYSTEM_IP"
 echo "systemd-inhibit nix-shell -p btop --run \"btop\""
 echo ""
-echo "# 4. Reboot to BIOS, clear Secure Boot keys, reboot to OS, then enroll:"
+echo "# 4. Re-enable Secure Boot and reboot:"
+echo "# (Reboot to firmware, enable Secure Boot, save and exit)"
 echo "ssh root@$SYSTEM_IP 'systemctl reboot --firmware-setup'"
-echo "# (In BIOS: clear all Secure Boot keys to enter Setup Mode, save and reboot)"
-echo "ssh root@$SYSTEM_IP 'sbctl enroll-keys'"
 echo ""
-echo "# 5. Re-enroll TPM2 (clearing Secure Boot keys wipes TPM):"
-LUKS_DEVICE=\$(grep '^\s*device = ' \"~/nixconf/hosts/$HOSTNAME/zfs-optimizations.nix\" | grep -oE '/dev/[^\"]+' || echo \"/dev/nvme0n1p2\")
-echo "ssh $SYSTEM_IP 'sudo systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=0+2+7 $LUKS_DEVICE'"
-echo ""
-echo "# 6. Copy nixconf to user home and optimize hardware config:"
+echo "# 5. Copy nixconf to user home and optimize hardware config:"
 echo "scp -r ~/nixconf $SYSTEM_IP:~/ && ssh $SYSTEM_IP 'cd ~/nixconf && hardware-config-insert'"
 echo ""
-echo "# 7. Copy updated configuration back and commit everything:"
+echo "# 6. Copy updated configuration back and commit everything:"
 echo "scp -r $SYSTEM_IP:~/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/"
 echo "git commit -a -m \"feat($HOSTNAME): new host deployed and configured\""
 echo ""

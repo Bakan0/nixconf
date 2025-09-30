@@ -44,6 +44,7 @@ in {
 
       # Secure Boot management (read-only)
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/sbctl list-files"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/sbctl verify"; options = ["NOPASSWD"]; }]; }
       
       # Service management (read-only)
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/systemctl status *"; options = ["NOPASSWD"]; }]; }

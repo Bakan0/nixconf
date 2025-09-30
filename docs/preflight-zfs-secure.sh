@@ -13,16 +13,64 @@ fi
 # Variables that don't require tools
 DRIVE="${1:-}"
 if [[ -z "$DRIVE" ]]; then
-    echo "Usage: $0 /dev/nvmeXnX"
-    echo "Example: $0 /dev/nvme0n1"
+    echo "💾 Available drives:"
+    echo ""
+
+    # Get list of drives excluding the USB stick
+    mapfile -t DRIVES < <(lsblk -d -n -o NAME,SIZE,MODEL,TYPE | grep disk | awk '{print $1}')
+
+    for i in "${!DRIVES[@]}"; do
+        DNAME="${DRIVES[$i]}"
+        INFO=$(lsblk -d -n -o SIZE,MODEL "/dev/$DNAME")
+        printf "%d) /dev/%-8s %s\n" "$((i+1))" "$DNAME" "$INFO"
+    done
+
+    echo ""
+    read -p "Select drive number (or enter full path like /dev/nvme0n1): " SELECTION
+
+    if [[ -z "$SELECTION" ]]; then
+        echo "❌ No drive specified"
+        exit 1
+    fi
+
+    # Check if selection is a number
+    if [[ "$SELECTION" =~ ^[0-9]+$ ]]; then
+        INDEX=$((SELECTION - 1))
+        if [[ $INDEX -ge 0 && $INDEX -lt ${#DRIVES[@]} ]]; then
+            DRIVE="/dev/${DRIVES[$INDEX]}"
+        else
+            echo "❌ Invalid selection"
+            exit 1
+        fi
+    else
+        DRIVE="$SELECTION"
+    fi
+fi
+
+# Find stable by-id path for the drive
+echo "🔍 Finding stable device identifier..."
+DRIVE_BASENAME=$(basename "$DRIVE")
+DRIVE_BY_ID=$(ls -l /dev/disk/by-id/ | grep "../../$DRIVE_BASENAME\$" | grep -v '\-part' | awk '{print $9}' | head -1)
+
+if [[ -z "$DRIVE_BY_ID" ]]; then
+    echo "❌ Could not find stable by-id path for $DRIVE"
+    echo "Available devices:"
+    ls -l /dev/disk/by-id/ | grep nvme
     exit 1
 fi
+
+DRIVE_BY_ID_PATH="/dev/disk/by-id/$DRIVE_BY_ID"
+echo "✅ Using stable identifier: $DRIVE_BY_ID_PATH"
+echo ""
 
 # Execute the ENTIRE installation within nix-shell environment
 echo "📦 Installing all tools and running complete installation..."
 exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecode tpm2-tools systemd --run "
     set -euo pipefail
     echo '✅ All tools installed and available throughout installation'
+
+    # Use the stable by-id path
+    LUKS_DEVICE='$DRIVE_BY_ID_PATH-part2'
 
     # Constants
     EFI_SIZE='3.5GiB'
@@ -309,8 +357,13 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
     '';
   };
 
-  # Performance monitoring tools (ZFS tools moved to nixosModules/features/zfs.nix)
+  # Performance monitoring and ZFS tools
   environment.systemPackages = with pkgs; [
+    zfs
+    smartmontools
+    iotop
+    htop
+    btop
     nvme-cli
     lm_sensors
     pciutils
@@ -328,7 +381,7 @@ NIXEOF
 
     # Replace placeholders with actual values using sed
     sed -i \"s/HOSTID_PLACEHOLDER/\$HOSTID/g\" /mnt/etc/nixos/zfs-optimizations.nix
-    sed -i \"s|DRIVE_PLACEHOLDER2|${DRIVE}p2|g\" /mnt/etc/nixos/zfs-optimizations.nix
+    sed -i \"s|DRIVE_PLACEHOLDER2|\$LUKS_DEVICE|g\" /mnt/etc/nixos/zfs-optimizations.nix
     sed -i \"s/ARC_SIZE_PLACEHOLDER/\$ARC_SIZE/g\" /mnt/etc/nixos/zfs-optimizations.nix
     sed -i \"s/TOTAL_RAM_GB_PLACEHOLDER/\$TOTAL_RAM_GB/g\" /mnt/etc/nixos/zfs-optimizations.nix
 
@@ -387,10 +440,7 @@ SYSEOF
     echo ''
     echo '✅ Installation preparation complete!'
     echo ''
-    echo '🎯 Ready for nixos-install (no conflicts!):'
-    echo '   nixos-install'
-    echo ''
-    echo '🚀 Optimizations included:'
+    echo '🚀 What was configured:'
     echo \"   • zstd compression for better ratios\"
     echo \"   • 25% ARC limit: \$((ARC_SIZE / 1024 / 1024 / 1024))GB (25% of \${TOTAL_RAM_GB}GB RAM)\"
     echo \"   • Optimized record sizes (128K root, 1M home)\"
@@ -406,5 +456,28 @@ SYSEOF
     echo ''
     echo \"💡 Hardware config handles filesystem detection automatically\"
     echo \"💡 ZFS optimizations in separate config - no conflicts!\"
+    echo ''
+
+    # Check if Secure Boot is in Setup Mode and enroll keys at the END
+    SETUP_MODE=\$(cat /sys/firmware/efi/efivars/SetupMode-* 2>/dev/null | od -An -t u1 | awk '{print \$NF}')
+    if [[ \"\$SETUP_MODE\" == \"1\" ]]; then
+        echo \"🔐 Secure Boot is in Setup Mode - setting up lanzaboote keys...\"
+        SBCTL=\$(nix-build '<nixpkgs>' -A sbctl --no-out-link 2>/dev/null)/bin/sbctl
+        if [[ -x \"\$SBCTL\" ]]; then
+            \$SBCTL create-keys
+            mkdir -p /mnt/var/lib/sbctl
+            cp -r /var/lib/sbctl/* /mnt/var/lib/sbctl/
+            \$SBCTL enroll-keys
+            echo \"✅ Secure Boot keys created, copied, and enrolled!\"
+            echo \"   • Keys stored in /mnt/var/lib/sbctl/\"
+            echo \"   • Keys enrolled to firmware\"
+        else
+            echo \"⚠️  Could not build sbctl - skipping key enrollment\"
+        fi
+        echo ''
+    fi
+
+    echo '🎯 Next step:'
+    echo '   nixos-install'
 "
 
