@@ -127,7 +127,6 @@ $ZFS_IMPORT
   # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
-    neovim    # Essential editor
   ];
 
   environment.variables.EDITOR = "nvim";

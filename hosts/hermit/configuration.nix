@@ -53,8 +53,7 @@
   # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
-    qbittorrent
-    sbctl  # Required for lanzaboote secure boot operations
+    neovim    # Essential editor
   ];
 
   environment.variables.EDITOR = "nvim";
