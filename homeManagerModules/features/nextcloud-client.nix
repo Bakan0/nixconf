@@ -55,6 +55,19 @@ in {
       };
     };
 
+    # Ensure virtual files mode is set correctly (enable on-demand download)
+    home.activation.nextcloudVfsMode = lib.hm.dag.entryAfter ["writeBoundary"] ''
+      if [ -f "$HOME/.config/Nextcloud/nextcloud.cfg" ]; then
+        if grep -q "virtualFilesMode=wincfapi" "$HOME/.config/Nextcloud/nextcloud.cfg"; then
+          echo "Fixing Nextcloud VFS mode: wincfapi -> suffix (Linux)"
+          $DRY_RUN_CMD sed -i 's/virtualFilesMode=wincfapi/virtualFilesMode=suffix/' "$HOME/.config/Nextcloud/nextcloud.cfg"
+        elif grep -q "virtualFilesMode=off" "$HOME/.config/Nextcloud/nextcloud.cfg"; then
+          echo "Enabling Nextcloud VFS mode: off -> suffix (on-demand download)"
+          $DRY_RUN_CMD sed -i 's/virtualFilesMode=off/virtualFilesMode=suffix/' "$HOME/.config/Nextcloud/nextcloud.cfg"
+        fi
+      fi
+    '';
+
     # Ensure the ~/nc directory and subdirectories exist
     home.activation.nextcloudSetup = lib.hm.dag.entryAfter ["writeBoundary"] (''
       $DRY_RUN_CMD mkdir -p "$HOME/nc"
