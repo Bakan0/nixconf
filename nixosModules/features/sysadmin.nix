@@ -30,7 +30,7 @@ in {
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/hwinfo"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/fdisk -l"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/blkid"; options = ["NOPASSWD"]; }]; }
-      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/mount"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/mount -l"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/df"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/free"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ps"; options = ["NOPASSWD"]; }]; }
@@ -41,6 +41,9 @@ in {
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip addr show"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip route show"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip link show"; options = ["NOPASSWD"]; }]; }
+
+      # Secure Boot management (read-only)
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/sbctl list-files"; options = ["NOPASSWD"]; }]; }
       
       # Service management (read-only)
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/systemctl status *"; options = ["NOPASSWD"]; }]; }

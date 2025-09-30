@@ -16,6 +16,12 @@
     };
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
+
+    # AMD graphics support
+    amd = {
+      enable = true;
+      supergfxMode = "Hybrid";
+    };
   };
 
   boot = {
@@ -53,7 +59,6 @@
   # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
-    neovim    # Essential editor
   ];
 
   environment.variables.EDITOR = "nvim";

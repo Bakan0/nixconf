@@ -50,7 +50,7 @@
 
   # LUKS configuration with TPM2 support
   boot.initrd.luks.devices."luks-rpool" = {
-    device = "/dev/nvme0n1p2";
+    device = "/dev/nvme1n1p2";
     crypttabExtraOpts = [ "tpm2-device=auto" "tpm2-pcrs=0+2+7" ];
   };
 
@@ -83,7 +83,7 @@
   boot.zfs.forceImportAll = false;
 
   # Networking with unique hostId
-  networking.hostId = lib.mkDefault "f5dc6e16";
+  networking.hostId = lib.mkDefault "975dc772";
 
   # No swap (as requested)
   swapDevices = [ ];

@@ -137,6 +137,7 @@
     ntfs3g      # NTFS filesystem support
     openssl     # Crypto tools often needed system-wide
     ripgrep     # Fast grep replacement
+    sbctl       # Secure Boot key management
     tmux
     tree        # Directory listing
     unrar       # Extract RAR archives

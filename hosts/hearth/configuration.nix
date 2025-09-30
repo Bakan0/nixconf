@@ -5,6 +5,7 @@
     # Include the results of the hardware scan.
     ./hardware-configuration.nix
     ./zfs-optimizations.nix
+    inputs.lanzaboote.nixosModules.lanzaboote
   ];
 
   myNixOS = {
@@ -19,8 +20,12 @@
   };
 
   boot = {
+    lanzaboote = {
+      enable = true;
+      pkiBundle = "/var/lib/sbctl";
+      configurationLimit = 17;
+    };
     loader = {
-      systemd-boot.enable = true;
       efi = {
         canTouchEfiVariables = true;
         efiSysMountPoint = "/boot";

@@ -124,9 +124,11 @@ wl-copy < path/to/file
 bat /path/to/file | wl-copy
 
 # Screenshot management
-# Only view screenshots when explicitly requested by user
-# Clean up screenshots from current session after viewing (except when specifically asked to keep)
-find ~/Pictures -name "screenshot-*.png" -mmin -10 -delete  # Clean up screenshots from last 10 minutes
+# GNOME saves screenshots to: ~/Pictures/Screenshots/
+# When user asks to view a screenshot:
+# 1. Read the most recent screenshot
+# 2. After discussing it, immediately clean up screenshots from the last 10 minutes (unless user asks to keep it)
+find ~/Pictures/Screenshots -name "Screenshot*.png" -mmin -10 -delete
 ```
 
 **NixOS Script Syntax:**
