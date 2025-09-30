@@ -216,6 +216,16 @@ fi
 echo "Host initialization complete!"
 echo ""
 
+# Generate secure boot keys for lanzaboote
+echo "Generating secure boot keys for lanzaboote..."
+if [[ ! -f "/var/lib/sbctl/keys/db/db.key" ]]; then
+    nix-shell -p sbctl --run 'sbctl create-keys'
+    echo "✅ Secure boot keys created"
+else
+    echo "✅ Secure boot keys already exist"
+fi
+echo ""
+
 # Get this system's IP dynamically
 SYSTEM_IP=$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
 
