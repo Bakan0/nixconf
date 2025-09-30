@@ -21,7 +21,7 @@
   boot = {
     lanzaboote = {
       enable = true;
-      pkiBundle = "/etc/secureboot";
+      pkiBundle = "/var/lib/sbctl";
       configurationLimit = 17;
     };
     loader = {
@@ -54,6 +54,7 @@
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
     qbittorrent
+    sbctl  # Required for lanzaboote secure boot operations
   ];
 
   environment.variables.EDITOR = "nvim";

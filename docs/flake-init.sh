@@ -95,7 +95,7 @@ $ZFS_IMPORT
   boot = {
     lanzaboote = {
       enable = true;
-      pkiBundle = "/etc/secureboot";
+      pkiBundle = "/var/lib/sbctl";
       configurationLimit = 17;
     };
     loader = {
@@ -127,7 +127,7 @@ $ZFS_IMPORT
   # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
-    qbittorrent
+    neovim    # Essential editor
   ];
 
   environment.variables.EDITOR = "nvim";
@@ -252,5 +252,8 @@ echo "git commit -m \"feat($HOSTNAME): PROFIT! new host deployed and ready\""
 echo ""
 echo "# 5. Reboot into the new system:"
 echo "ssh root@$SYSTEM_IP reboot"
+echo ""
+echo "💡 Hardware optimization tip:"
+echo "   Run 'hardware-config-insert' after deployment to optimize hardware config for this machine"
 echo ""
 echo "Note: SSH access bootstrapped for post-reboot deployment"

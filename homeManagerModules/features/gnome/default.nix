@@ -49,7 +49,7 @@
       };
 
       "org/gnome/desktop/session" = {
-        idle-delay = 1800;  # 30 minutes before screen dims/blanks
+        idle-delay = 5400;  # 90 minutes before screen dims/blanks
       };
 
       "org/gnome/desktop/screensaver" = {
@@ -195,7 +195,7 @@
           ${pkgs.coreutils}/bin/sleep 5
 
           # Force apply power management settings
-          ${pkgs.glib}/bin/gsettings set org.gnome.desktop.session idle-delay 1800
+          ${pkgs.glib}/bin/gsettings set org.gnome.desktop.session idle-delay 5400
           ${pkgs.glib}/bin/gsettings set org.gnome.desktop.screensaver idle-activation-enabled true
           ${pkgs.glib}/bin/gsettings set org.gnome.desktop.screensaver lock-enabled true
           ${pkgs.glib}/bin/gsettings set org.gnome.desktop.screensaver lock-delay 1800

@@ -136,6 +136,25 @@ else
     run_cmd ln -sf "$NIXOS_CONFIG_DIR/hosts/$HOSTNAME/configuration.nix" "$NIXOS_CONFIG_DIR/configuration.nix"
 fi
 
+# Generate Secure Boot keys for lanzaboote
+echo "🔐 Setting up Secure Boot keys for lanzaboote..."
+echo "📦 Installing sbctl and generating keys..."
+if [[ "$IN_CHROOT" == "true" ]]; then
+    nix-shell -p sbctl --run "
+        set -euo pipefail
+        echo '✅ sbctl available'
+        sbctl create-keys
+        echo '✅ Secure Boot keys generated successfully'
+    "
+else
+    run_cmd nix-shell -p sbctl --run "
+        set -euo pipefail
+        echo '✅ sbctl available'
+        sbctl create-keys
+        echo '✅ Secure Boot keys generated successfully'
+    "
+fi
+
 # Test the flake before building
 echo "🧪 Testing flake configuration..."
 cd "$NIXOS_CONFIG_DIR"
@@ -175,6 +194,7 @@ echo "📋 Summary:"
 echo "   • Host: $HOSTNAME"
 echo "   • Flake configuration deployed from https://github.com/$GITHUB_USER/$FLAKE_REPO"
 echo "   • Hardware configuration preserved from nixos-install"
+echo "   • Secure Boot keys generated for lanzaboote"
 echo "   • System built and activated with flake configuration"
 echo ""
 echo "🔄 Future updates:"
