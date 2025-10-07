@@ -42,6 +42,9 @@ in {
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip route show"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip link show"; options = ["NOPASSWD"]; }]; }
 
+      # ZeroTier management
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/zerotier-cli *"; options = ["NOPASSWD"]; }]; }
+
       # Secure Boot management (read-only)
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/sbctl list-files"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/sbctl verify"; options = ["NOPASSWD"]; }]; }

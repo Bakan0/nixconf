@@ -22,6 +22,7 @@
 
     wake-on-lan.enable = true;
     virtualisation.enable = true;
+    zerotierone.enable = true;  # Server mode - auto-starts on boot
     home-users = {
       "emet" = {
         userConfig = ./home.nix;

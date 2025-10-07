@@ -10,10 +10,6 @@
   # Use emet's profile for consistent configuration
   myHomeManager = {
     profiles.emet.enable = true;
-    bundles.desktop = {
-      enable = true;
-      gnome.enable = true;
-    };
 
     # Add any host-specific customizations here
     # Example: stylix.enable = true;

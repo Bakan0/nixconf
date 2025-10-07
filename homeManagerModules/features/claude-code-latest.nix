@@ -8,9 +8,9 @@ let
   claude-code-latest = 
     let
       # Current known hashes - update these when versions change
-      registryHash = "sha256:0agix0hgd93iw1h64pvgyq29zkvwv0d9w507x5xn779s5ifq7x5m";
-      sourceHash = "sha256:13wy0hg8hx2kchaabjsr2pm6sysnk3wqcf0m63w8x5dlaqyc6iid";
-      depsHash = "sha256:13wy0hg8hx2kchaabjsr2pm6sysnk3wqcf0m63w8x5dlaqyc6iid";
+      registryHash = "sha256:098zrngmz9vr1vw253r746vga0v53k8zb7schszhpvjwy3dz9ysl";
+      sourceHash = "sha256:0pkprrf61zxbp1lghy10cr8fy1hkzhmkrllp7ixhmc9zkd8y85av";
+      depsHash = "sha256:0pkprrf61zxbp1lghy10cr8fy1hkzhmkrllp7ixhmc9zkd8y85av";
       
       # Fetch registry info with hash verification
       registryInfo = builtins.fromJSON (builtins.readFile (pkgs.fetchurl {

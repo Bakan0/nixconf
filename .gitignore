@@ -19,3 +19,6 @@ nixosModules/features/apple/firmware/
 /result-*
 *.old
 CLAUDE_DEBUG_STATE.md
+
+# ZeroTier private network IDs
+hosts/*/zerotier-networks.nix

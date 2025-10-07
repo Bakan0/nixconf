@@ -25,6 +25,12 @@
       enable = true;
       supergfxMode = "Hybrid";
     };
+
+    # ZeroTier VPN (client mode - on-demand only)
+    zerotierone = {
+      enable = true;
+      clientMode = true;
+    };
   };
 
   boot = {
