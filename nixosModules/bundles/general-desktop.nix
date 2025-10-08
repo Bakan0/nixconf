@@ -116,10 +116,21 @@
     };
   };
 
-  # Override ensure-printers to always succeed - printer might not be reachable at boot
-  systemd.services.ensure-printers.postStart = ''
-    exit 0  # Always succeed no matter what happened
-  '';
+  # Fix for NixOS bug #78535 - ensure-printers blocks activation when printer offline
+  # Make the service optional so it doesn't block activation
+  systemd.services.ensure-printers = {
+    wantedBy = lib.mkForce [ ];  # Don't start automatically
+    serviceConfig.Type = "oneshot";
+  };
+
+  # Create a timer to retry printer setup in background
+  systemd.timers.ensure-printers = {
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "2min";
+      OnUnitActiveSec = "10min";
+    };
+  };
 
   fonts.packages = with pkgs; [
     nerd-fonts.mononoki
