@@ -85,6 +85,7 @@ in {
           "amdgpu.gpu_recovery=1"             # Keep essential recovery params
           "amdgpu.ppfeaturemask=0xfff7ffff"   # Enable PowerPlay features, disable some problematic ones
           "amdgpu.deep_color=1"               # Better color support
+          "amdgpu.dcdebugmask=0x10"           # Disable PSR to prevent DMCUB firmware crashes
         ] ++ optionals cfg.conservativePowerManagement [
           "amd_pstate=passive"
           "processor.max_cstate=2"
@@ -143,6 +144,7 @@ in {
           "amdgpu.gpu_recovery=1"             # Keep essential recovery params
           "amdgpu.ppfeaturemask=0xfff7ffff"   # Enable PowerPlay features, disable some problematic ones
           "amdgpu.deep_color=1"               # Better color support
+          "amdgpu.dcdebugmask=0x10"           # Disable PSR to prevent DMCUB firmware crashes
         ] ++ optionals cfg.conservativePowerManagement [
           "amd_pstate=passive"
           "processor.max_cstate=2"
