@@ -15,6 +15,7 @@
       user = "emet";
     };
     gnome.enable = true;  # Enable GNOME desktop environment
+    zerotierone.enable = true;
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
   };
