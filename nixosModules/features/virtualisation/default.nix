@@ -45,10 +45,6 @@ in {
           package = pkgs.qemu;
           runAsRoot = true;
           swtpm.enable = true;
-          ovmf = {
-            enable = true;
-            packages = [pkgs.OVMFFull.fd];
-          };
         };
         # Allow libvirt to auto-detect firmware instead of hardcoded paths
         extraConfig = ''
