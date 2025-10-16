@@ -17,7 +17,6 @@
     };
 
     # Server overrides - disable desktop environments
-    hyprland.enable = false;
     gnome.enable = false;
 
     wake-on-lan.enable = true;

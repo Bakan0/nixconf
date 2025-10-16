@@ -124,9 +124,8 @@ in {
           enable = true;
           allowedActions = "anarchy";  # No prompts for curated admin commands
         };
-        hyprland.enable = lib.mkDefault true;  # Enable Hyprland window manager
         gnome.enable = lib.mkDefault true;     # Enable GNOME desktop environment
-        kanshi.enable = true;  # Display management
+        kanshi.enable = cfg.hyprland.enable;  # Display management (only when Hyprland is enabled)
         vpn.enable = true;     # VPN support
 
         home-users.emet = {

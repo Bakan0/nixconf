@@ -13,7 +13,6 @@
       user = "joelle";  # Joelle's profile with GNOME, packages, SSH keys
     };
     sddm.enable = false;
-    hyprland.enable = false;
     tpm2.enable = true;
     virtualisation.enable = false;
     wake-on-lan.enable = true;

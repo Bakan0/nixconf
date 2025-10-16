@@ -5,85 +5,108 @@ let
   
   # Claude Code with hash verification and auto-update capability
   # Set UPDATE_CLAUDE_HASHES=1 to auto-update hashes on build failure
-  claude-code-latest = 
+  claude-code-latest =
     let
-      # Current known hashes - update these when versions change
-      registryHash = "sha256:0v18rp4xm01i8q8ym5zazviin5vpnxp32kkyij2iz48r1pxqasa9";
-      sourceHash = "sha256:1wv63q65iq5cdynhc1yzgf7w8mf9mn47gs14vay68sdj73djg5p0";
-      depsHash = "sha256:1wv63q65iq5cdynhc1yzgf7w8mf9mn47gs14vay68sdj73djg5p0";
-      
+      # Current known hashes - update these when versions change (SRI format)
+      registryHash = "sha256-SWmF+w0ZkR+FjH5OMW63dxcb4/7ql+oRRjGA2snNKGw=";
+      sourceHash = "sha256-4JYn2ziyaWS82iTod4ityVXEj3vfBwatb6zgWAweZvM=";
+      depsHash = "sha256-4JYn2ziyaWS82iTod4ityVXEj3vfBwatb6zgWAweZvM=";
+
       # Fetch registry info with hash verification
       registryInfo = builtins.fromJSON (builtins.readFile (pkgs.fetchurl {
         url = "https://registry.npmjs.org/@anthropic-ai/claude-code/";
-        sha256 = registryHash;
+        hash = registryHash;
       }));
       latestVersion = registryInfo.dist-tags.latest;
-      
+
     in
-    pkgs.claude-code.overrideAttrs (oldAttrs: rec {
+    # Use stdenv directly since tarball contains pre-built cli.js
+    pkgs.stdenv.mkDerivation {
+      pname = "claude-code";
       version = latestVersion;
+
       src = pkgs.fetchzip {
         url = "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-${latestVersion}.tgz";
         hash = sourceHash;
       };
-      npmDepsHash = depsHash;
-      
-      # Add some debug info
-      preBuild = ''
-        echo "Building Claude Code version: ${latestVersion}"
-        echo "Source hash: ${sourceHash}"
-        echo "NPM deps hash: ${depsHash}"
+
+      nativeBuildInputs = [ pkgs.makeWrapper ];
+
+      installPhase = ''
+        runHook preInstall
+
+        mkdir -p $out/lib/claude-code $out/bin
+        cp -r . $out/lib/claude-code
+
+        makeWrapper ${pkgs.nodejs}/bin/node $out/bin/claude \
+          --add-flags "$out/lib/claude-code/cli.js" \
+          --set DISABLE_AUTOUPDATER 1 \
+          --set AUTHORIZED 1 \
+          --unset DEV
+
+        runHook postInstall
       '';
-    });
+
+      meta = {
+        description = "Agentic coding tool that lives in your terminal";
+        homepage = "https://github.com/anthropics/claude-code";
+        license = lib.licenses.unfree;
+        mainProgram = "claude";
+      };
+    };
 
   # Simple hash fetcher script - outputs hashes for Claude to apply manually
   claude-hash-fetch = pkgs.writeShellScriptBin "claude-hash-fetch" ''
     set -euo pipefail
-    
+
     echo "=== Claude Code Hash Fetcher ==="
     echo "This script fetches current hashes for Claude Code npm package."
     echo "Copy the output hashes and paste them into the module file."
     echo ""
-    
+
     # Get latest version from npm registry
     echo "Fetching latest version info..."
     LATEST_VERSION=$(${pkgs.curl}/bin/curl -s https://registry.npmjs.org/@anthropic-ai/claude-code/ | ${pkgs.jq}/bin/jq -r '.["dist-tags"].latest')
-    
+
     if [[ -z "$LATEST_VERSION" || "$LATEST_VERSION" == "null" ]]; then
       echo "❌ Failed to fetch latest version"
       exit 1
     fi
-    
+
     echo "Latest version: $LATEST_VERSION"
     echo ""
-    
-    # Get registry hash using nix-prefetch-url
+
+    # Get registry hash using nix-prefetch-url and convert to SRI format
     echo "Getting registry hash..."
-    REGISTRY_HASH=$(${pkgs.nix}/bin/nix-prefetch-url https://registry.npmjs.org/@anthropic-ai/claude-code/ 2>/dev/null | ${pkgs.coreutils}/bin/tail -1)
-    
+    REGISTRY_HASH_NIX32=$(${pkgs.nix}/bin/nix-prefetch-url https://registry.npmjs.org/@anthropic-ai/claude-code/ 2>/dev/null)
+    REGISTRY_HASH=$(${pkgs.nix}/bin/nix hash convert --to sri "sha256:$REGISTRY_HASH_NIX32" 2>/dev/null)
+
     if [[ -z "$REGISTRY_HASH" ]]; then
       echo "❌ Failed to get registry hash"
       exit 1
     fi
-    
-    # Get source hash using nix-prefetch-url  
+
+    # Get source hash using nix-prefetch-url and convert to SRI format
     echo "Getting source hash..."
-    SOURCE_HASH=$(${pkgs.nix}/bin/nix-prefetch-url --unpack "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$LATEST_VERSION.tgz" 2>/dev/null | ${pkgs.coreutils}/bin/tail -1)
-    
+    SOURCE_HASH_NIX32=$(${pkgs.nix}/bin/nix-prefetch-url --unpack "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$LATEST_VERSION.tgz" 2>/dev/null)
+    SOURCE_HASH=$(${pkgs.nix}/bin/nix hash convert --to sri "sha256:$SOURCE_HASH_NIX32" 2>/dev/null)
+
     if [[ -z "$SOURCE_HASH" ]]; then
       echo "❌ Failed to get source hash"
       exit 1
     fi
-    
+
     echo ""
     echo "=== RESULTS ==="
     echo "Version: $LATEST_VERSION"
     echo ""
+    echo "⚠️  IMPORTANT: Hashes in SRI format (sha256-...) to match base package format"
+    echo ""
     echo "Update the following lines in homeManagerModules/features/claude-code-latest.nix:"
     echo ""
-    echo "registryHash = \"sha256:$REGISTRY_HASH\";"
-    echo "sourceHash = \"sha256:$SOURCE_HASH\";"
-    echo "depsHash = \"sha256:$SOURCE_HASH\";  # Usually same as source"
+    echo "registryHash = \"$REGISTRY_HASH\";"
+    echo "sourceHash = \"$SOURCE_HASH\";"
+    echo "depsHash = \"$SOURCE_HASH\";  # May need adjustment after first build"
     echo ""
     echo "=== END RESULTS ==="
   '';

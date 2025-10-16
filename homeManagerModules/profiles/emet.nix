@@ -7,10 +7,10 @@
   # Enable emet's preferred bundles by default (can be overridden per host)
   myHomeManager = {
 
-    # Bundles - desktop with BOTH Hyprland and GNOME
+    # Bundles - desktop with GNOME by default
     bundles.desktop = {
       enable = lib.mkDefault true;
-      hyprland.enable = lib.mkDefault true;
+      hyprland.enable = lib.mkDefault false;  # Disabled by default - enable per host if needed
       gnome = {
         enable = lib.mkDefault true;
         tiling.enable = lib.mkDefault true;  # Hyprland-like tiling for GNOME

@@ -17,9 +17,7 @@
     bundles.graphics-performance.enable = false;
     bundles.desktop.enable = false;         # No browsers, MIME associations, desktop apps
 
-    # Disable desktop components on server
-    hyprland.enable = false;
-    waybar.enable = false;
+    # Desktop components disabled via bundles.desktop.enable = false
 
     # Server doesn't need Microsoft Azure tools
     microsoft.enable = false;
