@@ -85,8 +85,14 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
     set -euo pipefail
     echo '✅ All tools installed and available throughout installation'
 
-    # Use the stable by-id path
-    LUKS_DEVICE='$DRIVE_BY_ID_PATH-part2'
+    # Set LUKS device path - use proper partition naming
+    # For VMs (direct paths like /dev/vda), use partition number directly
+    # For by-id paths, use -part2 suffix
+    if [[ '$DRIVE_BY_ID_PATH' =~ ^/dev/disk/by-id/ ]]; then
+        LUKS_DEVICE='$DRIVE_BY_ID_PATH-part2'
+    else
+        LUKS_DEVICE='${PART_PREFIX}2'
+    fi
 
     # Constants
     EFI_SIZE='3.5GiB'
@@ -518,12 +524,17 @@ SYSEOF
         SBCTL=\$(nix-build '<nixpkgs>' -A sbctl --no-out-link 2>/dev/null)/bin/sbctl
         if [[ -x \"\$SBCTL\" ]]; then
             \$SBCTL create-keys
-            mkdir -p /mnt/var/lib/sbctl
-            cp -r /var/lib/sbctl/* /mnt/var/lib/sbctl/
-            \$SBCTL enroll-keys
-            echo \"✅ Secure Boot keys created, copied, and enrolled!\"
-            echo \"   • Keys stored in /mnt/var/lib/sbctl/\"
-            echo \"   • Keys enrolled to firmware\"
+            mkdir -p /mnt/persist/system/var/lib/sbctl
+            cp -r /var/lib/sbctl/* /mnt/persist/system/var/lib/sbctl/
+            if \$SBCTL enroll-keys --microsoft; then
+                echo \"✅ Secure Boot keys created, copied, and enrolled!\"
+                echo \"   • Keys stored in /mnt/persist/system/var/lib/sbctl/\"
+                echo \"   • Keys enrolled to firmware (with Microsoft certs)\"
+            else
+                echo \"⚠️  Key enrollment failed - keys created and copied, but not enrolled to firmware\"
+                echo \"   • Keys stored in /mnt/persist/system/var/lib/sbctl/\"
+                echo \"   • You can enroll manually later with: sbctl enroll-keys --microsoft\"
+            fi
         else
             echo \"⚠️  Could not build sbctl - skipping key enrollment\"
         fi

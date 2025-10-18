@@ -9,15 +9,22 @@
   ];
 
   myNixOS = {
-    bundles.general-desktop.enable = true;
+    bundles.lean-desktop.enable = true;  # Lean version without heavy packages
     bundles.users = {
       enable = true;
       user = "emet";
     };
-    gnome.enable = true;  # Enable GNOME desktop environment
-    zerotierone.enable = true;
+    hyprland.enable = true;  # Hyprland is much lighter than GNOME (~500MB vs ~3GB)
+    impermanence.enable = true;
     # User configuration handled via home-manager userConfig
     home-users."emet".userConfig = ./home.nix;
+
+    # Kanshi configuration for KVM QXL virtual display
+    kanshi = {
+      laptopModel = "KVM_QXL";
+      laptopResolution = "1920x1080@60Hz";
+      laptopScale = 1.0;
+    };
   };
 
   boot = {
@@ -35,7 +42,7 @@
   };
 
   networking = {
-    hostName = "hearth";
+    hostName = "vapor";
     networkmanager.enable = true;
   };
 

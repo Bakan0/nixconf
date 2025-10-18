@@ -195,6 +195,13 @@ sed -i '/^}$/i \
 echo "Applying SSH bootstrap configuration..."
 nixos-install --root /mnt --no-root-passwd --no-channel-copy
 
+# Move machine-id to persist location for impermanence compatibility
+if [[ -f "/mnt/etc/machine-id" && -d "/mnt/persist/system" ]]; then
+    echo "Moving machine-id to persist location for impermanence..."
+    mkdir -p /mnt/persist/system/etc
+    mv /mnt/etc/machine-id /mnt/persist/system/etc/machine-id
+fi
+
 # Backup flake.nix before modifications
 cp flake.nix flake.nix.bak
 
@@ -217,7 +224,7 @@ echo "Host initialization complete!"
 echo ""
 
 # Secure boot keys already handled by preflight-zfs-secure.sh
-if [[ -f "/mnt/var/lib/sbctl/keys/db/db.key" ]]; then
+if [[ -f "/mnt/persist/system/var/lib/sbctl/keys/db/db.key" ]]; then
     echo "✅ Secure Boot keys present (created by preflight-zfs-secure.sh)"
     echo ""
 fi
@@ -225,6 +232,10 @@ fi
 # Get this system's IP dynamically
 SYSTEM_IP=$(ip route get 9.9.9.9 2>/dev/null | awk '{print $7}' | head -1 || echo "INSTALLER_IP")
 
+# Extract LUKS device path from zfs-optimizations.nix if it exists
+if [[ -f "$CONFIG_DIR/zfs-optimizations.nix" ]]; then
+    LUKS_DEVICE=$(grep 'device = "' "$CONFIG_DIR/zfs-optimizations.nix" | grep -o '"/[^"]*"' | tr -d '"' || echo "")
+fi
 
 echo ""
 echo "Host $HOSTNAME configuration created successfully!"
@@ -240,7 +251,7 @@ echo "# (In firmware: disable Secure Boot temporarily for first boot)"
 echo "# (Alternative: use 'reboot' instead of 'reboot --firmware-setup' and press F2/DEL manually)"
 echo ""
 echo "# 3. Deploy configuration:"
-echo "nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --build-host $SYSTEM_IP --show-trace --option extra-experimental-features 'nix-command flakes'"
+echo "nixos-rebuild switch --flake ~/nixconf#$HOSTNAME --target-host root@$SYSTEM_IP --build-host root@$SYSTEM_IP --show-trace --option extra-experimental-features 'nix-command flakes'"
 echo ""
 echo "# 3b. (Optional) Monitor deployment in separate terminal:"
 echo "ssh root@$SYSTEM_IP"
@@ -250,10 +261,18 @@ echo "# 4. Re-enable Secure Boot and reboot:"
 echo "# (Reboot to firmware, enable Secure Boot, save and exit)"
 echo "ssh root@$SYSTEM_IP 'systemctl reboot --firmware-setup'"
 echo ""
-echo "# 5. Copy nixconf to user home and optimize hardware config:"
+echo "# 5. Re-enroll TPM2 after Secure Boot is enabled (PCR values changed):"
+if [[ -n "$LUKS_DEVICE" ]]; then
+    echo "ssh root@$SYSTEM_IP 'systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=0+2+7 $LUKS_DEVICE'"
+else
+    echo "ssh root@$SYSTEM_IP 'systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=0+2+7 /dev/disk/by-id/*-part2 || systemd-cryptenroll --wipe-slot=tpm2 --tpm2-device=auto --tpm2-pcrs=0+2+7 /dev/vda2'"
+fi
+echo "# (This restores automatic TPM2 unlock after Secure Boot changes PCR values)"
+echo ""
+echo "# 6. Copy nixconf to user home and optimize hardware config:"
 echo "scp -r ~/nixconf $SYSTEM_IP:~/ && ssh $SYSTEM_IP 'cd ~/nixconf && hardware-config-insert'"
 echo ""
-echo "# 6. Copy updated configuration back and commit everything:"
+echo "# 7. Copy updated configuration back and commit everything:"
 echo "scp -r $SYSTEM_IP:~/nixconf/hosts/$HOSTNAME ~/nixconf/hosts/"
 echo "git commit -a -m \"feat($HOSTNAME): new host deployed and configured\""
 echo ""

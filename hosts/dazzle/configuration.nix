@@ -88,7 +88,6 @@
   # Most packages provided by general-desktop bundle
   environment.systemPackages = with pkgs; [
     # Additional packages not in bundles
-    qbittorrent
   ];
 
   environment.variables.EDITOR = "nvim";

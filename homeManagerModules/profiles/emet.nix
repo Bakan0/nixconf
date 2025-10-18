@@ -7,7 +7,6 @@
   # Enable emet's preferred bundles by default (can be overridden per host)
   myHomeManager = {
 
-    # Bundles - desktop with GNOME by default
     bundles.desktop = {
       enable = lib.mkDefault true;
       hyprland.enable = lib.mkDefault false;  # Disabled by default - enable per host if needed
@@ -22,7 +21,7 @@
 
     # Features
     zsh.enable = false;   # Legacy vimjoyer code - not used
-    firefox.enable = true;
+    firefox.enable = lib.mkDefault true;
     # hyprland and waybar now handled by desktop-hyprland bundle
     microsoft.enable = lib.mkDefault true;  # Default for emet - override per host if needed
     nextcloud-client = {
@@ -37,7 +36,6 @@
       iconTheme = lib.mkDefault "numix";  # Professional with orange accents
     };
 
-    # Transfer scripts now enabled via bundles.xfer-scripts
   };
 
   # Auto-start btop when desktop starts (Hyprland)
@@ -46,13 +44,16 @@
   '';
 
   # Auto-start btop when desktop starts (GNOME and other XDG-compliant desktops)
-  xdg.configFile."autostart/btop.desktop".text = ''
-    [Desktop Entry]
-    Type=Application
-    Name=System Monitor (btop)
-    Exec=${pkgs.kitty}/bin/kitty --title "System Monitor - btop" ${pkgs.btop}/bin/btop
-    Hidden=false
-    NoDisplay=false
-    X-GNOME-Autostart-enabled=true
-  '';
+  # Only enable XDG autostart when GNOME is enabled to avoid duplicate starts with Hyprland
+  xdg.configFile."autostart/btop.desktop" = lib.mkIf config.myHomeManager.bundles.desktop.gnome.enable {
+    text = ''
+      [Desktop Entry]
+      Type=Application
+      Name=System Monitor (btop)
+      Exec=${pkgs.kitty}/bin/kitty --title "System Monitor - btop" ${pkgs.btop}/bin/btop
+      Hidden=false
+      NoDisplay=false
+      X-GNOME-Autostart-enabled=true
+    '';
+  };
 }

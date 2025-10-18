@@ -10,6 +10,7 @@ let
     DELL_XPS13_9300 = "Sharp Corporation 0x14CB Unknown";
     DELL_PRECISION_5530 = "Sharp Corporation 0x149A Unknown";
     APPLE_MBP_16_1 = "Apple Computer Inc Color LCD Unknown";
+    KVM_QXL = "Unknown Unknown Unknown";  # QEMU/KVM QXL virtual display
     # system76_darter8_pro = "make model serial";
   };
   laptopMatch = laptopModels.${cfg.laptopModel};

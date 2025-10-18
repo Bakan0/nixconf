@@ -70,6 +70,7 @@
       nixosConfigurations = {
         # ===================== NixOS Configurations ===================== #
 
+        vapor = mkSystem ./hosts/vapor/configuration.nix;
         hearth = mkSystem ./hosts/hearth/configuration.nix;
         acc01ade = mkSystem ./hosts/acc01ade/configuration.nix;
         mariposa = mkSystem ./hosts/mariposa/configuration.nix;
@@ -84,6 +85,7 @@
       homeConfigurations = {
         # ================== Home Configurations ================== #
 
+        "emet@vapor" = mkHome "x86_64-linux" ./hosts/vapor/home.nix;
         "emet@hearth" = mkHome "x86_64-linux" ./hosts/hearth/home.nix;
         "emet@acc01ade" = mkHome "x86_64-linux" ./hosts/acc01ade/home.nix;
         "emet@mariposa" = mkHome "x86_64-linux" ./hosts/mariposa/home.nix;

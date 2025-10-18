@@ -58,13 +58,13 @@ in {
         "/var/lib/systemd/coredump"
         "/etc/NetworkManager/system-connections"
         "/var/lib/sbctl"  # Secure Boot keys
-        {
-          directory = "/var/lib/colord";
-          user = "colord";
-          group = "colord";
-          mode = "u=rwx,g=rx,o=";
-        }
       ]
+      ++ (lib.optionals config.services.colord.enable [{
+        directory = "/var/lib/colord";
+        user = "colord";
+        group = "colord";
+        mode = "u=rwx,g=rx,o=";
+      }])
       ++ cfg.directories;
     files = [
       "/etc/machine-id"

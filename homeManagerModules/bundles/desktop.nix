@@ -38,6 +38,36 @@ in {
   };
 
   config = lib.mkMerge [
+    # Essential desktop packages (default priority - cannot be overridden)
+    {
+      home.packages = with pkgs; [
+        qbittorrent
+        bitwarden-desktop
+        kitty
+        libnotify
+        noisetorch
+      ];
+    }
+
+    # Optional desktop packages (can be overridden by lean-desktop)
+    {
+      home.packages = lib.mkDefault (with pkgs; [
+        neovide
+        ripdrag
+        mpv
+        sxiv
+        zathura
+        foot
+        cm_unicode
+        virt-manager
+        onlyoffice-bin
+        obsidian
+        gegl
+        signal-desktop
+        youtube-music
+      ]);
+    }
+
     # Base desktop configuration (always applied when bundle is enabled)
     {
       myHomeManager.bundles.general.enable = lib.mkDefault true;
@@ -47,28 +77,6 @@ in {
       myHomeManager.kitty.enable = lib.mkDefault true;
       myHomeManager.imv.enable = lib.mkDefault false;
       myHomeManager.gimp.enable = lib.mkDefault true;
-
-      home.packages = with pkgs; [
-        # Core desktop tools that work across DEs/WMs
-        noisetorch
-        libnotify
-        neovide
-        ripdrag
-        mpv
-        sxiv
-        zathura
-        foot
-        cm_unicode
-        virt-manager
-        kitty
-        bitwarden-desktop
-        onlyoffice-bin
-        obsidian
-        gegl  # GIMP's image processing backend
-        # Communication apps for all DEs
-        signal-desktop
-        youtube-music
-      ];
 
       myHomeManager.impermanence.cache.directories = [
         ".local/state/wireplumber"
@@ -150,7 +158,7 @@ in {
       };
 
       # Hyprland-specific packages
-      home.packages = with pkgs; [
+      home.packages = lib.mkDefault (with pkgs; [
         rofi-bluetooth
         feh
         polkit
@@ -161,7 +169,7 @@ in {
         adwaita-qt
         pcmanfm
         xfce.thunar
-      ];
+      ]);
     })
 
     # GNOME-specific configuration
