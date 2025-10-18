@@ -47,20 +47,36 @@ if [[ -z "$DRIVE" ]]; then
     fi
 fi
 
-# Find stable by-id path for the drive
+# Find stable by-id path for the drive (or use direct path for VMs)
 echo "🔍 Finding stable device identifier..."
 DRIVE_BASENAME=$(basename "$DRIVE")
-DRIVE_BY_ID=$(ls -l /dev/disk/by-id/ | grep "../../$DRIVE_BASENAME\$" | grep -v '\-part' | awk '{print $9}' | head -1)
+DRIVE_BY_ID=$(ls -l /dev/disk/by-id/ | grep "../../$DRIVE_BASENAME\$" | grep -v -- '-part' | awk '{print $9}' | head -1 || true)
 
 if [[ -z "$DRIVE_BY_ID" ]]; then
-    echo "❌ Could not find stable by-id path for $DRIVE"
-    echo "Available devices:"
-    ls -l /dev/disk/by-id/ | grep nvme
-    exit 1
+    # No by-id path found - common for virtio disks without serial numbers
+    echo "⚠️  No /dev/disk/by-id entry found for $DRIVE"
+
+    # Check if this is a virtio disk (VM)
+    if [[ "$DRIVE" =~ /dev/vd[a-z] ]]; then
+        echo "✅ Detected virtio disk (VM) - using direct path: $DRIVE"
+        DRIVE_BY_ID_PATH="$DRIVE"
+    else
+        echo "❌ Could not find stable by-id path for $DRIVE"
+        echo "Available devices:"
+        ls -l /dev/disk/by-id/
+        exit 1
+    fi
+else
+    DRIVE_BY_ID_PATH="/dev/disk/by-id/$DRIVE_BY_ID"
+    echo "✅ Using stable identifier: $DRIVE_BY_ID_PATH"
 fi
 
-DRIVE_BY_ID_PATH="/dev/disk/by-id/$DRIVE_BY_ID"
-echo "✅ Using stable identifier: $DRIVE_BY_ID_PATH"
+# Determine partition naming scheme (nvme uses p1, others use just 1)
+if [[ "$DRIVE" =~ nvme ]]; then
+    PART_PREFIX="${DRIVE}p"
+else
+    PART_PREFIX="${DRIVE}"
+fi
 echo ""
 
 # Execute the ENTIRE installation within nix-shell environment
@@ -74,8 +90,6 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
 
     # Constants
     EFI_SIZE='3.5GiB'
-    ROOT_PERCENT=20
-    HOME_PERCENT=30
 
     # Get actual installed RAM from memory sticks (NOW AVAILABLE)
     echo '🔍 Detecting installed memory sticks...'
@@ -99,12 +113,13 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
     # Calculate ARC limit (25% of total RAM)
     ARC_SIZE=\$((TOTAL_RAM_BYTES / 4))
 
-    echo \"🚀 Installing Optimized ZFS NixOS with TPM2 Auto-Unlock on $DRIVE\"
+    echo \"🚀 Installing ZFS NixOS with TPM2 Auto-Unlock (impermanence-ready layout) on $DRIVE\"
     echo \"🧠 Total RAM: \${TOTAL_RAM_GB}GB\"
     echo \"📊 ARC Size: \$((ARC_SIZE / 1024 / 1024 / 1024))GB (25% of RAM)\"
-    echo \"💾 EFI: \$EFI_SIZE, Root: \${ROOT_PERCENT}%, Home: \${HOME_PERCENT}%\"
+    echo \"💾 EFI: \$EFI_SIZE\"
     echo \"🔐 TPM2: Automatic LUKS unlock (with password fallback)\"
     echo \"⚡ Optimizations: zstd compression, 25% ARC tuning, performance settings\"
+    echo \"🔄 Impermanence-ready: Enable myNixOS.impermanence in config to wipe root on boot\"
     read -p 'Continue? (y/N): ' confirm
 
     if [[ \"\$confirm\" != 'y' ]]; then
@@ -119,6 +134,8 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
     echo '  Unmounting specific filesystems...'
     umount /mnt/boot 2>/dev/null || true
     umount /mnt/home 2>/dev/null || true
+    umount /mnt/persist 2>/dev/null || true
+    umount /mnt/nix 2>/dev/null || true
     umount /mnt 2>/dev/null || true
 
     # Unmount all mounts under /mnt (recursive)
@@ -174,22 +191,28 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
     parted \"$DRIVE\" --script -- set 1 esp on
     parted \"$DRIVE\" --script -- mkpart primary \"\$EFI_SIZE\" 100%
 
+    # Wait for kernel to recognize new partitions
+    echo '⏳ Waiting for kernel to recognize partitions...'
+    partprobe \"$DRIVE\"
+    udevadm settle --timeout=10
+    sleep 2
+
     # Format EFI partition
     echo '🔧 Formatting EFI partition...'
-    mkfs.fat -F 32 -n EFI \"${DRIVE}p1\"
+    mkfs.fat -F 32 -n EFI \"${PART_PREFIX}1\"
 
     # LUKS setup with optimal settings + TPM2 enrollment
     echo '🔐 Setting up LUKS2 encryption with TPM2 auto-unlock...'
     echo 'Enter LUKS password for this machine (you'\''ll rarely need to type this after TPM2 setup):'
-    cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha256 \"${DRIVE}p2\"
-    cryptsetup luksOpen \"${DRIVE}p2\" luks-rpool
+    cryptsetup luksFormat --type luks2 --cipher aes-xts-plain64 --key-size 512 --hash sha256 \"${PART_PREFIX}2\"
+    cryptsetup luksOpen \"${PART_PREFIX}2\" luks-rpool
 
     # Check if TPM2 is available and enroll key
     echo '🔒 Checking TPM2 availability...'
     TPM2_ENROLLED=false
     if [[ -c /dev/tpmrm0 ]] || [[ -c /dev/tpm0 ]]; then
         echo '✅ TPM2 detected, enrolling LUKS key for automatic unlock...'
-        if systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0+2+7 \"${DRIVE}p2\"; then
+        if systemd-cryptenroll --tpm2-device=auto --tpm2-pcrs=0+2+7 \"${PART_PREFIX}2\"; then
             echo '🎉 TPM2 enrollment successful! System will auto-unlock on boot.'
             TPM2_ENROLLED=true
         else
@@ -223,25 +246,42 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
         -R /mnt \\
         rpool /dev/mapper/luks-rpool
 
-    # Create optimized datasets with different record sizes
-    echo '📁 Creating optimized ZFS datasets...'
+    # Create impermanence-ready dataset structure
+    echo '📁 Creating ZFS datasets (impermanence-ready)...'
+
+    # System datasets
     zfs create -o mountpoint=legacy -o canmount=noauto \\
         -o recordsize=128K -o compression=zstd \\
         -o sync=standard -o logbias=latency \\
         rpool/root
+    zfs create -o mountpoint=legacy \\
+        -o recordsize=128K -o compression=zstd \\
+        -o sync=standard -o atime=off \\
+        rpool/nix
 
+    # Persistent data dataset (optimized for large files)
     zfs create -o mountpoint=legacy \\
         -o recordsize=1M -o compression=zstd \\
         -o sync=standard -o logbias=throughput \\
-        rpool/home
+        rpool/persist
 
     # Mount filesystems in correct order
     echo '🔗 Mounting filesystems...'
     mount -t zfs rpool/root /mnt
-    mkdir -p /mnt/home
-    mount -t zfs rpool/home /mnt/home
+    mkdir -p /mnt/nix
+    mount -t zfs rpool/nix /mnt/nix
+    mkdir -p /mnt/persist
+    mount -t zfs rpool/persist /mnt/persist
     mkdir -p /mnt/boot
-    mount \"${DRIVE}p1\" /mnt/boot
+    mount \"${PART_PREFIX}1\" /mnt/boot
+
+    # Create /persist/home and bind mount it to /home
+    mkdir -p /mnt/persist/home
+    mkdir -p /mnt/home
+    mount --bind /mnt/persist/home /mnt/home
+
+    # Create blank snapshot for future impermanence use
+    zfs snapshot rpool/root@blank
 
     # Generate hardware configuration FIRST (detects ZFS automatically)
     echo '⚙️  Generating NixOS hardware configuration...'
@@ -340,6 +380,15 @@ exec nix-shell -p zfs parted cryptsetup util-linux e2fsprogs dosfstools dmidecod
   # No swap (as requested)
   swapDevices = [ ];
 
+  # Mark /persist as needed for boot (required for impermanence)
+  fileSystems.\"/persist\".neededForBoot = true;
+
+  # Bind mount /home to /persist/home (always, regardless of impermanence)
+  fileSystems.\"/home\" = {
+    device = \"/persist/home\";
+    options = [ \"bind\" ];
+  };
+
   # Enable periodic filesystem checks
   systemd.services.zfs-mount.enable = true;
 
@@ -435,15 +484,18 @@ SYSEOF
     zfs list
     echo ''
     echo '💾 Filesystem Mounts:'
-    df -h /mnt /mnt/home /mnt/boot
+    df -h /mnt /mnt/nix /mnt/persist /mnt/home /mnt/boot
 
     echo ''
     echo '✅ Installation preparation complete!'
     echo ''
     echo '🚀 What was configured:'
+    echo \"   • Impermanence-ready dataset layout (rpool/root, rpool/nix, rpool/persist)\"
+    echo \"   • /home → /persist/home (always persistent, regardless of impermanence)\"
+    echo \"   • Blank root snapshot created for future impermanence use\"
     echo \"   • zstd compression for better ratios\"
     echo \"   • 25% ARC limit: \$((ARC_SIZE / 1024 / 1024 / 1024))GB (25% of \${TOTAL_RAM_GB}GB RAM)\"
-    echo \"   • Optimized record sizes (128K root, 1M home)\"
+    echo \"   • Optimized record sizes (128K root/nix, 1M persist for large files)\"
     echo \"   • Performance-tuned kernel parameters\"
     echo \"   • Automated snapshots and scrubbing\"
     echo \"   • SSD-optimized settings with TRIM\"
@@ -456,6 +508,7 @@ SYSEOF
     echo ''
     echo \"💡 Hardware config handles filesystem detection automatically\"
     echo \"💡 ZFS optimizations in separate config - no conflicts!\"
+    echo \"💡 To enable impermanence: set myNixOS.impermanence.enable = true\"
     echo ''
 
     # Check if Secure Boot is in Setup Mode and enroll keys at the END

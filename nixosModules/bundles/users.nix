@@ -108,7 +108,7 @@ in {
       name: user:
         {
           isNormalUser = true;
-          initialPassword = "Ch4ngeM3!";
+          initialPassword = "Kim0no,"; # Ch4ngeMe!
           description = "";
           shell = pkgs.fish;
           extraGroups = [ "libvirtd" "networkmanager" "wheel" "audio" "avahi" "video" ];
