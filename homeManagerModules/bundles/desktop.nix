@@ -38,7 +38,7 @@ in {
   };
 
   config = lib.mkMerge [
-    # Essential desktop packages (default priority - cannot be overridden)
+    # Essential desktop packages (always installed, even on lean-desktop)
     {
       home.packages = with pkgs; [
         qbittorrent
@@ -49,24 +49,30 @@ in {
       ];
     }
 
-    # Optional desktop packages (can be overridden by lean-desktop)
+    # Lightweight optional packages (installed on all desktops including lean-desktop)
     {
-      home.packages = lib.mkDefault (with pkgs; [
-        neovide
+      home.packages = with pkgs; [
         ripdrag
         mpv
         sxiv
         zathura
         foot
         cm_unicode
+      ];
+    }
+
+    # Heavy optional packages (excluded from lean-desktop)
+    (lib.mkIf (!config.myHomeManager.bundles.lean-desktop.enable) {
+      home.packages = with pkgs; [
+        neovide
         virt-manager
         onlyoffice-bin
         obsidian
         gegl
         signal-desktop
         youtube-music
-      ]);
-    }
+      ];
+    })
 
     # Base desktop configuration (always applied when bundle is enabled)
     {

@@ -133,6 +133,7 @@
     neofetch    # System info display
     neovim      # Modern vim replacement
     nh          # Nix helper
+    nfs-utils   # NFS client utilities for mounting network shares
     nix-output-monitor
     ntfs3g      # NTFS filesystem support
     openssl     # Crypto tools often needed system-wide

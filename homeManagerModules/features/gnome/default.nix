@@ -27,6 +27,13 @@
     # Core GNOME settings (apply regardless of tiling)
     dconf.settings = {
 
+      # Enable GNOME Shell extensions
+      "org/gnome/shell" = {
+        enabled-extensions = [
+          "gsconnect@andyholmes.github.io"
+        ];
+      };
+
       # Power management settings
       "org/gnome/settings-daemon/plugins/power" = {
         # AC (plugged in) settings - never sleep when plugged in
@@ -121,22 +128,10 @@
       };
     };
 
-    # GNOME-compatible packages only
+    # GNOME-specific packages only (common packages are in desktop bundle)
     home.packages = with pkgs; [
-      # Core desktop tools that work well with GNOME
-      libnotify
-
-      # Media tools
-      mpv
-      zathura
-
-      # Productivity
-      onlyoffice-bin
-      obsidian
-      bitwarden-desktop
-
-      # Other tools
-      virt-manager
+      # GNOME extensions
+      gnomeExtensions.gsconnect  # KDE Connect integration
     ];
 
     myHomeManager.impermanence.cache.directories = [

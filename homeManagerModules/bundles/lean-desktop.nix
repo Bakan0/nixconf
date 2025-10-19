@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  config,
   ...
 }: {
   # Lean desktop bundle - forcefully strips heavy packages from profiles
@@ -36,14 +37,4 @@
   # Override hardcoded enables in feature modules
   programs.firefox.enable = lib.mkOverride 900 false;
   programs.chromium.enable = lib.mkOverride 900 false;
-
-  # Lightweight desktop packages (override desktop bundle's optional packages)
-  home.packages = lib.mkOverride 900 (with pkgs; [
-    ripdrag
-    mpv
-    sxiv
-    foot
-    zathura
-    cm_unicode
-  ]);
 }
