@@ -13,7 +13,6 @@ in {
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       nextcloud-client
-      nautilus-python  # Enables Nextcloud VFS right-click context menu in Nautilus
       (writeShellScriptBin "nextcloud-setup" ''
         set -euo pipefail
         echo "🔗 Nextcloud Client Setup"
@@ -31,6 +30,27 @@ in {
 
     # Auto-create the Nextcloud directory
     home.file."nc/.keep".text = "";
+
+    # Pre-populate Nextcloud config with VFS enabled (before first account setup)
+    # This ensures VFS is active from the very first sync
+    home.activation.nextcloudPreConfig = lib.hm.dag.entryBefore ["writeBoundary"] ''
+      NC_CFG="$HOME/.config/Nextcloud/nextcloud.cfg"
+
+      # Only create initial config if it doesn't exist (don't overwrite existing setup)
+      if [ ! -f "$NC_CFG" ]; then
+        echo "Creating initial Nextcloud config with VFS enabled..."
+        $DRY_RUN_CMD mkdir -p "$HOME/.config/Nextcloud"
+        $DRY_RUN_CMD cat > "$NC_CFG" << 'EOF'
+[General]
+isVfsEnabled=true
+showExperimentalOptions=true
+launchOnSystemStartup=true
+promptDeleteAllFiles=false
+
+EOF
+        echo "✅ VFS pre-configured - all files will be placeholders on first sync"
+      fi
+    '';
     
     # XDG autostart desktop entry - works across all DEs (GNOME, Hyprland, etc)
     xdg.configFile."autostart/nextcloud-client.desktop".text = ''
@@ -80,12 +100,20 @@ in {
             fi
 
             # 2. Add virtualFilesMode to each account if missing
-            ACCOUNT_COUNT=$(${pkgs.gnugrep}/bin/grep -c "^[0-9]\\+\\\\dav_user=" "$NC_CFG" || echo "0")
+            # Check both "Folders" (non-VFS) and "FoldersWithPlaceholders" (VFS active)
+            ACCOUNT_COUNT=$(${pkgs.gnugrep}/bin/grep -c "^[0-9]\\+\\\\dav_user=" "$NC_CFG" 2>/dev/null || echo "0")
+            ACCOUNT_COUNT=$(echo "$ACCOUNT_COUNT" | head -1)
             if [ "$ACCOUNT_COUNT" -gt 0 ]; then
               for i in $(seq 0 $((ACCOUNT_COUNT - 1))); do
-                if ! ${pkgs.gnugrep}/bin/grep -q "^$i\\\\Folders\\\\1\\\\virtualFilesMode=" "$NC_CFG"; then
+                # Check if virtualFilesMode exists in either Folders or FoldersWithPlaceholders
+                if ! ${pkgs.gnugrep}/bin/grep -qE "^$i\\\\(Folders|FoldersWithPlaceholders)\\\\1\\\\virtualFilesMode=" "$NC_CFG"; then
                   echo "Nextcloud VFS auto-fix: Adding virtualFilesMode for account $i"
-                  ${pkgs.gnused}/bin/sed -i "/^$i\\\\Folders\\\\1\\\\version=/a $i\\\\Folders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+                  # Try to add after Folders\1\version first, if not found try FoldersWithPlaceholders\1\version
+                  if ${pkgs.gnugrep}/bin/grep -q "^$i\\\\Folders\\\\1\\\\version=" "$NC_CFG"; then
+                    ${pkgs.gnused}/bin/sed -i "/^$i\\\\Folders\\\\1\\\\version=/a $i\\\\Folders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+                  elif ${pkgs.gnugrep}/bin/grep -q "^$i\\\\FoldersWithPlaceholders\\\\1\\\\version=" "$NC_CFG"; then
+                    ${pkgs.gnused}/bin/sed -i "/^$i\\\\FoldersWithPlaceholders\\\\1\\\\version=/a $i\\\\FoldersWithPlaceholders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+                  fi
                   CHANGED=true
                 fi
               done
@@ -133,15 +161,21 @@ in {
         fi
 
         # 2. Add virtualFilesMode to each account if missing (Nextcloud stores per-account)
-        # Format: 0\Folders\1\virtualFilesMode=suffix (under [Accounts] section)
-        ACCOUNT_COUNT=$(grep -c "^[0-9]\\+\\\\dav_user=" "$NC_CFG" || echo "0")
+        # Format: 0\Folders\1\virtualFilesMode=suffix OR 0\FoldersWithPlaceholders\1\virtualFilesMode=suffix
+        ACCOUNT_COUNT=$(grep -c "^[0-9]\\+\\\\dav_user=" "$NC_CFG" 2>/dev/null || echo "0")
+        # Clean up any extra output (grep -c outputs "0" even on no match, but also fails)
+        ACCOUNT_COUNT=$(echo "$ACCOUNT_COUNT" | head -1)
         if [ "$ACCOUNT_COUNT" -gt 0 ]; then
           for i in $(seq 0 $((ACCOUNT_COUNT - 1))); do
-            # Check if this account already has virtualFilesMode configured
-            if ! grep -q "^$i\\\\Folders\\\\1\\\\virtualFilesMode=" "$NC_CFG"; then
+            # Check if virtualFilesMode exists in either Folders or FoldersWithPlaceholders
+            if ! grep -qE "^$i\\\\(Folders|FoldersWithPlaceholders)\\\\1\\\\virtualFilesMode=" "$NC_CFG"; then
               echo "Enabling VFS for Nextcloud account $i (suffix mode)"
-              # Insert after the Folders version line
-              $DRY_RUN_CMD sed -i "/^$i\\\\Folders\\\\1\\\\version=/a $i\\\\Folders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+              # Insert after version line - try Folders first, then FoldersWithPlaceholders
+              if grep -q "^$i\\\\Folders\\\\1\\\\version=" "$NC_CFG"; then
+                $DRY_RUN_CMD sed -i "/^$i\\\\Folders\\\\1\\\\version=/a $i\\\\Folders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+              elif grep -q "^$i\\\\FoldersWithPlaceholders\\\\1\\\\version=" "$NC_CFG"; then
+                $DRY_RUN_CMD sed -i "/^$i\\\\FoldersWithPlaceholders\\\\1\\\\version=/a $i\\\\FoldersWithPlaceholders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+              fi
               CHANGED=true
             fi
           done

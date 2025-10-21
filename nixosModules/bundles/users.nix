@@ -47,6 +47,11 @@ in {
     services.xserver.enable = lib.mkIf cfg.gnome.enable true;
     services.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable true;
 
+    # Nautilus Python extension support (for Nextcloud VFS, etc.)
+    environment.systemPackages = lib.mkIf cfg.gnome.enable (with pkgs; [
+      nautilus-python
+    ]);
+
     # Locking GNOME requires gdm: https://github.com/NixOS/nixpkgs/issues/415677
     myNixOS.gdm.enable = lib.mkDefault (cfg.hyprland.enable || cfg.gnome.enable);
 
