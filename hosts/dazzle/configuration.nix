@@ -29,7 +29,6 @@
 
     # Display management for MacBookPro16,1
     kanshi = {
-      enable = true;
       laptopModel = "APPLE_MBP_16_1";
       laptopResolution = "3072x1920@60Hz";
       laptopScale = 1.333333;
