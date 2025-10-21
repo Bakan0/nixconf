@@ -117,10 +117,9 @@
   };
 
   # Fix for NixOS bug #78535 - ensure-printers blocks activation when printer offline
-  # Make the service optional so it doesn't block activation
-  systemd.services.ensure-printers = {
-    wantedBy = lib.mkForce [ ];  # Don't start automatically
-    serviceConfig.Type = "oneshot";
+  # Make service always succeed
+  systemd.services.ensure-printers.serviceConfig = {
+    SuccessExitStatus = "0 1";  # Treat exit codes 0 and 1 as success
   };
 
   # Create a timer to retry printer setup in background

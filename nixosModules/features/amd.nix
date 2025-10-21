@@ -44,7 +44,6 @@ in {
           extraPackages = with pkgs; [
             # AMD GPU drivers
             mesa  # Full mesa package with drivers
-            amdvlk  # AMD Vulkan driver
             
             # Universal VAAPI hardware acceleration drivers
             libva
@@ -55,7 +54,6 @@ in {
           
           extraPackages32 = with pkgs.driversi686Linux; [
             mesa
-            amdvlk
           ];
         };
       };

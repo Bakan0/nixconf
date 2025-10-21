@@ -8,7 +8,7 @@ let
   claude-code-latest =
     let
       # Current known hashes - update these when versions change (SRI format)
-      registryHash = "sha256-nxwkmuyKOv1s3yIGVI9qhiJ6ME2erdrGJYqFMIzjWUE=";
+      registryHash = "sha256-xwHc0AeDft+KbQx/KvUHGPL5mSHeDx2VaG/SbKBYwII=";
       sourceHash = "sha256-SDXYXEb7Vi150Hx04y9kd+Owzu11VSqVRgej36P2khU=";
       depsHash = "sha256-SDXYXEb7Vi150Hx04y9kd+Owzu11VSqVRgej36P2khU=";
 
@@ -79,7 +79,7 @@ let
     # Get registry hash using nix-prefetch-url and convert to SRI format
     echo "Getting registry hash..."
     REGISTRY_HASH_NIX32=$(${pkgs.nix}/bin/nix-prefetch-url https://registry.npmjs.org/@anthropic-ai/claude-code/ 2>/dev/null)
-    REGISTRY_HASH=$(${pkgs.nix}/bin/nix hash convert --to sri "sha256:$REGISTRY_HASH_NIX32" 2>/dev/null)
+    REGISTRY_HASH=$(${pkgs.nix}/bin/nix hash to-sri --type sha256 "$REGISTRY_HASH_NIX32")
 
     if [[ -z "$REGISTRY_HASH" ]]; then
       echo "❌ Failed to get registry hash"
@@ -89,7 +89,7 @@ let
     # Get source hash using nix-prefetch-url and convert to SRI format
     echo "Getting source hash..."
     SOURCE_HASH_NIX32=$(${pkgs.nix}/bin/nix-prefetch-url --unpack "https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-$LATEST_VERSION.tgz" 2>/dev/null)
-    SOURCE_HASH=$(${pkgs.nix}/bin/nix hash convert --to sri "sha256:$SOURCE_HASH_NIX32" 2>/dev/null)
+    SOURCE_HASH=$(${pkgs.nix}/bin/nix hash to-sri --type sha256 "$SOURCE_HASH_NIX32")
 
     if [[ -z "$SOURCE_HASH" ]]; then
       echo "❌ Failed to get source hash"
