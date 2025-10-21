@@ -13,6 +13,7 @@ in {
   config = mkIf cfg.enable {
     home.packages = with pkgs; [
       nextcloud-client
+      nautilus-python  # Enables Nextcloud VFS right-click context menu in Nautilus
       (writeShellScriptBin "nextcloud-setup" ''
         set -euo pipefail
         echo "🔗 Nextcloud Client Setup"
