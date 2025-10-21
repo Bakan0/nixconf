@@ -69,14 +69,37 @@ in {
         ExecStart = pkgs.writeShellScript "nextcloud-vfs-enforcer" ''
           NC_CFG="$HOME/.config/Nextcloud/nextcloud.cfg"
           if [ -f "$NC_CFG" ]; then
-            # Fix isVfsEnabled if disabled
+            CHANGED=false
+
+            # 1. Fix isVfsEnabled if disabled
             if ${pkgs.gnugrep}/bin/grep -q "^isVfsEnabled=false" "$NC_CFG"; then
               ${pkgs.gnused}/bin/sed -i 's/^isVfsEnabled=false/isVfsEnabled=true/' "$NC_CFG"
               echo "Nextcloud VFS auto-fixed: isVfsEnabled=false -> true"
+              CHANGED=true
             fi
 
-            # Remove orphaned Folders entries (keep only FoldersWithPlaceholders)
-            ${pkgs.gnused}/bin/sed -i '/^[0-9]\+\\Folders\\[0-9]\+\\virtualFilesMode=/d' "$NC_CFG"
+            # 2. Add virtualFilesMode to each account if missing
+            ACCOUNT_COUNT=$(${pkgs.gnugrep}/bin/grep -c "^[0-9]\\+\\\\dav_user=" "$NC_CFG" || echo "0")
+            if [ "$ACCOUNT_COUNT" -gt 0 ]; then
+              for i in $(seq 0 $((ACCOUNT_COUNT - 1))); do
+                if ! ${pkgs.gnugrep}/bin/grep -q "^$i\\\\Folders\\\\1\\\\virtualFilesMode=" "$NC_CFG"; then
+                  echo "Nextcloud VFS auto-fix: Adding virtualFilesMode for account $i"
+                  ${pkgs.gnused}/bin/sed -i "/^$i\\\\Folders\\\\1\\\\version=/a $i\\\\Folders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+                  CHANGED=true
+                fi
+              done
+            fi
+
+            # 3. Fix incorrect VFS modes
+            if ${pkgs.gnugrep}/bin/grep -q "virtualFilesMode=off" "$NC_CFG"; then
+              echo "Nextcloud VFS auto-fix: off -> suffix"
+              ${pkgs.gnused}/bin/sed -i 's/virtualFilesMode=off/virtualFilesMode=suffix/' "$NC_CFG"
+              CHANGED=true
+            fi
+
+            if [ "$CHANGED" = true ]; then
+              echo "⚠️  Nextcloud VFS enforced - restart client if running"
+            fi
           fi
         '';
       };
@@ -110,14 +133,14 @@ in {
 
         # 2. Add virtualFilesMode to each account if missing (Nextcloud stores per-account)
         # Format: 0\Folders\1\virtualFilesMode=suffix (under [Accounts] section)
-        ACCOUNT_COUNT=$(grep -c "^[0-9]\+\\\\dav_user=" "$NC_CFG" || echo "0")
+        ACCOUNT_COUNT=$(grep -c "^[0-9]\\+\\\\dav_user=" "$NC_CFG" || echo "0")
         if [ "$ACCOUNT_COUNT" -gt 0 ]; then
           for i in $(seq 0 $((ACCOUNT_COUNT - 1))); do
             # Check if this account already has virtualFilesMode configured
             if ! grep -q "^$i\\\\Folders\\\\1\\\\virtualFilesMode=" "$NC_CFG"; then
               echo "Enabling VFS for Nextcloud account $i (suffix mode)"
-              # Insert after the account's version line (last line of account config)
-              $DRY_RUN_CMD sed -i "/^$i\\\\version=/a $i\\\\Folders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
+              # Insert after the Folders version line
+              $DRY_RUN_CMD sed -i "/^$i\\\\Folders\\\\1\\\\version=/a $i\\\\Folders\\\\1\\\\virtualFilesMode=suffix" "$NC_CFG"
               CHANGED=true
             fi
           done
