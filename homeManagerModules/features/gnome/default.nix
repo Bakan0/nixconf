@@ -31,6 +31,7 @@
       "org/gnome/shell" = {
         enabled-extensions = [
           "gsconnect@andyholmes.github.io"
+          "caffeine@patapon.info"
         ];
       };
 
@@ -132,10 +133,12 @@
     home.packages = with pkgs; [
       # GNOME extensions
       gnomeExtensions.gsconnect  # KDE Connect integration
+      gnomeExtensions.caffeine   # Disable auto-suspend and screensaver
     ];
 
     myHomeManager.impermanence.cache.directories = [
       ".local/state/wireplumber"
+      ".config/gsconnect"  # GSConnect device pairing and settings
     ];
 
     # Audio initialization service - set volume and mute microphone on boot

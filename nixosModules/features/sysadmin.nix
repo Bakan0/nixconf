@@ -42,6 +42,14 @@ in {
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip route show"; options = ["NOPASSWD"]; }]; }
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip link show"; options = ["NOPASSWD"]; }]; }
 
+      # Firewall diagnostics (read-only)
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/iptables -L *"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/iptables -S *"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/iptables -nvL *"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip6tables -L *"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip6tables -S *"; options = ["NOPASSWD"]; }]; }
+      { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/ip6tables -nvL *"; options = ["NOPASSWD"]; }]; }
+
       # ZeroTier management
       { groups = ["wheel"]; commands = [{ command = "/run/current-system/sw/bin/zerotier-cli *"; options = ["NOPASSWD"]; }]; }
 
@@ -93,9 +101,10 @@ in {
       systemd      # bootctl, systemctl, journalctl
       util-linux   # dmesg, lsblk, fdisk, lscpu
       dmidecode    # dmidecode
-      pciutils     # lspci  
+      pciutils     # lspci
       usbutils     # lsusb
       iproute2     # ip
+      iptables     # iptables, ip6tables for firewall diagnostics
     ];
   };
 }

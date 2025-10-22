@@ -44,14 +44,6 @@ in {
 
     programs.hyprland.enable = cfg.hyprland.enable;
 
-    services.xserver.enable = lib.mkIf cfg.gnome.enable true;
-    services.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable true;
-
-    # Nautilus Python extension support (for Nextcloud VFS, etc.)
-    environment.systemPackages = lib.mkIf cfg.gnome.enable (with pkgs; [
-      nautilus-python
-    ]);
-
     # Locking GNOME requires gdm: https://github.com/NixOS/nixpkgs/issues/415677
     myNixOS.gdm.enable = lib.mkDefault (cfg.hyprland.enable || cfg.gnome.enable);
 
@@ -148,10 +140,6 @@ in {
       services.teamviewer.enable = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) (lib.mkDefault true);
       services.protonmail-bridge.enable = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) (lib.mkDefault true);
 
-      # Only enable desktop services if desktop environments are enabled
-      services.xserver.enable = lib.mkIf (cfg.hyprland.enable || cfg.gnome.enable) (lib.mkDefault true);
-      services.desktopManager.gnome.enable = lib.mkIf cfg.gnome.enable (lib.mkDefault true);
-
       # Hide root from display managers since we're adding SSH keys to it
       # This prevents "System administrator" from appearing in GDM/SDDM login screens
       services.displayManager.hiddenUsers = [ "root" ];
@@ -188,10 +176,6 @@ in {
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKaxtmB1X6IDyQGmtqUA148c4v/YBctuOBxLw6n0dsUY jm-ecc"
       ];
 
-      # GNOME desktop environment (joelle's preference)  
-      services.xserver.enable = true;
-      services.desktopManager.gnome.enable = true;
-      
       # Printing support
       services.printing.enable = true;
     })

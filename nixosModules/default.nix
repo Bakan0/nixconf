@@ -75,7 +75,6 @@ in {
 
   options.myNixOS = {
     hyprland.enable = lib.mkEnableOption "enable hyprland";
-    gnome.enable = lib.mkEnableOption "enable gnome";
   };
 
   config = {
